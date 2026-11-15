@@ -22,7 +22,7 @@ export function useApi<T>(path: string | null): ApiState<T> {
         const env = body as Envelope<T>
         setState({ data: env.data, sources: env.sources ?? [], loading: false, error: null })
       })
-      .catch((e) => { if (e.name !== 'AbortError') setState({ data: null, sources: [], loading: false, error: e.message === 'Failed to fetch' ? 'The BorealWatch API is not responding.' : e.message }) })
+      .catch((e) => { if (e.name !== 'AbortError') setState({ data: null, sources: [], loading: false, error: e.message === 'Failed to fetch' ? 'The Before the Smoke API is not responding.' : e.message }) })
     return () => ctrl.abort()
   }, [path, mode, tick, ready])
 

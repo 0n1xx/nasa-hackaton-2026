@@ -34,7 +34,7 @@ const weather = (mode: Mode, pts: { lat: number; lon: number }[]) => (mode === '
 const airNow = (mode: Mode, pts: { lat: number; lon: number }[]) => (mode === 'sim' ? Promise.resolve(simAirNow(pts)) : getAirNow(pts))
 const wxSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-weather', 'weather') : src('open-meteo-weather', 'Open-Meteo weather (model analysis + forecast)', 'model', 'https://open-meteo.com/', 'Gridded numerical weather models, not station measurements')
 const airSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-air', 'air quality') : src('open-meteo-air', 'Open-Meteo air quality (CAMS global model)', 'model', 'https://open-meteo.com/en/docs/air-quality-api', 'Modelled at roughly 40 km resolution; not ground monitors. AQI shown is the US EPA scale')
-const riskSrc = () => src('risk-model', 'BorealWatch risk index v0.1', 'model', undefined, 'Rule-based prototype, unvalidated. A relative index, not a probability')
+const riskSrc = () => src('risk-model', 'Before the Smoke risk index v0.1', 'model', undefined, 'Rule-based prototype, unvalidated. A relative index, not a probability')
 
 const within = (pts: { lat: number; lon: number }[], lat: number, lon: number, radius: number) => pts.reduce((n, p) => n + (km(lat, lon, p.lat, p.lon) <= radius ? 1 : 0), 0)
 

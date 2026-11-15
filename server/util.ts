@@ -30,7 +30,7 @@ export const integrations = () => [...registry.values()]
 export async function fetchUpstream(integration: string, url: string, as: 'json' | 'text' = 'json', timeoutMs = 15000): Promise<any> {
   const st = registry.get(integration)
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), headers: { 'User-Agent': 'BorealWatch/0.1 (NASA Space Apps prototype)' } })
+    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), headers: { 'User-Agent': 'BeforeTheSmoke/0.1 (NASA Space Apps prototype)' } })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const body = as === 'json' ? await res.json() : await res.text()
     if (st) { st.lastOk = new Date().toISOString(); st.lastError = null }

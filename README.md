@@ -1,4 +1,4 @@
-# BorealWatch
+# Before the Smoke
 
 **Track wildfires. Understand smoke. Protect communities.**
 

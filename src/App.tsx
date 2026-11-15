@@ -16,9 +16,9 @@ const NAV = [
 ]
 
 export function Logo() {
-  return <NavLink to="/" className="flex shrink-0 items-center gap-2.5" aria-label="BorealWatch home">
-    <svg viewBox="0 0 22 22" className="h-[22px] w-[22px]" aria-hidden><path d="M11 2l5 8h-3l4 7H5l4-7H6l5-8z" fill="#eef1f4" /><circle cx="18" cy="5" r="2.2" fill="#f2884b" /></svg>
-    <span className="text-[15px] font-semibold tracking-tight">BorealWatch</span>
+  return <NavLink to="/" className="flex shrink-0 items-center gap-2.5" aria-label="Before the Smoke home">
+    <svg viewBox="0 0 22 22" className="h-[22px] w-[22px]" aria-hidden><path d="M11 2l5 8h-3l4 7H5l4-7H6l5-8z" fill="#141b22" /><circle cx="18" cy="5" r="2.2" fill="#e06a2c" /></svg>
+    <span className="text-[15px] font-semibold tracking-tight">Before the Smoke</span>
   </NavLink>
 }
 
@@ -39,7 +39,7 @@ export default function App() {
             {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </label>
-        <div className="flex overflow-hidden rounded-lg border border-[#2a3642]" role="group" aria-label="Data mode">
+        <div className="flex overflow-hidden rounded-lg border border-[#c5ccd4]" role="group" aria-label="Data mode">
           {(['live', 'sim'] as const).map((m) => <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={`px-3.5 py-[7px] text-[13.5px] ${mode === m ? 'bg-fg font-medium text-ink-950' : 'text-mute hover:text-fg'}`}>{m === 'live' ? 'Live' : 'Simulated'}</button>)}
         </div>
       </div>

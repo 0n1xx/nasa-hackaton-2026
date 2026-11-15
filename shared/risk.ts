@@ -1,4 +1,4 @@
-// BorealWatch wildfire risk index — a transparent, rule-based PROTOTYPE.
+// Before the Smoke wildfire risk index — a transparent, rule-based PROTOTYPE.
 //
 // It is a weighted sum of eight dryness/hazard sub-scores, each scaled 0–1 by a
 // simple linear ramp. Every number below is a documented assumption chosen for

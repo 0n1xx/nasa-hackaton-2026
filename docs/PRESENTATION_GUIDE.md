@@ -9,7 +9,7 @@ Companion to [PRESENTATION_SCRIPT.md](PRESENTATION_SCRIPT.md). Total 5:00, with 
 | 0:00–0:14 | 1 | Question, then ten-second silence | Slide 1: the question | 11 |
 | 0:14–0:28 | 1 | "Five percent" and the 42% statistic | Slide 2: 5%, then 42% | 16 |
 | 0:28–1:15 | 1 | Why it matters, Thunder Bay, hand-off | Slide 2 stays | 110 |
-| 1:15–1:36 | 2 | Introduces BorealWatch and NASA data | Slide 3: logo and tagline | 45 |
+| 1:15–1:36 | 2 | Introduces Before the Smoke and NASA data | Slide 3: logo and tagline | 45 |
 | 1:36–2:06 | 2 | The indicators and the risk index | Slide 4: seven icons | 100 |
 | 2:06–2:35 | 2 | Honest limits, hand-off | Slide 4 stays | 55 |
 | 2:35–3:55 | 3 | Live demonstration (80 s, five screens) | The website | 140 |
@@ -21,7 +21,7 @@ Speaking time is roughly 1:15, 1:20 and 2:15. Speaker 3 carries the demo, which 
 
 1. The question, white on black. Nothing else.
 2. "5%" alone. On Speaker 1's second line, "42%" appears beside it, larger. Small source line: *Christianson et al., Canadian Wildland Fire Evacuation Database, 1980–2021. Evacuation events, not evacuees.*
-3. BorealWatch name and tagline.
+3. Before the Smoke name and tagline.
 4. Seven icons in a row: satellite, thermometer, droplet, wind, rain, leaf, lungs. No sentences.
 5. "Five percent of the population. Forty-two percent of the evacuations."
 

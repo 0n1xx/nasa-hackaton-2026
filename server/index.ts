@@ -53,4 +53,4 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: err?.message ?? 'Unexpected server error' })
 })
 
-app.listen(PORT, () => console.log(`BorealWatch API on http://localhost:${PORT}  (default mode: ${DEFAULT_MODE})`))
+app.listen(PORT, () => console.log(`Before the Smoke API on http://localhost:${PORT}  (default mode: ${DEFAULT_MODE})`))

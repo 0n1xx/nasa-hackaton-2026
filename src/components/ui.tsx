@@ -6,12 +6,12 @@ import type { ApiState } from '../api.ts'
 import { useApp } from '../state.tsx'
 
 export const KIND: Record<DataKind, { label: string; color: string; desc: string }> = {
-  observed: { label: 'Observed', color: '#7fc8a0', desc: 'Measured by satellites or reported by fire agencies' },
-  historical: { label: 'Historical', color: '#9aa7b4', desc: 'Past records and long-term averages' },
-  forecast: { label: 'Forecast', color: '#9cc4e4', desc: 'Predicted by weather or air quality models' },
-  model: { label: 'Model estimate', color: '#9aa7b4', desc: 'Calculated by a model, including our risk index' },
-  simulated: { label: 'Simulated', color: '#d9b44a', desc: 'Invented for demonstration; not real' },
-  reference: { label: 'Reference', color: '#9aa7b4', desc: 'Static reference information' },
+  observed: { label: 'Observed', color: '#2a9a64', desc: 'Measured by satellites or reported by fire agencies' },
+  historical: { label: 'Historical', color: '#5c6b7a', desc: 'Past records and long-term averages' },
+  forecast: { label: 'Forecast', color: '#2a6fad', desc: 'Predicted by weather or air quality models' },
+  model: { label: 'Model estimate', color: '#5c6b7a', desc: 'Calculated by a model, including our risk index' },
+  simulated: { label: 'Simulated', color: '#a67c00', desc: 'Invented for demonstration; not real' },
+  reference: { label: 'Reference', color: '#5c6b7a', desc: 'Static reference information' },
 }
 
 export function KindBadge({ kind }: { kind: DataKind }) {
@@ -66,7 +66,7 @@ export function Async<T>({ state, children, height = 160, empty }: { state: ApiS
 }
 
 export function Btn({ children, onClick, active, title }: { children: ReactNode; onClick?: () => void; active?: boolean; title?: string }) {
-  return <button type="button" title={title} onClick={onClick} aria-pressed={active} className={`rounded-lg border px-3 py-1.5 text-[13px] ${active ? 'border-fg bg-fg text-ink-950 font-medium' : 'border-[#2a3642] text-mute hover:border-mute hover:text-fg'}`}>{children}</button>
+  return <button type="button" title={title} onClick={onClick} aria-pressed={active} className={`rounded-lg border px-3 py-1.5 text-[13px] ${active ? 'border-fg bg-fg text-ink-950 font-medium' : 'border-[#c5ccd4] text-mute hover:border-mute hover:text-fg'}`}>{children}</button>
 }
 
 export function Stat({ label, value, unit, hint, color }: { label: string; value: ReactNode; unit?: string; hint?: ReactNode; color?: string }) {
@@ -98,6 +98,6 @@ export function PageHead({ kicker, title, children }: { kicker: string; title: s
   </div>
 }
 
-export const chartAxis = { stroke: '#7f8c99', fontSize: 11, tickLine: false, axisLine: { stroke: '#1f2933' } } as const
-export const chartGrid = { stroke: '#1f2933', strokeDasharray: '3 3', vertical: false } as const
-export const tooltipStyle = { contentStyle: { background: '#141b22', border: '1px solid #1f2933', borderRadius: 8, fontSize: 12 }, labelStyle: { color: '#9aa7b4' }, itemStyle: { color: '#eef1f4' }, cursor: { fill: 'rgb(238 241 244 / 0.05)' } } as const
+export const chartAxis = { stroke: '#7a8794', fontSize: 11, tickLine: false, axisLine: { stroke: '#dce1e6' } } as const
+export const chartGrid = { stroke: '#e2e6eb', strokeDasharray: '3 3', vertical: false } as const
+export const tooltipStyle = { contentStyle: { background: '#ffffff', border: '1px solid #dce1e6', borderRadius: 8, fontSize: 12, boxShadow: '0 2px 8px rgb(20 27 34 / 0.08)' }, labelStyle: { color: '#5c6b7a' }, itemStyle: { color: '#141b22' }, cursor: { fill: 'rgb(20 27 34 / 0.04)' } } as const

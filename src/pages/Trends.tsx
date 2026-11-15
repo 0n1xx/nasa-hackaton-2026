@@ -28,7 +28,7 @@ export default function Trends() {
             <div className="h-[300px]"><ResponsiveContainer><ComposedChart data={h.years} margin={{ left: -16, right: -8, top: 8 }}>
               <CartesianGrid {...chartGrid} /><XAxis dataKey="year" {...chartAxis} /><YAxis yAxisId="l" {...chartAxis} /><YAxis yAxisId="r" orientation="right" {...chartAxis} domain={[0, 8000]} />
               <Tooltip {...tooltipStyle} formatter={(v: number, n, p) => n === 'areaMha' ? [`${v} Mha${p.payload.verified ? '' : ' (approximate)'}`, 'Area burned'] : [v.toLocaleString(), 'Fires']} />
-              <Bar yAxisId="l" dataKey="areaMha" radius={[4, 4, 0, 0]} cursor="pointer" onClick={(d: any) => setA(d.year)} isAnimationActive={false}>{h.years.map((y) => <Cell key={y.year} fill={y.areaMha > avg * 1.5 ? '#e5484d' : '#f2884b'} fillOpacity={y.verified ? 0.95 : 0.5} stroke={y.year === a || y.year === b ? '#eef1f4' : 'none'} />)}</Bar>
+              <Bar yAxisId="l" dataKey="areaMha" radius={[4, 4, 0, 0]} cursor="pointer" onClick={(d: any) => setA(d.year)} isAnimationActive={false}>{h.years.map((y) => <Cell key={y.year} fill={y.areaMha > avg * 1.5 ? '#d12c33' : '#e06a2c'} fillOpacity={y.verified ? 0.95 : 0.5} stroke={y.year === a || y.year === b ? '#141b22' : 'none'} />)}</Bar>
               <Line yAxisId="r" dataKey="fires" stroke="#9cc4e4" strokeWidth={1.8} dot={{ r: 2.5, fill: '#9cc4e4' }} isAnimationActive={false} />
             </ComposedChart></ResponsiveContainer></div>
             <p className="mt-1 text-[11.5px] text-dim">Solid bars were checked against a published figure. Faded bars are approximate values awaiting verification against the National Forestry Database.</p>

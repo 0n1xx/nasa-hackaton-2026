@@ -26,7 +26,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     Promise.all([fetch('/api/regions').then((r) => r.json()), fetch('/api/status').then((r) => r.json())])
       .then(([r, s]) => { setRegions(r.data); setStatus(s); setModeRaw((m) => m ?? s.defaultMode) })
-      .catch(() => setBootError('The BorealWatch API is not responding. Start it with "npm run dev".'))
+      .catch(() => setBootError('The Before the Smoke API is not responding. Start it with "npm run dev".'))
   }, [])
 
   const value = useMemo<AppState>(() => ({

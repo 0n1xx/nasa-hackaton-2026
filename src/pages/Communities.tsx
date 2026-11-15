@@ -61,16 +61,16 @@ export default function Communities() {
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 xl:grid-cols-2">
         <Panel title="Regional patterns" sub="Listed communities with an active fire within 100 km, and with US AQI over 100.">
           <Async state={communities} height={260}>{() => <div className="h-[260px]"><ResponsiveContainer><BarChart data={byRegion} margin={{ left: -18, right: 8 }}>
-            <CartesianGrid {...chartGrid} /><XAxis dataKey="name" {...chartAxis} interval={0} tick={{ fontSize: 10, fill: '#9aa7b4' }} /><YAxis allowDecimals={false} {...chartAxis} />
+            <CartesianGrid {...chartGrid} /><XAxis dataKey="name" {...chartAxis} interval={0} tick={{ fontSize: 10, fill: '#5c6b7a' }} /><YAxis allowDecimals={false} {...chartAxis} />
             <Tooltip {...tooltipStyle} /><Legend wrapperStyle={{ fontSize: 11.5 }} />
-            <Bar dataKey="listed" name="Listed" fill="#1f2933" radius={[3, 3, 0, 0]} isAnimationActive={false} /><Bar dataKey="nearFire" name="Fire ≤100 km" fill="#f2884b" radius={[3, 3, 0, 0]} isAnimationActive={false} /><Bar dataKey="smoky" name="AQI over 100" fill="#9cc4e4" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar dataKey="listed" name="Listed" fill="#a8b3be" radius={[3, 3, 0, 0]} isAnimationActive={false} /><Bar dataKey="nearFire" name="Fire ≤100 km" fill="#e06a2c" radius={[3, 3, 0, 0]} isAnimationActive={false} /><Bar dataKey="smoky" name="AQI over 100" fill="#2a6fad" radius={[3, 3, 0, 0]} isAnimationActive={false} />
           </BarChart></ResponsiveContainer></div>}</Async>
         </Panel>
         <Panel title="Repeated exposure" sub="What the evidence says, and what this prototype does not show.">
           <div className="space-y-2.5 text-[13px] leading-relaxed text-mute">
             <p>Analysis of the Canadian Wildland Fire Evacuation Database found 16 communities evacuated five or more times between 1980 and 2021. Fourteen were First Nations reserves. Some Nations have left home in back-to-back seasons.</p>
             <p>In the table above, the “publicly reported events” column gives a partial view of this. Several Northwestern Ontario communities appear in both 2025 and 2026 reporting.</p>
-            <p className="rounded-md border border-line p-2.5 text-[12.5px]">BorealWatch does not publish a community-by-community evacuation count. That record is not open data, and counting evacuations without the community’s account of them would repeat the problem this project is trying to address.</p>
+            <p className="rounded-md border border-line p-2.5 text-[12.5px]">Before the Smoke does not publish a community-by-community evacuation count. That record is not open data, and counting evacuations without the community’s account of them would repeat the problem this project is trying to address.</p>
           </div>
         </Panel>
       </div>
@@ -81,7 +81,7 @@ export default function Communities() {
           <div className="space-y-2.5 text-[13px] leading-relaxed text-mute">
             <p>In mid-July 2026, wildfires in Northwestern Ontario forced evacuation orders for Whitesand, Namaygoosisagagun (Collins), Gull Bay, Lac des Mille Lacs and Lac La Croix First Nations and the town of Armstrong. Homes were destroyed in Collins, a community with no road access whose members left by boat. Neskantaga flew residents out days later.</p>
             <p>Most evacuees headed to Thunder Bay, where hotels filled within days and families were sent on to southern Ontario. Leaders said warnings came too late and that distant placements separated families.</p>
-            <p className="text-fg">The same pieces of information existed before the orders: heat, dry air, wind, new satellite detections and thickening smoke. BorealWatch puts them side by side for the region, so a rising index and nearby detections can prompt a call days earlier.</p>
+            <p className="text-fg">The same pieces of information existed before the orders: heat, dry air, wind, new satellite detections and thickening smoke. Before the Smoke puts them side by side for the region, so a rising index and nearby detections can prompt a call days earlier.</p>
             <div className="flex flex-wrap gap-2 pt-1">
               <Link to="/map?date=2026-07-14" onClick={() => setRegionId('thunder-bay')} className="rounded-md border border-ember/50 bg-ember/12 px-3 py-1.5 text-[12.5px] text-ember hover:bg-ember/20">See NASA imagery for 14 July 2026 →</Link>
               <Link to="/risk" onClick={() => setRegionId('thunder-bay')} className="rounded-md border border-line bg-ink-800 px-3 py-1.5 text-[12.5px] hover:text-sky">Open today’s risk assessment</Link>

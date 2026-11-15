@@ -1,4 +1,4 @@
-# BorealWatch — five-minute presentation script
+# Before the Smoke — five-minute presentation script
 
 Three speakers · about 610 spoken words · 5:00 including pauses and demo
 
@@ -34,9 +34,9 @@ Stage directions are in [BRACKETS]. Do not read them aloud.
 
 ## Speaker 2 — the solution (1:15–2:35)
 
-**[SLIDE 3: BorealWatch logo and tagline: "Track wildfires. Understand smoke. Protect communities."]**
+**[SLIDE 3: Before the Smoke logo and tagline: "Track wildfires. Understand smoke. Protect communities."]**
 
-**1:15** It takes putting the right information in one place. We built BorealWatch.
+**1:15** It takes putting the right information in one place. We built Before the Smoke.
 
 **1:22** It starts with NASA. Satellites carrying the VIIRS and MODIS instruments detect heat from fires across Canada every day, and NASA publishes daily imagery of the smoke.
 
@@ -56,7 +56,7 @@ Stage directions are in [BRACKETS]. Do not read them aloud.
 
 **[OPEN THE WEBSITE — already loaded on the Overview page, "Simulated scenario" selected]**
 
-**2:35** This is BorealWatch. It is November, so Canada's fire season is over. What you see is a simulated summer scenario, and the yellow banner says so on every page.
+**2:35** This is Before the Smoke. It is November, so Canada's fire season is over. What you see is a simulated summer scenario, and the yellow banner says so on every page.
 
 **[SHOW THE CANADA WILDFIRE MAP — scroll to "Canada at a glance"]**
 
@@ -80,7 +80,7 @@ Stage directions are in [BRACKETS]. Do not read them aloud.
 
 **[STEP AWAY FROM THE LAPTOP. SLIDE 5: photo-free closing slide with the final line.]**
 
-**3:55** BorealWatch is not really about tracking fires. It is about time. A few more days for a community to decide, on its own terms, how to protect its people, its homes, its ancestral lands and its cultural heritage.
+**3:55** Before the Smoke is not really about tracking fires. It is about time. A few more days for a community to decide, on its own terms, how to protect its people, its homes, its ancestral lands and its cultural heritage.
 
 **4:10** So we are asking for three things. Invest in monitoring before the fire, especially in the North, where many communities have no air sensor at all. Build tools like this with Indigenous leadership, not for them. And treat environmental data as a responsibility, labelled honestly and shared fairly.
 

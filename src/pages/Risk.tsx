@@ -14,7 +14,7 @@ function Dial({ score, color, band, level }: { score: number; color: string; ban
     <div className="relative mt-4 h-1.5 rounded bg-ink-700">
       <span className="absolute top-0 h-1.5 rounded opacity-30" style={{ left: `${lo}%`, width: `${hi - lo}%`, background: color }} />
       <span className="absolute top-0 left-0 h-1.5 rounded" style={{ width: `${score}%`, background: color, transition: 'width .5s ease' }} />
-      {[25, 50, 75].map((t) => <span key={t} className="absolute -top-1 h-3.5 w-px bg-ink-950" style={{ left: `${t}%` }} />)}
+      {[25, 50, 75].map((t) => <span key={t} className="absolute -top-1 h-3.5 w-px bg-fg" style={{ left: `${t}%` }} />)}
     </div>
     <div className="mt-1.5 grid grid-cols-4 text-[12px] text-mute"><span>Low</span><span>Moderate</span><span>High</span><span>Critical</span></div>
   </div>
@@ -66,7 +66,7 @@ export default function Risk() {
               <CartesianGrid {...chartGrid} /><XAxis dataKey="label" {...chartAxis} /><YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} {...chartAxis} />
               {[[25, 50, '#e3c341'], [50, 75, '#f2884b'], [75, 100, '#e5484d']].map(([a, b, col]) => <ReferenceArea key={a} y1={a as number} y2={b as number} fill={col as string} fillOpacity={0.04} />)}
               <Tooltip {...tooltipStyle} formatter={(v: number, _n, p) => [`${v} · ${p.payload.level}`, p.payload.kind === 'forecast' ? 'Forecast-based estimate' : p.payload.kind === 'today' ? 'Today' : 'Past estimate']} />
-              <Bar dataKey="score" radius={[4, 4, 0, 0]} isAnimationActive={false}>{r.timeline.map((d) => <Cell key={d.date} fill={LEVEL_COLORS[d.level]} fillOpacity={d.kind === 'forecast' ? 0.45 : d.kind === 'today' ? 1 : 0.75} stroke={d.kind === 'today' ? '#eef1f4' : d.kind === 'forecast' ? LEVEL_COLORS[d.level] : 'none'} strokeDasharray={d.kind === 'forecast' ? '4 3' : undefined} />)}</Bar>
+              <Bar dataKey="score" radius={[4, 4, 0, 0]} isAnimationActive={false}>{r.timeline.map((d) => <Cell key={d.date} fill={LEVEL_COLORS[d.level]} fillOpacity={d.kind === 'forecast' ? 0.45 : d.kind === 'today' ? 1 : 0.75} stroke={d.kind === 'today' ? '#141b22' : d.kind === 'forecast' ? LEVEL_COLORS[d.level] : 'none'} strokeDasharray={d.kind === 'forecast' ? '4 3' : undefined} />)}</Bar>
             </BarChart></ResponsiveContainer></div>
             <div className="mt-1 flex flex-wrap gap-2"><KindBadge kind={mode === 'sim' ? 'simulated' : 'model'} /><KindBadge kind="forecast" /><span className="text-[11.5px] text-dim">Outlined bar is today; faded, dashed bars are the outlook.</span></div>
           </Panel>
