@@ -45,7 +45,7 @@ export function levelFor(score: number): RiskLevel {
 }
 
 export const LEVEL_COLORS: Record<RiskLevel, string> = {
-  Low: '#3fb68b', Moderate: '#e3c341', High: '#f08c3a', Critical: '#e5484d',
+  Low: '#2e8b62', Moderate: '#c79a16', High: '#e0702b', Critical: '#c9302c',
 }
 
 export function computeRisk(inp: RiskInputs): RiskResult {

@@ -1,37 +1,78 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* White theme: light ground, hairline rules, one accent (ember). */
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+
+/* Design tokens. White ground, spruce-black ink, cool green-grey neutrals.
+   Ember is reserved for risk and for the one primary action on a screen.
+   Display: Archivo, condensed (font-stretch) for headlines, like fire-danger signage.
+   Body and data: IBM Plex Sans with tabular figures. Fonts are bundled, so the site works offline. */
 @theme {
-  --color-ink-950: #ffffff;
-  --color-ink-900: #fafbfc;
-  --color-ink-850: #f5f7f9;
-  --color-ink-800: #eef1f4;
-  --color-ink-700: #e2e6eb;
-  --color-line: #dce1e6;
-  --color-fg: #141b22;
-  --color-mute: #5c6b7a;
-  --color-dim: #7a8794;
-  --color-moss: #141b22;
-  --color-ember: #e06a2c;
-  --color-flame: #d12c33;
-  --color-sky: #2a6fad;
-  --color-sun: #a67c00;
-  --font-display: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-ink-950: #ffffff;   /* page ground */
+  --color-ink-900: #f7f8f6;   /* quiet surface */
+  --color-ink-850: #f0f2ef;
+  --color-ink-800: #e8ebe7;   /* hover, selected row */
+  --color-ink-700: #d9ded8;   /* tracks, empty bars */
+  --color-line: #d9ded9;      /* rules and borders */
+  --color-edge: #b9c3bc;      /* form control and button borders, a step stronger than line */
+  --color-fg: #13211b;        /* spruce-black ink */
+  --color-mute: #52615a;      /* secondary text */
+  --color-dim: #75827c;       /* tertiary text, captions */
+  --color-moss: #2e7d57;      /* ok, healthy, Low */
+  --color-ember: #d4551f;     /* risk accent, primary action */
+  --color-ember-deep: #c24a17; /* ember behind white text: 4.9:1, passes WCAG AA at body size */
+  --color-flame: #c42f2a;     /* errors, Critical */
+  --color-sky: #2f6690;       /* links, smoke and air */
+  --color-sun: #8a6400;       /* simulated-data marker */
+  --breakpoint-wide: 87rem;   /* 1392px: the header fits on one row from here (1440 projector) */
+  --font-display: "Archivo Variable", "Arial Narrow", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-html, body, #root { height: 100%; }
-body {
-  background: var(--color-ink-950);
-  color: var(--color-fg);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
+/* Element defaults live in the base layer so a utility class on an element can override them
+   (unlayered rules would beat every Tailwind utility regardless of specificity). */
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    background: var(--color-ink-950);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { letter-spacing: -0.015em; }
+  button, a, select, input { transition: background-color .15s, border-color .15s, color .15s; }
+  :focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; border-radius: 4px; }
+  select, input[type="date"] {
+    background-color: var(--color-ink-950);
+    border: 1px solid var(--color-edge);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--color-fg);
+    color-scheme: light;
+    font-size: 13.5px;
+  }
+  /* One consistent chevron instead of each browser's native arrow. */
+  select {
+    appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%2313211b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+  }
+  select:hover { border-color: var(--color-mute); }
 }
-h1, h2, h3 { letter-spacing: -0.015em; }
+
+/* Condensed display type. Use on headlines and hero numbers: className="font-display condensed" */
+.condensed { font-stretch: 72%; }
+
 .num { font-variant-numeric: tabular-nums; }
 .label { font-size: 12.5px; color: var(--color-mute); }
 
@@ -40,18 +81,37 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .skeleton { background: var(--color-ink-800); border-radius: 6px; animation: pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .5; } }
-@media (prefers-reduced-motion: reduce) { .fade-in, .skeleton { animation: none; } }
 
-button, a, select, input { transition: background-color .15s, border-color .15s, color .15s; }
-:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; border-radius: 4px; }
-select, input[type="date"] {
-  background: var(--color-ink-950);
-  border: 1px solid #c5ccd4;
-  border-radius: 8px;
-  padding: 7px 10px;
-  color: var(--color-fg);
-  color-scheme: light;
-  font-size: 13.5px;
+
+/* Header navigation: horizontal scroll on narrow screens without a visible scrollbar. */
+.nav-scroll { scrollbar-width: none; }
+.nav-scroll::-webkit-scrollbar { display: none; }
+
+/* Risk strip (Overview hero). Columns rise once on load; forecast columns are hatched so they
+   read as different from observed days without relying on colour. */
+.strip-bar {
+  transform-origin: bottom;
+  animation: strip-rise .7s cubic-bezier(.2, .75, .25, 1) both;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.strip-num { animation: strip-num .4s ease both; }
+@keyframes strip-rise { from { transform: scaleY(0); } }
+@keyframes strip-num { from { opacity: 0; transform: translateY(4px); } }
+.hatch {
+  background-color: #ffffff;
+  background-image: repeating-linear-gradient(135deg, var(--c) 0 3.5px, transparent 3.5px 7px);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .skeleton, .strip-bar, .strip-num { animation: none; }
+}
+
+/* Print: the app shell scrolls inside <main>; let the document flow so long pages print in full. */
+@media print {
+  html, body, #root { height: auto !important; }
 }
 
 /* Leaflet — light map */
@@ -59,5 +119,5 @@ select, input[type="date"] {
 .leaflet-control-zoom a { background: var(--color-ink-950) !important; color: var(--color-fg) !important; border-color: var(--color-line) !important; }
 .leaflet-control-attribution { background: rgb(255 255 255 / 0.85) !important; color: var(--color-dim) !important; font-size: 10px; }
 .leaflet-control-attribution a { color: var(--color-mute) !important; }
-.leaflet-tooltip { background: var(--color-ink-950); color: var(--color-fg); border: 1px solid var(--color-line); box-shadow: 0 1px 4px rgb(20 27 34 / 0.08); font-size: 12px; }
+.leaflet-tooltip { background: var(--color-ink-950); color: var(--color-fg); border: 1px solid var(--color-line); box-shadow: 0 1px 4px rgb(19 33 27 / 0.08); font-size: 12px; }
 .leaflet-tooltip::before { display: none; }

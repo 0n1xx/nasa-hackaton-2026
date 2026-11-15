@@ -5,9 +5,10 @@ import { PageHead } from '../components/ui.tsx'
 export default function MapPage() {
   const [q] = useSearchParams()
   const d = q.get('date') ?? ''
+  // ?date=2026-07-14 opens the same NASA imagery view as the button on the map (handled in MapView).
   return <>
-    <PageHead kicker="Interactive wildfire map" title="Fire, smoke and communities on one map">
-      Agency-reported fires, satellite detections, modelled smoke and NASA imagery. Choose a region in the top bar to fly there, pick a date to load that day’s satellite passes, and select any marker for details.
+    <PageHead kicker="Wildfire map" title="Fire, smoke and communities on one map">
+      Fire reports, satellite detections, modelled smoke and real NASA imagery. Select any marker for details.
     </PageHead>
     <MapView height="68vh" initialDate={/^\d{4}-\d{2}-\d{2}$/.test(d) ? d : ''} />
   </>

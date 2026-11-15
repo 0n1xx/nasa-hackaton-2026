@@ -13,6 +13,8 @@ import { aqiFromPm25 } from '../shared/aqi.ts'
 function rng(seed: number) {
   return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
 }
+/** Local calendar date (YYYY-MM-DD), not UTC, so 'today' matches the presenter's clock in the evening. */
+const localDay = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 const hash = (lat: number, lon: number) => Math.round(lat * 1000) * 7919 + Math.round(lon * 1000) * 104729
 
 // cluster centre, spread (deg), number of fires, typical size (ha), agency
@@ -28,7 +30,7 @@ let fireCache: ActiveFire[] | null = null
 export function simActiveFires(): ActiveFire[] {
   if (fireCache) return fireCache
   const r = rng(20260714), out: ActiveFire[] = []
-  const start = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)
+  const start = localDay(Date.now() - 6 * 86400000)
   for (const [lat, lon, spread, n, size, agency] of CLUSTERS) {
     for (let i = 0; i < n; i++) {
       out.push({ id: `SIM-${agency}-${out.length + 1}`, name: `SIM ${agency} ${String(out.length + 1).padStart(3, '0')}`, agency, lat: lat + (r() - 0.5) * 2 * spread, lon: lon + (r() - 0.5) * 3 * spread, hectares: Math.round(size * (0.05 + r() ** 2 * 1.6)), startDate: start, stage: STAGES[Math.floor(r() * STAGES.length)] })
@@ -65,14 +67,16 @@ export function simWeather(pts: Pt[]): WeatherResult[] {
     const r = rng(hash(p.lat, p.lon)), a = anomaly(p.lat, p.lon)
     const days = Array.from({ length: 11 }, (_, i) => {
       const off = i - 7 // -7 … +3
-      const build = 0.55 + 0.45 * Math.min(1, (i + 1) / 8) // heat builds through the week
-      const tMax = 20 + 11 * a * build + (r() - 0.5) * 4 - Math.max(0, p.lat - 55) * 0.5
-      const rhMin = Math.max(14, 55 - 30 * a * build + (r() - 0.5) * 12)
-      const wet = r() < 0.18 - 0.14 * a
+      // Heat and dryness build through the week from a cool, damp start, so the
+      // scenario shows warning signs lining up days before the peak.
+      const build = 0.1 + 0.9 * Math.min(1, i / 7)
+      const tMax = 19 + 13 * a * build + (r() - 0.5) * 3 - Math.max(0, p.lat - 55) * 0.5
+      const rhMin = Math.max(14, 62 - 40 * a * build + (r() - 0.5) * 10)
+      const wet = i <= 1 ? r() < 0.55 + 0.4 * a : r() < 0.14 - 0.12 * a
       return {
-        date: new Date(Date.now() + off * 86400000).toISOString().slice(0, 10), kind: off > 0 ? 'forecast' as const : 'historical' as const,
+        date: localDay(Date.now() + off * 86400000), kind: off > 0 ? 'forecast' as const : 'historical' as const,
         tMax: +tMax.toFixed(1), rhMin: Math.round(rhMin), windMax: +(12 + r() * 16 + 10 * a * (off >= -1 ? 1 : 0.4)).toFixed(1), windDir: Math.round(200 + r() * 90),
-        precip: wet ? +(1 + r() * 9).toFixed(1) : 0, vpdMax: +(0.6108 * Math.exp((17.27 * tMax) / (tMax + 237.3)) * (1 - rhMin / 100)).toFixed(2),
+        precip: wet ? +((i <= 1 ? 8 : 1) + r() * 9).toFixed(1) : 0, vpdMax: +(0.6108 * Math.exp((17.27 * tMax) / (tMax + 237.3)) * (1 - rhMin / 100)).toFixed(2),
         soil: +(0.3 - 0.17 * a * build + (r() - 0.5) * 0.03).toFixed(3), snow: 0,
       }
     })
