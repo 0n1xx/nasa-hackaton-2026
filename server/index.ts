@@ -1,4 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
+import compression from 'compression'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -16,6 +17,10 @@ import { assistantReply } from './assistant.ts'
 import { integrations, src, UpstreamError } from './util.ts'
 
 const app = express()
+app.disable('x-powered-by')
+// gzip for the API's JSON and the built UI: the lists the map reads shrink about tenfold, which is most of
+// the wait on a phone connection.
+app.use(compression())
 const PORT = Number(process.env.PORT ?? 8787)
 const DEFAULT_MODE: Mode = process.env.DEFAULT_MODE === 'sim' ? 'sim' : 'live'
 
@@ -57,6 +62,10 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Unknown API route'
 // In production (after `npm run build`) the same server also serves the UI.
 const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
 if (existsSync(dist)) {
+  // Files under /assets carry a content hash in their name, so a browser may keep them for good.
+  app.use('/assets', express.static(path.join(dist, 'assets'), { immutable: true, maxAge: '1y' }))
+  // A missing asset is a 404, never the HTML page under a .js name (an old tab after a new build).
+  app.use('/assets', (_req, res) => res.status(404).end())
   app.use(express.static(dist))
   app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')))
 }

@@ -1,19 +1,23 @@
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useApp } from './state.tsx'
 import Home from './pages/Home.tsx'
 import Community from './pages/Community.tsx'
-import AskForHelp from './pages/AskForHelp.tsx'
-import AssistantPage from './pages/AssistantPage.tsx'
-import About from './pages/About.tsx'
-import Overview from './pages/Overview.tsx'
-import MapPage from './pages/MapPage.tsx'
-import Air from './pages/Air.tsx'
-import Risk from './pages/Risk.tsx'
-import Communities from './pages/Communities.tsx'
-import Trends from './pages/Trends.tsx'
-import Preparedness from './pages/Preparedness.tsx'
-import DataPage from './pages/DataPage.tsx'
+
+// Home and the community view are the app; they ship in the first download. Every other screen (and the
+// charting library the older ones need) is fetched the first time it is opened, which keeps the first load
+// small on a phone connection.
+const AskForHelp = lazy(() => import('./pages/AskForHelp.tsx'))
+const AssistantPage = lazy(() => import('./pages/AssistantPage.tsx'))
+const About = lazy(() => import('./pages/About.tsx'))
+const Overview = lazy(() => import('./pages/Overview.tsx'))
+const MapPage = lazy(() => import('./pages/MapPage.tsx'))
+const Air = lazy(() => import('./pages/Air.tsx'))
+const Risk = lazy(() => import('./pages/Risk.tsx'))
+const Communities = lazy(() => import('./pages/Communities.tsx'))
+const Trends = lazy(() => import('./pages/Trends.tsx'))
+const Preparedness = lazy(() => import('./pages/Preparedness.tsx'))
+const DataPage = lazy(() => import('./pages/DataPage.tsx'))
 
 /** The wordmark is the logo: no clip-art. */
 export function Logo() {
@@ -38,6 +42,13 @@ export default function App() {
   const loc = useLocation()
   const full = FULL_SCREEN(loc.pathname)
   useEffect(() => { document.querySelector('main')?.scrollTo({ top: 0 }) }, [loc.pathname])
+  // The next screens of the main path (ask for help, ask a question): fetch them once the first screen has
+  // settled, so a tap on a slow connection does not wait for a download.
+  useEffect(() => {
+    const warm = () => { void import('./pages/AskForHelp.tsx'); void import('./pages/AssistantPage.tsx') }
+    const t = window.setTimeout(warm, 4000)
+    return () => window.clearTimeout(t)
+  }, [])
 
   return <div className="flex h-full flex-col print:block print:h-auto">
     <header className="z-[1100] flex h-14 shrink-0 items-center gap-4 border-b border-line bg-white px-4 md:px-6 print:hidden">
@@ -58,7 +69,7 @@ export default function App() {
 
     <main className={`relative min-h-0 flex-1 print:overflow-visible ${full ? 'overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'}`}>
       {bootError ? <div role="alert" className="p-8 text-danger">{bootError}</div> : !region ? <div className="skeleton m-8 h-64" /> :
-        <Routes>
+        <Suspense fallback={<div aria-busy="true" aria-label="Loading" className="skeleton m-4 h-64 md:m-8" />}><Routes>
           <Route path="/" element={<Home />} />
           <Route path="/c/:id" element={<Community />} />
           <Route path="/c/:id/help" element={<Page><AskForHelp /></Page>} />
@@ -75,7 +86,7 @@ export default function App() {
           <Route path="/data" element={<Page><DataPage /></Page>} />
           <Route path="/brief" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Page><p className="py-6 text-[17px]">This page does not exist. <NavLink className="text-action underline" to="/">Find your community</NavLink></p></Page>} />
-        </Routes>}
+        </Routes></Suspense>}
     </main>
   </div>
 }
