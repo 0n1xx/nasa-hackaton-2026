@@ -9,6 +9,8 @@ import * as svc from './services.ts'
 import { parseHorizon } from '../shared/horizon.ts'
 import { riskGrid } from './grid.ts'
 import { climateHistory } from './climate.ts'
+import { placeReport } from './place.ts'
+import { searchCommunities } from './directory.ts'
 import { integrations, src, UpstreamError } from './util.ts'
 
 const app = express()
@@ -41,6 +43,8 @@ app.get('/api/risk/:id', route((req) => svc.regionRisk(mode(req), req.params.id,
 app.get('/api/air-trends', route((req) => svc.airTrends(mode(req))))
 app.get('/api/air/:id', route((req) => svc.regionAir(mode(req), req.params.id, intParam(req.query.pastDays, 7, 1, 92), horizon(req))))
 app.get('/api/communities', route((req) => svc.communities(mode(req))))
+app.get('/api/communities/search', route((req) => searchCommunities(typeof req.query.q === 'string' ? req.query.q : '')))
+app.get('/api/place/:id', route((req) => placeReport(mode(req), req.params.id, horizon(req))))
 app.get('/api/risk-grid', route((req) => riskGrid(mode(req), horizon(req))))
 app.get('/api/climate-history/:id', route((req) => climateHistory(mode(req), req.params.id)))
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Unknown API route' }))

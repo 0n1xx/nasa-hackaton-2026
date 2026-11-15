@@ -44,6 +44,11 @@ export function levelFor(score: number): RiskLevel {
   return score >= 75 ? 'Critical' : score >= 50 ? 'High' : score >= 25 ? 'Moderate' : 'Low'
 }
 
+/** The word the UI shows for a level (plain-English glossary in docs/plans). Display only: the RiskLevel values stay as they are. */
+export function levelLabel(level: RiskLevel): string {
+  return ({ Low: 'Low', Moderate: 'Medium', High: 'High', Critical: 'Very high' } as Record<RiskLevel, string>)[level] ?? level
+}
+
 export const LEVEL_COLORS: Record<RiskLevel, string> = {
   Low: '#2e8b62', Moderate: '#c79a16', High: '#e0702b', Critical: '#c9302c',
 }

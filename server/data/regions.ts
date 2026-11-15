@@ -1,4 +1,5 @@
 import type { Region } from '../../shared/types.ts'
+import { km } from '../util.ts'
 
 // Monitoring regions. `historyIndex` is a hand-set relative baseline (an assumption),
 // used only as the smallest-weight factor in the risk index.
@@ -14,3 +15,19 @@ export const REGIONS: Region[] = [
   { id: 'n-quebec', name: 'Nord-du-Québec', short: 'Nord-du-Québec', province: 'QC', lat: 50.5, lon: -75.5, zoom: 6, historyIndex: 0.55 },
 ]
 export const regionById = (id: string) => REGIONS.find((r) => r.id === id)
+
+/** A point further than this from every region centre has no region (and the default baseline below). */
+export const REGION_REACH_KM = 600
+/** Baseline historyIndex for a point with no region within REGION_REACH_KM. An assumption, like the hand-set values above. */
+export const DEFAULT_HISTORY_INDEX = 0.5
+
+/** The region whose centre is nearest to the point, if within maxKm. */
+export function nearestRegion(lat: number, lon: number, maxKm = REGION_REACH_KM): Region | null {
+  let best: Region | null = null, bestKm = Infinity
+  for (const r of REGIONS) { const d = km(lat, lon, r.lat, r.lon); if (d < bestKm) { bestKm = d; best = r } }
+  return bestKm <= maxKm ? best : null
+}
+
+/** The risk index's regional baseline for any point: the nearest region's, else DEFAULT_HISTORY_INDEX.
+ *  Derived from the point alone, so a map cell, a region and a community at the same spot get the same score. */
+export const historyIndexAt = (lat: number, lon: number) => nearestRegion(lat, lon)?.historyIndex ?? DEFAULT_HISTORY_INDEX

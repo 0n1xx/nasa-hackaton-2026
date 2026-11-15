@@ -17,11 +17,22 @@ if (!file) { console.error('Pass the path to the downloaded GeoJSON.'); process.
 const geo = JSON.parse(readFileSync(file, 'utf8')) as { features: { properties: Record<string, unknown>; geometry: { type: string; coordinates: [number, number] } }[] }
 const round = (v: number) => Math.round(v * 100) / 100
 
+// The source lost the glottal stop (ʔ) in a few Ktunaxa and Tsilhqot'in names and
+// spells one Mi'kmaw name in capitals. Restore the names as the Nations write them.
+const NAME_FIXES: Record<number, string> = {
+  604: 'ʔAkisq\'nuk First Nation',
+  602: 'ʔaq\'am',
+  709: 'ʔEsdilagh First Nation',
+  603: 'Yaqit ʔa·knuqli\'it First Nation',
+  25: 'Sipekne\'katik',
+}
+const fixName = (band: number, name: string) => NAME_FIXES[band] ?? name.replace(/\?/g, 'ʔ').replace(/[‘’]/g, '\'')
+
 const out = geo.features
   .filter((f) => f.geometry?.type === 'Point' && typeof f.properties.BAND_NAME === 'string' && Number.isFinite(f.properties.BAND_NUMBER))
   .map((f) => {
     const [lon, lat] = f.geometry.coordinates
-    return { id: `isc-${f.properties.BAND_NUMBER}`, bandNumber: Number(f.properties.BAND_NUMBER), name: String(f.properties.BAND_NAME).trim(), lat: round(lat), lon: round(lon), province: provinceAt(lat, lon) }
+    return { id: `isc-${f.properties.BAND_NUMBER}`, bandNumber: Number(f.properties.BAND_NUMBER), name: fixName(Number(f.properties.BAND_NUMBER), String(f.properties.BAND_NAME).trim()), lat: round(lat), lon: round(lon), province: provinceAt(lat, lon) }
   })
   .sort((a, b) => a.name.localeCompare(b.name))
 

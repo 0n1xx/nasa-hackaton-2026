@@ -74,3 +74,13 @@ export function parseCsv(text: string): Record<string, string>[] {
   const head = (rows.shift() ?? []).map((h) => h.trim().toLowerCase())
   return rows.filter((r) => r.length >= head.length - 1 && r.some((c) => c.trim())).map((r) => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? '').trim()])))
 }
+
+const COMPASS8 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const
+/** 8-point compass direction of the initial great-circle bearing from a to b. */
+export function compass8(aLat: number, aLon: number, bLat: number, bLon: number): (typeof COMPASS8)[number] {
+  const r = Math.PI / 180, dLon = (bLon - aLon) * r
+  const y = Math.sin(dLon) * Math.cos(bLat * r)
+  const x = Math.cos(aLat * r) * Math.sin(bLat * r) - Math.sin(aLat * r) * Math.cos(bLat * r) * Math.cos(dLon)
+  const deg = (Math.atan2(y, x) / r + 360) % 360
+  return COMPASS8[Math.round(deg / 45) % 8]
+}

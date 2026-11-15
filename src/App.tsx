@@ -31,10 +31,12 @@ export default function App() {
       <div className="ml-auto flex items-center gap-4">
         {!home && <Link to="/" className="hidden text-[14px] text-mute hover:text-fg sm:inline">Map</Link>}
         <Link to="/data" className="hidden text-[14px] text-mute hover:text-fg sm:inline">About the data</Link>
-        <div className="flex rounded-full bg-ink-800 p-0.5" role="group" aria-label="Data mode">
+        <div className="flex shrink-0 rounded-full bg-ink-800 p-0.5" role="group" aria-label="Which data to show">
           {(['live', 'sim'] as const).map((m) => <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
-            className={`rounded-full px-3.5 py-1.5 text-[13px] ${mode === m ? 'bg-white font-medium text-fg shadow-sm' : 'text-mute hover:text-fg'}`}>
-            {m === 'live' ? 'Live' : 'Simulated'}
+            className={`rounded-full px-3 py-1.5 text-[13px] whitespace-nowrap sm:px-3.5 ${mode === m ? 'bg-white font-medium text-fg shadow-sm' : 'text-mute hover:text-fg'}`}>
+            {/* Short words on phones so the header fits 390 px */}
+            <span className="sm:hidden">{m === 'live' ? 'Live' : 'Example'}</span>
+            <span className="hidden sm:inline">{m === 'live' ? 'Live data' : 'Example scenario'}</span>
           </button>)}
         </div>
       </div>

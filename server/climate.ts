@@ -93,7 +93,12 @@ function metric(d: PowerDaily, key: Key, win: Set<string>): ClimateMetricHistory
 export async function climateHistory(mode: Mode, id: string): Promise<Envelope<ClimateHistory>> {
   const region = regionById(id)
   if (!region) throw new NotFound(`Unknown region: ${id}`)
-  const d = await getPowerDaily(region.lat, region.lon)
+  return climateHistoryAt(mode, region.lat, region.lon)
+}
+
+/** The same history for any point (used by /api/place for a community's location). */
+export async function climateHistoryAt(mode: Mode, lat: number, lon: number): Promise<Envelope<ClimateHistory>> {
+  const d = await getPowerDaily(lat, lon)
   const w = windowFor(mode)
   const years = new Set(d.dates.map((x) => x.slice(0, 4)))
   const data: ClimateHistory = {

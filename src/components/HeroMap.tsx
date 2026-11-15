@@ -3,12 +3,12 @@ import { Circle, CircleMarker, MapContainer, Pane, Popup, Rectangle, TileLayer, 
 import { useSearchParams } from 'react-router-dom'
 import { Pause, Play } from 'lucide-react'
 import type { ReactNode } from 'react'
-import type { ActiveFire, CommunityExposure, RegionSummary, RiskGrid, RiskLevel, SourceMeta } from '../../shared/types.ts'
-import { LEVEL_COLORS, levelFor } from '../../shared/risk.ts'
+import type { ActiveFire, CommunityExposure, RegionSummary, RiskGrid, RiskLevel } from '../../shared/types.ts'
+import { LEVEL_COLORS, levelFor, levelLabel } from '../../shared/risk.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
-import { EXPLAIN, stageLabel } from '../explain.ts'
-import { InfoPopover, fmt, fmtTime } from './ui.tsx'
+import { stageWords } from '../explain.ts'
+import { InfoPopover, fmtArea, fmtPlace, placeName, sourceLine } from './ui.tsx'
 import HorizonSelector from './HorizonSelector.tsx'
 
 const GIBS_WMS = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi'
@@ -40,9 +40,13 @@ const localDate = (iso: string) => {
   const [y, m, d] = iso.slice(0, 10).split('-').map(Number)
   return new Date(y, (m || 1) - 1, d || 1)
 }
+/** A bare date stays a local calendar day; a full timestamp is shown in local time. */
+const anyDate = (iso: string) => (iso.length > 10 && !Number.isNaN(Date.parse(iso)) ? new Date(iso) : localDate(iso))
+const monthDay = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(d.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' } : {}) })
 const shortDay = (d: GridDay) => d.kind === 'today' ? 'Today' : localDate(d.date).toLocaleDateString('en-US', { weekday: 'short' })
+/** "Today", "Wednesday, Nov 18 (expected)", "Monday, Nov 9 (past)" */
 const dayLine = (d: GridDay) => d.kind === 'today' ? 'Today'
-  : `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · ${d.kind === 'forecast' ? 'predicted' : 'past'}`
+  : `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} (${d.kind === 'forecast' ? 'expected' : 'past'})`
 /** Compact pill text when the window is long (up to 19 days): weekday initial and day of month, so repeated weekdays stay distinct. */
 const pillDay = (d: GridDay, compact: boolean) => d.kind === 'today' ? 'Today'
   : compact ? `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'narrow' })} ${localDate(d.date).getDate()}` : shortDay(d)
@@ -54,16 +58,26 @@ const shortName = (name: string) => {
   return (m ? m[1] : name).replace(/ First Nations?\b/, '').trim()
 }
 
-/** The body of every map popup: a title, one plain line, a few values, then source and update time. */
-function Card({ title, line, rows, source, note }: { title: string; line: string; rows: [string, ReactNode][]; source?: SourceMeta; note?: string }) {
-  return <div className="w-[236px]">
-    <p className="text-[14px] font-semibold">{title}</p>
-    <p className="mt-0.5 text-[12.5px] text-[#52615a]">{line}</p>
-    <dl className="mt-2 space-y-0.5">
-      {rows.map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-[#52615a]">{k}</dt><dd className="num text-right font-medium">{v}</dd></div>)}
-    </dl>
+/** Title for a map square on the chosen day: "Medium fire risk expected here on Sunday". */
+function zoneTitle(level: RiskLevel, d: GridDay, today: GridDay | undefined) {
+  const L = levelLabel(level)
+  if (d.kind === 'today') return `${L} fire risk here today`
+  const date = localDate(d.date)
+  const far = today ? Math.abs(date.getTime() - localDate(today.date).getTime()) > 6 * 86400000 : false
+  const on = `on ${date.toLocaleDateString('en-US', { weekday: 'long', ...(far ? { month: 'short', day: 'numeric' } : {}) })}`
+  return d.kind === 'forecast' ? `${L} fire risk expected here ${on}` : `${L} fire risk here ${on}`
+}
+
+/** The body of every map popup: a title, one plain line, a few short sentences, then where the data came from. */
+function Card({ title, line, lines, note, source }: { title: string; line?: string; lines: ReactNode[]; note?: string; source?: string | null }) {
+  return <div className="w-[240px]">
+    <p className="text-[14px] font-semibold leading-snug">{title}</p>
+    {line && <p className="mt-0.5 text-[12.5px] text-[#52615a]">{line}</p>}
+    <ul className="mt-2 space-y-0.5">
+      {lines.map((l, i) => <li key={i}>{l}</li>)}
+    </ul>
     {note && <p className="mt-2 text-[12px] text-[#52615a]">{note}</p>}
-    {source && <p className="mt-2 border-t border-[#e8ebe7] pt-1.5 text-[12px] text-[#52615a]">Source: {source.label}<br />Updated: <span className="num">{fmtTime(source.fetchedAt)}</span></p>}
+    {source && <p className="mt-2 border-t border-[#e8ebe7] pt-1.5 text-[12px] text-[#52615a]">{source}</p>}
   </div>
 }
 
@@ -202,10 +216,10 @@ export default function HeroMap() {
         const v = cell.scores[day]
         const d = grid.days[day]
         return <Popup key={zone.i} position={[zone.lat, zone.lon]} className="hero-popup" eventHandlers={{ remove: () => setZone(null) }}>
-          <Card title={validScore(v) ? `Risk ${Math.round(v)} · ${levelFor(v)}` : 'No score'} line={EXPLAIN.riskZone.what}
-            rows={[['Day', d.kind === 'today' ? 'Today' : `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · ${d.kind === 'forecast' ? 'Predicted' : 'Past'}`],
-              ['Cell centre', `${cell.lat.toFixed(2)}, ${cell.lon.toFixed(2)}`]]}
-            note={`${EXPLAIN.riskIndex.read}${sim ? ' Simulated inputs.' : ''}`} source={gridApi.sources[0]} />
+          <Card title={validScore(v) ? zoneTitle(levelFor(v), d, grid.days[todayIdx]) : 'No fire risk score for this square'}
+            lines={validScore(v) ? [`Score: ${Math.round(v)} out of 100`, `Where: ${fmtPlace(cell.lat, cell.lon)}`] : []}
+            note="Our estimate for this square of land, not an official fire danger rating."
+            source={sim ? 'Example scenario, not real conditions' : sourceLine(gridApi.sources[0])} />
         </Popup>
       })()}
 
@@ -235,28 +249,29 @@ export default function HeroMap() {
         pathOptions={{ className: 'fire-pulse', color: '#e5482b', weight: 1, opacity: 0.9, fillColor: '#e5482b', fillOpacity: 0.9 }}>
         <Tooltip>{f.name}</Tooltip>
         <Popup className="hero-popup">
-          <Card title={sim ? 'Simulated fire' : 'Active fire'} line={sim ? EXPLAIN['kind.simulated'].what : EXPLAIN.activeFire.what}
-            rows={[['Name', f.name], ['Agency', f.agency || '—'], ['Stage', stageLabel(f.stage)], ['Size', `${fmt(f.hectares)} ha`],
-              ['Reported', f.startDate?.slice(0, 10) ?? '—'], ['Location', `${f.lat.toFixed(3)}, ${f.lon.toFixed(3)}`]]}
-            source={fires.sources[0]} />
+          <Card title={sim ? 'Example fire (not real)' : 'Wildfire reported by fire crews'}
+            line={sim ? f.name : `${f.name}${f.agency ? `, ${placeName(f.agency)}` : ''}`}
+            lines={[`Status: ${stageWords(f.stage)}`, `Size: ${fmtArea(f.hectares)}`,
+              f.startDate ? `Reported on ${monthDay(anyDate(f.startDate))}` : 'Report date not given', `Where: ${fmtPlace(f.lat, f.lon)}`]}
+            source={sourceLine(fires.sources[0])} />
         </Popup>
       </CircleMarker>)}
 
       <Pane name="hero-communities" style={{ zIndex: 450 }}>
         {(communities.data ?? []).map((c) => {
           const lab = isLabelled(c)
+          const fireSrc = communities.sources.find((x) => x.id === 'communities') ?? communities.sources[0]
           return <CircleMarker key={`${c.id}${lab ? '-label' : ''}`} center={[c.lat, c.lon]} radius={5}
             pathOptions={{ color: '#ffffff', weight: 1.5, fillColor: INK, fillOpacity: 1 }}>
             {lab
               ? <Tooltip permanent direction={/Collins|Namaygoosisagagun/.test(c.name) ? "left" : "right"} offset={/Collins|Namaygoosisagagun/.test(c.name) ? [-6, 0] : [6, 0]} className="community-label">{shortName(c.name)}</Tooltip>
               : <Tooltip>{c.name}</Tooltip>}
             <Popup className="hero-popup">
-              <Card title={c.name} line={EXPLAIN[c.kind === 'Métis Settlement' ? 'community.metis' : 'community.firstNation'].what}
-                rows={[['Type', c.kind], ['Province', c.province],
-                  ['Nearest active fire', c.nearestFireKm == null ? 'none reported' : `${c.nearestFireKm} km`],
-                  ...(c.nearestFireName && c.nearestFireKm != null ? [['Fire', c.nearestFireName] as [string, ReactNode]] : [])]}
-                note={`Approximate public location. ${EXPLAIN.community.read}`}
-                source={communities.sources.find((x) => x.id === 'communities') ?? communities.sources[0]} />
+              <Card title={c.name} line={`${c.kind}, ${placeName(c.province)}`}
+                lines={[c.nearestFireKm == null ? 'No wildfire reported nearby'
+                  : `Nearest ${sim ? 'example fire' : 'wildfire reported by fire crews'}: ${Math.round(c.nearestFireKm)} km away${c.nearestFireName ? ` (${c.nearestFireName})` : ''}`]}
+                note={`Approximate public location. Distance shows how close a fire is, not how dangerous it is.${sim ? ' Fires here are from the example scenario.' : ''}`}
+                source={sourceLine(fireSrc)} />
             </Popup>
           </CircleMarker>
         })}
@@ -266,15 +281,16 @@ export default function HeroMap() {
     <div role="group" aria-label="Map view" className="absolute right-4 top-4 z-[1000] flex gap-1 rounded-full bg-white p-1 shadow-lg">
       <button type="button" aria-pressed={!nasa} onClick={() => setNasa(false)} className={btn(!nasa)}>Today</button>
       <button type="button" aria-pressed={nasa} onClick={() => setNasa(true)} className={btn(nasa)}>
-        <span className="sm:hidden">NASA · 14 Jul</span><span className="hidden sm:inline">NASA satellite · 14 July 2026</span>
+        <span className="sm:hidden">NASA, 14 July</span><span className="hidden sm:inline">NASA satellite, 14 July 2026</span>
       </button>
     </div>
 
+    {/* Bottom stack, about 146 px tall: look-ahead control, the chosen day, the day scrubber */}
     {!nasa && grid && <div className="absolute bottom-6 left-1/2 z-[1000] flex max-w-[calc(100vw-32px)] -translate-x-1/2 flex-col items-center gap-2 md:left-[calc(50%+188px)] md:max-w-[calc(100vw-424px)]">
-      <HorizonSelector compact />
+      <div className="rounded-full bg-white/95 py-0.5 pl-3 pr-0.5 shadow-sm"><HorizonSelector compact label /></div>
       <p aria-live="polite" className="rounded-full bg-white/90 px-3 py-0.5 text-[13px] font-semibold whitespace-nowrap text-[#13211b] shadow-sm">{dayLine(grid.days[day])}</p>
       <div className="flex max-w-full items-center gap-2 rounded-2xl bg-white p-1.5 shadow-lg">
-        <button type="button" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play the week'}
+        <button type="button" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play the days'}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#13211b] text-white transition-colors hover:bg-[#2a3a32] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#13211b]">
           {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" className="ml-0.5" />}
         </button>
@@ -284,7 +300,7 @@ export default function HeroMap() {
             const firstFc = fc && i > 0 && grid.days[i - 1].kind !== 'forecast'
             const many = grid.days.length > 9
             return <span key={`${d.date}-${i}`} className="flex shrink-0 items-center gap-1">
-              {firstFc && <span className="ml-1.5 shrink-0 text-[11px] font-semibold tracking-wide text-[#c9302c] uppercase">Predicted</span>}
+              {firstFc && <span className="ml-1.5 shrink-0 text-[12px] font-semibold text-[#c9302c]">Expected</span>}
               <button type="button" aria-pressed={i === day} title={dayLine(d)}
                 onClick={() => { setPlaying(false); setDayPick(i) }} className={`${pill(i === day, fc, false)} ${many ? 'px-2' : ''}`}>
                 {pillDay(d, many)}
@@ -295,18 +311,19 @@ export default function HeroMap() {
       </div>
     </div>}
 
-    <div aria-label="Map legend" className="absolute bottom-[116px] left-4 z-[1000] flex flex-col items-start gap-0.5 rounded-xl bg-white/95 px-2 py-1.5 text-[12px] text-[#13211b] shadow-md md:left-[392px] lg:bottom-6">
+    {/* Sits above the bottom stack at every width, so a long look-ahead never runs into it */}
+    <div aria-label="Map key" className="absolute bottom-[154px] left-4 z-[1000] flex flex-col items-start gap-0.5 rounded-xl bg-white/95 px-2 py-1.5 text-[12px] text-[#13211b] shadow-md md:left-[392px]">
       {!nasa && LEVELS.map((l) => <InfoPopover key={l} k={`level.${l}`} className="px-1 py-0.5 hover:bg-[#13211b]/5">
-        <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm" style={{ background: LEVEL_COLORS[l], opacity: 0.75 }} />{l}
+        <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm" style={{ background: LEVEL_COLORS[l], opacity: 0.75 }} />{levelLabel(l)}
       </InfoPopover>)}
       {!nasa && <InfoPopover k={sim ? 'simulatedScenario' : 'activeFire'} className="px-1 py-0.5 hover:bg-[#13211b]/5">
-        <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-full bg-[#e5482b]" />{sim ? 'Simulated fire' : 'Active fire'}
+        <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-full bg-[#e5482b]" />{sim ? 'Example fire (not real)' : 'Wildfire reported by fire crews'}
       </InfoPopover>}
       {nasa && <InfoPopover k="nasaTrueColour" className="px-1 py-0.5 hover:bg-[#13211b]/5">
-        <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm bg-[linear-gradient(135deg,#3d6b3a,#a9b3a0_55%,#f4f4f1)]" />True colour
+        <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm bg-[linear-gradient(135deg,#3d6b3a,#a9b3a0_55%,#f4f4f1)]" />Satellite photo
       </InfoPopover>}
       {nasa && <InfoPopover k="nasaThermal" className="px-1 py-0.5 hover:bg-[#13211b]/5">
-        <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-[2px] bg-[#ff3b1f]" />Thermal anomalies
+        <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-[2px] bg-[#ff3b1f]" />Heat seen by satellite
       </InfoPopover>}
       <InfoPopover k="community" className="px-1 py-0.5 hover:bg-[#13211b]/5">
         <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full border-[1.5px] border-white bg-[#13211b] shadow-[0_0_0_1px_#13211b]" />Community

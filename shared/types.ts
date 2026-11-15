@@ -213,3 +213,111 @@ export interface ClimateHistory {
   window: { label: string; startMMDD: string; endMMDD: string; /** why this window was chosen */ note: string }
   metrics: { tMax: ClimateMetricHistory; rh: ClimateMetricHistory; precip: ClimateMetricHistory; wind: ClimateMetricHistory; soil: ClimateMetricHistory }
 }
+
+// --- One place, one number (GET /api/place/:communityId, GET /api/communities/search) ---
+// Everything a community view, the assistant and the help request show for a place comes from
+// one PlaceReport, computed at the community's own location.
+
+/** Where a community entry comes from. 'manual': server/data/communities.ts (hand-checked, takes precedence).
+ *  'isc': Indigenous Services Canada "First Nation Location" open data (OGL-Canada). */
+export type CommunitySource = 'manual' | 'isc'
+
+/** A community in the server's directory (search and /api/place). */
+export interface DirectoryCommunity extends Community {
+  source: CommunitySource
+  /** ISC band number, when known */
+  bandNumber: number | null
+  /** Other names search should match, e.g. the ISC name of a hand-checked entry */
+  aliases: string[]
+}
+
+/** One result of GET /api/communities/search?q= */
+export interface CommunityMatch {
+  id: string; name: string; kind: Community['kind']; province: string; regionId: string | null; source: CommunitySource
+}
+
+/** 8-point compass direction, from the community towards something (e.g. a fire). */
+export type Compass8 = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW'
+
+export interface PlaceFire {
+  name: string; agency: string
+  /** agency stage code: OC out of control, BH being held, UC under control, EX out */
+  stage: string
+  hectares: number
+  /** great-circle distance from the community, rounded km */
+  distanceKm: number
+  /** direction from the community to the fire */
+  bearing: Compass8
+}
+
+/** What the risk does from today to the end of the horizon. Computed by shared/outlook.ts riskOutlook(). */
+export interface RiskOutlook {
+  todayDate: string | null
+  todayLevel: RiskLevel | null
+  /** the highest day from today to the end of the horizon (the earliest one on a tie) */
+  peakLevel: RiskLevel
+  peakScore: number
+  peakDate: string
+  /** first forecast day whose level is above today's; null when none is */
+  firstHigherLevelDate: string | null
+  /** the day before firstHigherLevelDate (today when that is tomorrow); null when no higher level is expected */
+  actByDate: string | null
+}
+
+/** 42-year NASA POWER context for the community's location. */
+export interface PlaceHistory {
+  /** NASA POWER grid cell the record comes from (0.5° × 0.625°, the native MERRA-2 grid; about 50 km across) */
+  point: { lat: number; lon: number }
+  period: ClimateHistory['period']
+  window: ClimateHistory['window']
+  /** today's daily high at the community (from the risk weather), °C */
+  todayTMax: number | null
+  /** 0–100: where today's high sits among all daily highs in the same calendar window since 1984 (percentileRank over tMax.window.q) */
+  tMaxPercentile: number | null
+  /** fire-season (1 May–30 Sep) average daily high: trend over the record */
+  fireSeasonTMax: { senPerDecade: number; mannKendallP: number; tau: number; trend: 'rising' | 'falling' | 'none'; unit: string }
+  /** the full daily-high record summary (window percentiles, annual series, trend fits) for charts */
+  tMax: ClimateMetricHistory
+}
+
+export interface PlaceReport {
+  community: Pick<DirectoryCommunity, 'id' | 'name' | 'kind' | 'province' | 'regionId' | 'lat' | 'lon' | 'source' | 'bandNumber' | 'reported'>
+  /** The community's monitoring region (assigned, or the nearest within 600 km); null when none is near */
+  region: Region | null
+  /** forecast days ahead of today in risk.timeline (the ?days= value) */
+  horizon: number
+  /** Risk at the community's own location, from the same function as the map grid and region panel (server pointRisk) */
+  risk: {
+    todayDate: string
+    today: RiskResult
+    /** past days (4), today, then `horizon` forecast days, each with its own confidence and ± uncertainty */
+    timeline: RiskDay[]
+    /** satellite detections within 100 km, last 24 h; null when that source is down (the score then runs without it) */
+    hotspots100km: number | null
+    /** regional baseline used by the score: the nearest region within 600 km, else 0.5 */
+    historyIndex: number
+    current: CurrentWeather
+    days: DayWeather[]
+  }
+  /** shared/signals.ts warningSigns() at this location */
+  signs: WarningSign[]
+  /** shared/signals.ts daysBuilding() */
+  daysBuilding: number
+  outlook: RiskOutlook
+  /** Agency-reported fires. null when that source is unreachable (never read null as "no fires") */
+  fires: { nearest: PlaceFire[]; within50km: number; within100km: number } | null
+  /** Satellite heat detections, last 24 h. null when that source is unreachable */
+  hotspots24h: { within50km: number; within100km: number } | null
+  /** Smoke at the location. null when the air-quality source is unreachable */
+  air: {
+    now: AirNow
+    /** highest daily-mean PM2.5 over the 3 local days after today (12+ forecast hours each), its US AQI and day; daily = those days */
+    max3d: { pm25: number | null; usAqi: number | null; date: string | null; days: number; daily: { date: string; pm25: number }[] }
+  } | null
+  /** null while the NASA POWER record is still downloading (historyStatus 'loading': ask again in a few seconds) or when it failed */
+  history: PlaceHistory | null
+  historyStatus: 'ok' | 'loading' | 'unavailable'
+}
+
+// Type-only import at the end so the appended block stays self-contained (signals.ts imports types from this file).
+import type { WarningSign } from './signals.ts'

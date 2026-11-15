@@ -1,18 +1,18 @@
 // Combines data sources into the views the UI needs. No HTTP details here.
-import type { ActiveFire, CommunityExposure, DayWeather, Envelope, Hotspot, Mode, RegionAir, RegionRisk, RegionSummary, RiskDay, SourceMeta, ClimateNormals, AirTrend } from '../shared/types.ts'
+import type { ActiveFire, CommunityExposure, DayWeather, Envelope, Hotspot, Mode, RegionAir, RegionRisk, RegionSummary, RiskDay, RiskResult, SourceMeta, ClimateNormals, AirTrend } from '../shared/types.ts'
 import { computeRisk, type RiskInputs } from '../shared/risk.ts'
 import { DEFAULT_HORIZON } from '../shared/horizon.ts'
-import { REGIONS, regionById } from './data/regions.ts'
+import { REGIONS, historyIndexAt, regionById } from './data/regions.ts'
 import { COMMUNITIES } from './data/communities.ts'
 import { getActiveFires, getHotspots24h } from './sources/cwfis.ts'
 import { firmsConfigured, firmsSourceLabel, getFirmsHotspots } from './sources/firms.ts'
-import { getAirNow, getAirSeries, getAirTrend, getWeather, type WeatherResult } from './sources/openMeteo.ts'
+import { getAirNow, getAirSeries, getAirTrend, getWeather, type Pt, type WeatherResult } from './sources/openMeteo.ts'
 import { getClimate } from './sources/power.ts'
 import { simActiveFires, simAirNow, simAirSeries, simClimate, simHotspots, simWeather } from './sim.ts'
 import { km, src } from './util.ts'
 
 const SIM_NOTE = 'Simulated demonstration scenario — not an observation'
-const simSrc = (id: string, what: string): SourceMeta => src(id, `Simulated ${what}`, 'simulated', undefined, SIM_NOTE)
+export const simSrc = (id: string, what: string): SourceMeta => src(id, `Simulated ${what}`, 'simulated', undefined, SIM_NOTE)
 
 export class NotFound extends Error {}
 export class BadRequest extends Error {}
@@ -31,13 +31,20 @@ export async function hotspots(mode: Mode, days: number, date?: string): Promise
   return { data: await getHotspots24h(), sources: [src('cwfis-hotspots', 'CWFIS satellite hotspots, last 24 h', 'observed', 'https://cwfis.cfs.nrcan.gc.ca/datamart', 'No FIRMS key set, so only the last 24 hours are available')] }
 }
 
-const weather = (mode: Mode, pts: { lat: number; lon: number }[], days: number) => (mode === 'sim' ? Promise.resolve(simWeather(pts, days)) : getWeather(pts, days))
+/** Weather for many points; live requests go to Open-Meteo in chunks of 40 points (one URL each). */
+async function weather(mode: Mode, pts: Pt[], days: number): Promise<WeatherResult[]> {
+  if (mode === 'sim') return simWeather(pts, days)
+  const out: WeatherResult[] = []
+  for (let i = 0; i < pts.length; i += 40) out.push(...(await getWeather(pts.slice(i, i + 40), days)))
+  return out
+}
 const airNow = (mode: Mode, pts: { lat: number; lon: number }[]) => (mode === 'sim' ? Promise.resolve(simAirNow(pts)) : getAirNow(pts))
-const wxSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-weather', 'weather') : src('open-meteo-weather', 'Open-Meteo weather (model analysis + forecast)', 'model', 'https://open-meteo.com/', 'Gridded numerical weather models, not station measurements')
-const airSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-air', 'air quality') : src('open-meteo-air', 'Open-Meteo air quality (CAMS global model)', 'model', 'https://open-meteo.com/en/docs/air-quality-api', 'Modelled at roughly 40 km resolution; not ground monitors. AQI shown is the US EPA scale')
-const riskSrc = () => src('risk-model', 'Before the Smoke risk index v0.1', 'model', undefined, 'Rule-based prototype, unvalidated. A relative index, not a probability')
+export const wxSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-weather', 'weather') : src('open-meteo-weather', 'Open-Meteo weather (model analysis + forecast)', 'model', 'https://open-meteo.com/', 'Gridded numerical weather models, not station measurements')
+export const airSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-air', 'air quality') : src('open-meteo-air', 'Open-Meteo air quality (CAMS global model)', 'model', 'https://open-meteo.com/en/docs/air-quality-api', 'Modelled at roughly 40 km resolution; not ground monitors. AQI shown is the US EPA scale')
+export const riskSrc = () => src('risk-model', 'Before the Smoke risk index v0.1', 'model', undefined, 'Rule-based prototype, unvalidated. A relative index, not a probability')
 
-const within = (pts: { lat: number; lon: number }[], lat: number, lon: number, radius: number) => pts.reduce((n, p) => n + (km(lat, lon, p.lat, p.lon) <= radius ? 1 : 0), 0)
+/** How many of pts lie within radius km of (lat, lon). */
+export const within = (pts: { lat: number; lon: number }[], lat: number, lon: number, radius: number) => pts.reduce((n, p) => n + (km(lat, lon, p.lat, p.lon) <= radius ? 1 : 0), 0)
 
 /** Risk for each day we can score (needs at least 3 days of rain history before it), up to `days` ahead of today. */
 export function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode, days = DEFAULT_HORIZON) {
@@ -55,40 +62,73 @@ export function riskDays(wx: WeatherResult, hotspots100km: number | null, histor
 }
 
 /** Hotspots are optional for risk: if that source is down we still score, with lower confidence. */
-async function softHotspots(mode: Mode): Promise<{ list: Hotspot[] | null; sources: SourceMeta[] }> {
+export async function softHotspots(mode: Mode): Promise<{ list: Hotspot[] | null; sources: SourceMeta[] }> {
   try { const h = await hotspots(mode, 1); return { list: h.data, sources: h.sources } } catch { return { list: null, sources: [] } }
 }
-async function softFires(mode: Mode): Promise<{ list: ActiveFire[] | null; sources: SourceMeta[] }> {
+export async function softFires(mode: Mode): Promise<{ list: ActiveFire[] | null; sources: SourceMeta[] }> {
   try { const f = await activeFires(mode); return { list: f.data, sources: f.sources } } catch { return { list: null, sources: [] } }
 }
 
+/** Risk at one point: everything the map, a region panel and a community view show as "the number". */
+export interface PointRisk {
+  lat: number; lon: number
+  /** regional baseline used, from the point alone (data/regions.ts historyIndexAt) */
+  historyIndex: number
+  /** satellite detections within 100 km, last 24 h; null when that source is down (scored without it) */
+  hotspots100km: number | null
+  /** the weather's today (local date at the point) */
+  todayDate: string
+  today: RiskResult
+  timeline: RiskDay[]
+  wx: WeatherResult
+}
+
+/**
+ * THE risk computation for a point. The map grid, region panels, region summaries and /api/place all score
+ * through here, so the same point with the same weather always gets the same number. Pure (no I/O).
+ */
+export function scorePoint(wx: WeatherResult, hs: Hotspot[] | null, pt: Pt, mode: Mode, days: number): PointRisk {
+  const historyIndex = historyIndexAt(pt.lat, pt.lon)
+  const n = hs ? within(hs, pt.lat, pt.lon, 100) : null
+  const { today, out } = riskDays(wx, n, historyIndex, mode, days)
+  const todayEntry = out.find((o) => o.day.date === today) ?? out.at(-1)!
+  const timeline: RiskDay[] = out.map((o) => { const r = computeRisk(o.inputs); return { date: o.day.date, kind: o.day.date === today ? 'today' : o.day.kind, score: r.score, level: r.level, confidence: r.confidence, uncertainty: r.uncertainty } })
+  return { lat: pt.lat, lon: pt.lon, historyIndex, hotspots100km: n, todayDate: todayEntry.day.date, today: computeRisk(todayEntry.inputs), timeline, wx }
+}
+
+/** Score many points with one weather fetch (chunked) and one hotspot fetch. */
+export async function pointsRisk(mode: Mode, pts: Pt[], days = DEFAULT_HORIZON) {
+  const [wx, hs] = await Promise.all([weather(mode, pts, days), softHotspots(mode)])
+  return { points: pts.map((p, i) => scorePoint(wx[i], hs.list, p, mode, days)), hotspots: hs.list, hotspotSources: hs.sources, sources: [wxSrc(mode), ...hs.sources, riskSrc()] }
+}
+
+/** Risk at one point (weather fetched at that point). */
+export async function pointRisk(mode: Mode, pt: Pt, days = DEFAULT_HORIZON) {
+  const r = await pointsRisk(mode, [{ lat: pt.lat, lon: pt.lon }], days)
+  return { ...r.points[0], hotspots: r.hotspots, sources: r.sources }
+}
+
 export async function regionSummaries(mode: Mode, days = DEFAULT_HORIZON): Promise<Envelope<RegionSummary[]>> {
-  const [wx, air, hs, fires] = await Promise.all([weather(mode, REGIONS, days), airNow(mode, REGIONS), softHotspots(mode), softFires(mode)])
+  const [pr, air, fires] = await Promise.all([pointsRisk(mode, REGIONS, days), airNow(mode, REGIONS), softFires(mode)])
   const data = REGIONS.map((region, i): RegionSummary => {
-    const n = hs.list ? within(hs.list, region.lat, region.lon, 100) : null
-    const { today, out } = riskDays(wx[i], n, region.historyIndex, mode, days)
-    const idx = out.findIndex((o) => o.day.date === today)
-    const now = computeRisk(out[idx]?.inputs ?? out.at(-1)!.inputs)
-    const ahead = out[Math.min(out.length - 1, idx + days)]
-    return { region, risk: { score: now.score, level: now.level, confidence: now.confidence, trend: ahead ? computeRisk(ahead.inputs).score - now.score : 0 }, air: air[i], hotspots100km: n ?? 0, activeFires250km: fires.list ? within(fires.list, region.lat, region.lon, 250) : 0 }
+    const p = pr.points[i], now = p.today
+    const idx = p.timeline.findIndex((t) => t.kind === 'today')
+    const ahead = p.timeline[Math.min(p.timeline.length - 1, idx + days)]
+    return { region, risk: { score: now.score, level: now.level, confidence: now.confidence, trend: ahead ? ahead.score - now.score : 0 }, air: air[i], hotspots100km: p.hotspots100km ?? 0, activeFires250km: fires.list ? within(fires.list, region.lat, region.lon, 250) : 0 }
   })
-  return { data, sources: [wxSrc(mode), airSrc(mode), ...hs.sources, ...fires.sources, riskSrc()] }
+  return { data, sources: [wxSrc(mode), airSrc(mode), ...pr.hotspotSources, ...fires.sources, riskSrc()] }
 }
 
 export async function regionRisk(mode: Mode, id: string, days = DEFAULT_HORIZON): Promise<Envelope<RegionRisk>> {
   const region = regionById(id)
   if (!region) throw new NotFound(`Unknown region "${id}"`)
-  const [[wx], hs, climate] = await Promise.all([
-    weather(mode, [region], days), softHotspots(mode),
+  const [p, climate] = await Promise.all([
+    pointRisk(mode, region, days),
     (mode === 'sim' ? Promise.resolve(simClimate(region.lat)) : getClimate(region.lat, region.lon)).catch((): ClimateNormals | null => null),
   ])
-  const n = hs.list ? within(hs.list, region.lat, region.lon, 100) : null
-  const { today, out } = riskDays(wx, n, region.historyIndex, mode, days)
-  const todayEntry = out.find((o) => o.day.date === today) ?? out.at(-1)!
-  const timeline: RiskDay[] = out.map((o) => { const r = computeRisk(o.inputs); return { date: o.day.date, kind: o.day.date === today ? 'today' : o.day.kind, score: r.score, level: r.level, confidence: r.confidence, uncertainty: r.uncertainty } })
-  const sources = [wxSrc(mode), ...hs.sources, riskSrc()]
+  const sources = [...p.sources]
   if (climate) sources.push(mode === 'sim' ? simSrc('sim-climate', 'climate normals') : src('nasa-power', 'NASA POWER climatology', 'historical', 'https://power.larc.nasa.gov/', 'Long-term monthly means from NASA reanalysis'))
-  return { data: { region, current: wx.current, today: computeRisk(todayEntry.inputs), timeline, days: wx.days, hotspots100km: n ?? 0, climate, horizon: days }, sources }
+  return { data: { region, current: p.wx.current, today: p.today, timeline: p.timeline, days: p.wx.days, hotspots100km: p.hotspots100km ?? 0, climate, horizon: days }, sources }
 }
 
 /** Air series for a region; the forecast part stops at min(days, MAX_AIR_HORIZON) because the air-quality model ends there. */

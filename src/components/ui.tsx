@@ -1,8 +1,9 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import type { DataKind, RiskLevel, SourceMeta } from '../../shared/types.ts'
-import { LEVEL_COLORS } from '../../shared/risk.ts'
+import { LEVEL_COLORS, levelLabel } from '../../shared/risk.ts'
 import { aqiBand } from '../../shared/aqi.ts'
 import type { ApiState } from '../api.ts'
 import { useApp } from '../state.tsx'
@@ -10,12 +11,12 @@ import { EXPLAIN } from '../explain.ts'
 
 // Colours follow the tokens in styles.css: moss (observed), sky (forecast), sun (simulated), mute (the rest).
 export const KIND: Record<DataKind, { label: string; color: string; desc: string }> = {
-  observed: { label: 'Observed', color: '#2e7d57', desc: 'Measured by satellites or reported by fire agencies' },
-  historical: { label: 'Historical', color: '#52615a', desc: 'Past records and long-term averages' },
-  forecast: { label: 'Forecast', color: '#2f6690', desc: 'Predicted by weather or air quality models' },
-  model: { label: 'Model estimate', color: '#52615a', desc: 'Calculated by a model, including our risk index' },
-  simulated: { label: 'Simulated', color: '#8a6400', desc: 'Invented for demonstration; not real' },
-  reference: { label: 'Reference', color: '#52615a', desc: 'Static reference information' },
+  observed: { label: 'Measured', color: '#2e7d57', desc: 'Seen by satellites or reported by fire agencies' },
+  historical: { label: 'Past records', color: '#52615a', desc: 'Past records and long-term averages' },
+  forecast: { label: 'Forecast', color: '#2f6690', desc: 'What weather and smoke models expect' },
+  model: { label: 'Estimate', color: '#52615a', desc: 'Worked out by a model, including our fire risk score' },
+  simulated: { label: 'Example scenario', color: '#8a6400', desc: 'Made up to show how the app works; not real' },
+  reference: { label: 'Reference', color: '#52615a', desc: 'Fixed background information' },
 }
 
 export function KindBadge({ kind, explain = true }: { kind: DataKind; explain?: boolean }) {
@@ -28,6 +29,54 @@ export function KindBadge({ kind, explain = true }: { kind: DataKind; explain?: 
 
 export const fmtTime = (iso: string) => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? iso : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }
 export const fmt = (v: number | null | undefined, digits = 0, unit = '') => (v == null || Number.isNaN(v) ? '—' : `${v.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: digits })}${unit}`)
+
+/** "10:34 PM" for today, "Nov 13, 10:34 PM" otherwise. */
+export const fmtUpdated = (iso: string) => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return d.toDateString() === new Date().toDateString() ? time : `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`
+}
+
+/** "49.98° N, 88.79° W" */
+export const fmtPlace = (lat: number, lon: number) =>
+  `${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(2)}° ${lon >= 0 ? 'E' : 'W'}`
+
+const PLACE_NAMES: Record<string, string> = {
+  AB: 'Alberta', BC: 'British Columbia', MB: 'Manitoba', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', NS: 'Nova Scotia',
+  NT: 'Northwest Territories', NU: 'Nunavut', ON: 'Ontario', PE: 'Prince Edward Island', QC: 'Quebec', SK: 'Saskatchewan', YT: 'Yukon',
+  PC: 'Parks Canada',
+}
+/** Province, territory or agency code spelled out ("ON" -> "Ontario"); anything else is passed through. */
+export const placeName = (code: string | null | undefined) => (code ? PLACE_NAMES[code.toUpperCase()] ?? code : '')
+
+// A Canadian football field including both end zones: 150 × 65 yards = 137.16 m × 59.44 m ≈ 8,152 m².
+const FOOTBALL_FIELD_HA = (137.16 * 59.436) / 10000
+
+/** "13,663 hectares (about 17,000 football fields)", "less than 1 hectare". */
+export const fmtArea = (ha: number | null | undefined) => {
+  if (ha == null || Number.isNaN(ha)) return 'not reported'
+  if (ha < 1) return 'less than 1 hectare'
+  const rounded = Math.round(ha)
+  const fields = ha / FOOTBALL_FIELD_HA
+  const n = fields < 10 ? Math.max(1, Math.round(fields)) : Number(fields.toPrecision(2))
+  return `${rounded.toLocaleString('en-US')} hectare${rounded === 1 ? '' : 's'} (about ${n.toLocaleString('en-US')} football field${n === 1 ? '' : 's'})`
+}
+
+/** Where a dataset came from, in plain words, from its id. Example data says so instead. */
+export function sourceLine(s: SourceMeta | undefined): string | null {
+  if (!s) return null
+  if (s.kind === 'simulated') return 'Example scenario, not real conditions'
+  const from: Record<string, string> = {
+    'cwfis-active': 'From Canada’s wildfire information system (CWFIS)',
+    'cwfis-hotspots': 'Satellite heat data from Canada’s wildfire information system (CWFIS)',
+    'open-meteo-weather': 'Our estimate from Open-Meteo weather and satellite heat data',
+    'open-meteo-air': 'From the Open-Meteo air quality model',
+    communities: 'From a short list of public, approximate community locations',
+  }
+  const text = from[s.id] ?? (s.id.startsWith('firms') ? 'Satellite heat data from NASA FIRMS' : `From ${s.label}`)
+  return s.kind === 'reference' ? text : `${text}, updated ${fmtUpdated(s.fetchedAt)}`
+}
 
 /** Source and timestamp for every dataset, on one compact line. Hover a source for its caveat. */
 export function Sources({ sources }: { sources: SourceMeta[] }) {
@@ -59,11 +108,11 @@ export function Async<T>({ state, children, height = 160, empty }: { state: ApiS
   const { mode, setMode } = useApp()
   if (state.loading && !state.data) return <div className="skeleton" style={{ height }} role="status" aria-label="Loading" />
   if (state.error) return <div role="alert" className="flex flex-col items-start gap-2.5 rounded-lg border border-flame/40 bg-flame/5 p-4" style={{ minHeight: Math.min(height, 120) }}>
-    <p className="font-medium text-flame">Data unavailable</p>
+    <p className="font-medium text-flame">We could not load this right now</p>
     <p className="text-[13px] text-mute">{state.error}</p>
     <div className="flex flex-wrap gap-2">
       <Btn onClick={state.reload}>Try again</Btn>
-      {mode === 'live' && <Btn onClick={() => setMode('sim')}>Open the simulated scenario instead</Btn>}
+      {mode === 'live' && <Btn onClick={() => setMode('sim')}>Open the example scenario instead</Btn>}
     </div>
   </div>
   if (!state.data) return null
@@ -89,12 +138,12 @@ export function Stat({ label, value, unit, hint, color }: { label: string; value
   </div>
 }
 
-/** Level swatch plus ink text: the level colours are too light to carry text on white. */
+/** Level swatch plus ink text: the level colours are too light to carry text on white. Words first, the score second. */
 export function RiskPill({ level, score, explain = true }: { level: RiskLevel; score?: number; explain?: boolean }) {
-  const pill = <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap">
+  const pill = <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap" title={score != null ? `${levelLabel(level)} fire risk, ${score} out of 100` : undefined}>
     <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: LEVEL_COLORS[level] }} />
-    {score != null && <span className="font-semibold text-fg">{score}</span>}
-    <span className="text-mute">{level}</span>
+    <span className="font-semibold text-fg">{levelLabel(level)}</span>
+    {score != null && <span className="text-mute">({score})</span>}
   </span>
   return explain ? <InfoPopover k={`level.${level}`}>{pill}</InfoPopover> : pill
 }
@@ -102,9 +151,9 @@ export function RiskPill({ level, score, explain = true }: { level: RiskLevel; s
 export function AqiPill({ aqi, explain = true }: { aqi: number | null; explain?: boolean }) {
   const b = aqiBand(aqi)
   if (!b) return <span className="num text-dim">—</span>
-  const pill = <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap" title={explain ? undefined : `US AQI ${aqi}: ${b.label}`}>
+  const pill = <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap" title={explain ? undefined : `Air quality ${aqi}: ${b.label}`}>
     <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: b.color }} />
-    <span className="font-semibold text-fg">{aqi}</span><span className="text-mute">{b.label}</span>
+    <span className="font-semibold text-fg">{b.label}</span><span className="text-mute">({aqi})</span>
   </span>
   return explain ? <InfoPopover k="aqi">{pill}</InfoPopover> : pill
 }
@@ -121,38 +170,87 @@ export const chartAxis = { stroke: '#75827c', fontSize: 11, tickLine: false, axi
 export const chartGrid = { stroke: '#e8ebe7', strokeDasharray: '3 3', vertical: false } as const
 export const tooltipStyle = { contentStyle: { background: '#ffffff', border: '1px solid #d9ded9', borderRadius: 8, fontSize: 12, boxShadow: '0 2px 8px rgb(19 33 27 / 0.08)' }, labelStyle: { color: '#52615a' }, itemStyle: { color: '#13211b' }, cursor: { fill: 'rgb(19 33 27 / 0.04)' } } as const
 
-/** Any marker, swatch or heading that explains itself: click or tap toggles a small card from EXPLAIN. Esc or an outside click closes it. */
+const EDGE = 8 // closest the card may come to the window edge
+const GAP = 6 // space between trigger and card
+
+/**
+ * Any marker, swatch or heading that explains itself: click or tap toggles a small card from EXPLAIN.
+ * The card lives in a portal on document.body with fixed positioning, so no panel, map or sheet can clip it.
+ * It opens below the trigger, flips above when there is no room, and is clamped inside the window.
+ * Esc (which returns focus to the trigger), a click outside, scrolling the page or the panel around it, or resizing closes it.
+ */
 export function InfoPopover({ k, children, className = '' }: { k: keyof typeof EXPLAIN | string; children: ReactNode; className?: string }) {
   const e = EXPLAIN[k]
   const [open, setOpen] = useState(false)
-  const [place, setPlace] = useState<{ right: boolean; up: boolean }>({ right: false, up: false })
-  const wrap = useRef<HTMLSpanElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+  const card = useRef<HTMLSpanElement>(null)
   const id = useId()
+
+  const close = useCallback((refocus = false) => {
+    setOpen(false)
+    setPos(null)
+    if (refocus) trigger.current?.focus()
+  }, [])
+
+  // Measure the rendered card, then place it before the browser paints.
+  useLayoutEffect(() => {
+    if (!open) return
+    const t = trigger.current?.getBoundingClientRect()
+    const c = card.current
+    if (!t || !c) return
+    const vw = document.documentElement.clientWidth || window.innerWidth
+    const vh = window.innerHeight
+    const w = c.offsetWidth, h = c.offsetHeight
+    const left = Math.max(EDGE, Math.min(t.left, vw - w - EDGE))
+    const below = t.bottom + GAP, above = t.top - GAP - h
+    const fitsBelow = below + h <= vh - EDGE, fitsAbove = above >= EDGE
+    let top = fitsBelow || (!fitsAbove && vh - t.bottom >= t.top) ? below : above
+    top = Math.max(EDGE, Math.min(top, vh - h - EDGE))
+    setPos({ top, left })
+  }, [open])
 
   useEffect(() => {
     if (!open) return
-    const r = wrap.current?.getBoundingClientRect()
-    if (r) setPlace({ right: r.left + 296 > window.innerWidth, up: r.bottom + 190 > window.innerHeight && r.top > 200 })
-    const away = (ev: PointerEvent) => { if (!wrap.current?.contains(ev.target as Node)) setOpen(false) }
-    const esc = (ev: KeyboardEvent) => { if (ev.key === 'Escape') setOpen(false) }
+    const inside = (n: EventTarget | null) => n instanceof Node && (!!trigger.current?.contains(n) || !!card.current?.contains(n))
+    const away = (ev: PointerEvent) => { if (!inside(ev.target)) close() }
+    // Stop Esc here so it closes only the card, not a sheet the card sits in.
+    const esc = (ev: KeyboardEvent) => { if (ev.key === 'Escape') { ev.stopPropagation(); close(true) } }
+    // Close when the trigger moves: the page or any box around the trigger scrolled. Other scrolling (the card, a map strip) is ignored.
+    const scroll = (ev: Event) => {
+      const t = ev.target
+      if (t === document || t === window || (t instanceof Node && trigger.current && t.contains(trigger.current))) close()
+    }
+    const resize = () => close()
     document.addEventListener('pointerdown', away)
     document.addEventListener('keydown', esc)
-    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc) }
-  }, [open])
+    window.addEventListener('scroll', scroll, true)
+    window.addEventListener('resize', resize)
+    return () => {
+      document.removeEventListener('pointerdown', away)
+      document.removeEventListener('keydown', esc)
+      window.removeEventListener('scroll', scroll, true)
+      window.removeEventListener('resize', resize)
+    }
+  }, [open, close])
 
   if (!e) return <span className={className}>{children}</span>
-  return <span ref={wrap} className="relative inline-flex">
-    <button type="button" aria-expanded={open} aria-controls={id} onClick={(ev) => { ev.stopPropagation(); setOpen((o) => !o) }}
+  return <span className="relative inline-flex">
+    <button ref={trigger} type="button" aria-expanded={open} aria-controls={open ? id : undefined} aria-haspopup="dialog"
+      onClick={(ev) => { ev.stopPropagation(); if (open) close(); else setOpen(true) }}
       className={`inline-flex cursor-pointer items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#13211b] ${className}`}>
       {children}
     </button>
-    {open && <span id={id} role="dialog" aria-label={e.title}
-      className={`absolute z-[1100] block w-[280px] max-w-[calc(100vw-32px)] rounded-xl border border-line bg-white p-3 text-left text-[13px] leading-snug font-normal text-fg normal-case shadow-lg ${place.up ? 'bottom-full mb-2' : 'top-full mt-2'} ${place.right ? 'right-0' : 'left-0'}`}>
-      <span className="block font-semibold">{e.title}</span>
-      <span className="mt-1.5 block"><span className="text-mute">What: </span>{e.what}</span>
-      <span className="mt-1 block"><span className="text-mute">Source: </span>{e.source}</span>
-      <span className="mt-1 block"><span className="text-mute">How to read: </span>{e.read}</span>
-    </span>}
+    {open && createPortal(
+      <span ref={card} id={id} role="dialog" aria-label={e.title} onClick={(ev) => ev.stopPropagation()}
+        style={{ position: 'fixed', top: pos?.top ?? 0, left: pos?.left ?? 0, visibility: pos ? 'visible' : 'hidden' }}
+        className="z-[3000] block w-[288px] max-w-[calc(100vw-16px)] rounded-xl border border-line bg-white p-3.5 text-left font-sans text-[13.5px] leading-snug font-normal tracking-normal text-fg normal-case shadow-[0_10px_30px_rgb(19_33_27/0.18)]">
+        <span className="block text-[14px] font-semibold">{e.title}</span>
+        <span className="mt-1 block">{e.body}</span>
+        {e.detail && <span className="mt-2 block text-[12px] leading-snug text-mute">{e.detail}</span>}
+      </span>,
+      document.body,
+    )}
   </span>
 }
 

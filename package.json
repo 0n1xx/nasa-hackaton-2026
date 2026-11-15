@@ -11,7 +11,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "tsx --env-file-if-exists=.env server/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test shared/risk.test.ts shared/signals.test.ts shared/stats.test.ts shared/horizon.test.ts server/sim.test.ts"
+    "test": "tsx --test shared/risk.test.ts shared/signals.test.ts shared/stats.test.ts shared/horizon.test.ts shared/outlook.test.ts shared/province.test.ts server/sim.test.ts server/place.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

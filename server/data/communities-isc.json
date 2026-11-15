@@ -6,30 +6,6 @@
  "retrieved": "2026-11-14",
  "communities": [
   {
-   "id": "isc-604",
-   "bandNumber": 604,
-   "name": "?Akisq'nuk First Nation",
-   "lat": 50.46,
-   "lon": -115.96,
-   "province": "BC"
-  },
-  {
-   "id": "isc-602",
-   "bandNumber": 602,
-   "name": "?aqam",
-   "lat": 49.58,
-   "lon": -115.75,
-   "province": "BC"
-  },
-  {
-   "id": "isc-709",
-   "bandNumber": 709,
-   "name": "?Esdilagh First Nation",
-   "lat": 52.56,
-   "lon": -122.5,
-   "province": "BC"
-  },
-  {
    "id": "isc-172",
    "bandNumber": 172,
    "name": "Aamjiwnaang",
@@ -1672,7 +1648,7 @@
   {
    "id": "isc-20",
    "bandNumber": 20,
-   "name": "Jijiktukwej L’nue’kati",
+   "name": "Jijiktukwej L'nue'kati",
    "lat": 45.07,
    "lon": -64.65,
    "province": "NB"
@@ -3880,7 +3856,7 @@
   {
    "id": "isc-25",
    "bandNumber": 25,
-   "name": "SIPEKNE'KATIK",
+   "name": "Sipekne'katik",
    "lat": 45.1,
    "lon": -63.49,
    "province": "NS"
@@ -4336,7 +4312,7 @@
   {
    "id": "isc-718",
    "bandNumber": 718,
-   "name": "Tl’esqox",
+   "name": "Tl'esqox",
    "lat": 51.93,
    "lon": -122.5,
    "province": "BC"
@@ -4744,7 +4720,7 @@
   {
    "id": "isc-18",
    "bandNumber": 18,
-   "name": "Wasoqopa’q First Nation",
+   "name": "Wasoqopa'q First Nation",
    "lat": 43.83,
    "lon": -66.08,
    "province": "NS"
@@ -4792,7 +4768,7 @@
   {
    "id": "isc-29",
    "bandNumber": 29,
-   "name": "We'koqma'q L’nue’kati",
+   "name": "We'koqma'q L'nue'kati",
    "lat": 45.97,
    "lon": -61.14,
    "province": "NS"
@@ -5048,7 +5024,7 @@
   {
    "id": "isc-603",
    "bandNumber": 603,
-   "name": "Yaqit ?a·knuqli‘it First Nation",
+   "name": "Yaqit ʔa·knuqli'it First Nation",
    "lat": 49.09,
    "lon": -115.08,
    "province": "BC"
@@ -5108,6 +5084,30 @@
    "lat": 45.95,
    "lon": -82.87,
    "province": "ON"
+  },
+  {
+   "id": "isc-604",
+   "bandNumber": 604,
+   "name": "ʔAkisq'nuk First Nation",
+   "lat": 50.46,
+   "lon": -115.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-602",
+   "bandNumber": 602,
+   "name": "ʔaq'am",
+   "lat": 49.58,
+   "lon": -115.75,
+   "province": "BC"
+  },
+  {
+   "id": "isc-709",
+   "bandNumber": 709,
+   "name": "ʔEsdilagh First Nation",
+   "lat": 52.56,
+   "lon": -122.5,
+   "province": "BC"
   }
  ]
 }

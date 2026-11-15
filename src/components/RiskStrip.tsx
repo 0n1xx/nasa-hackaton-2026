@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react'
 import type { RiskDay } from '../../shared/types.ts'
-import { LEVEL_COLORS } from '../../shared/risk.ts'
+import { LEVEL_COLORS, levelLabel } from '../../shared/risk.ts'
 import { InfoPopover } from './ui.tsx'
 
 // One column per day of the risk timeline: past estimates, today, forecast.
-// Bars are scaled 0–100 so the guides at 50 (High begins) and 75 (Critical begins) are honest.
+// Bars are scaled 0–100 so the guides at 50 (High begins) and 75 (Very high begins) are honest.
 // Past bars are solid, today is solid with a shaded band behind it, forecast bars are outlined and
 // hatched, so the three read differently in greyscale and in print as well as in colour.
 
@@ -16,7 +16,7 @@ const dayLong = (iso: string) => at(iso).toLocaleDateString('en-CA', { weekday: 
 const PHASE: Record<RiskDay['kind'], { label: string; sr: string }> = {
   historical: { label: 'Past days', sr: 'past estimate' },
   today: { label: 'Today', sr: 'today' },
-  forecast: { label: 'Forecast', sr: 'forecast' },
+  forecast: { label: 'Expected', sr: 'expected' },
 }
 
 // Plot and guide-label gutter share one height so the guide labels line up with the lines.
@@ -42,7 +42,7 @@ export default function RiskStrip({ timeline }: { timeline: RiskDay[] }) {
   }
 
   return <figure className="min-w-0">
-    <div className="grid grid-cols-[minmax(0,1fr)_2.75rem] gap-x-2 sm:grid-cols-[minmax(0,1fr)_3.25rem]">
+    <div className="grid grid-cols-[minmax(0,1fr)_3.75rem] gap-x-2 sm:grid-cols-[minmax(0,1fr)_4.25rem]">
       {/* Phase labels */}
       <div className={`grid ${gap}`} style={cols} aria-hidden>
         {runs.map((r, i) => <div key={i} style={{ gridColumn: `span ${r.count}` }} className={`border-t-2 pt-1.5 text-[11.5px] whitespace-nowrap sm:text-[12.5px] ${r.kind === 'today' ? 'border-fg text-center font-semibold text-fg' : 'border-edge text-mute'}`}>
@@ -62,7 +62,7 @@ export default function RiskStrip({ timeline }: { timeline: RiskDay[] }) {
             const bar: CSSProperties = fc
               ? ({ height: `${Math.max(d.score, 1.5)}%`, borderColor: c, '--c': c, animationDelay: delay } as CSSProperties)
               : { height: `${Math.max(d.score, 1.5)}%`, background: c, opacity: today ? 1 : 0.72, animationDelay: delay }
-            return <div key={d.date} className="relative h-full" title={`${dayLong(d.date)}: ${d.score}, ${d.level} (${PHASE[d.kind].sr})`}>
+            return <div key={d.date} className="relative h-full" title={`${dayLong(d.date)}: ${levelLabel(d.level)} fire risk (${d.score} out of 100), ${PHASE[d.kind].sr}`}>
               {today && <div className="absolute inset-x-0 -top-10 bottom-0 rounded-t-md bg-ink-800" />}
               <div className={`strip-bar absolute inset-x-0 bottom-0 mx-auto w-[min(74%,3.25rem)] rounded-t-[3px] ${fc ? 'hatch border-[1.5px] border-b-0' : ''}`} style={bar} />
               <span className={`strip-num num font-display condensed absolute inset-x-0 text-center leading-none font-semibold text-fg ${dense ? (today ? 'text-[15px] sm:text-[24px]' : 'text-[10px] sm:text-[15px] lg:text-[17px]') : today ? 'text-[21px] sm:text-[30px]' : 'text-[15px] sm:text-[20px]'}`}
@@ -72,9 +72,9 @@ export default function RiskStrip({ timeline }: { timeline: RiskDay[] }) {
         </div>
       </div>
 
-      {/* Guide labels, in a gutter so they never sit on a bar */}
+      {/* Guide labels, in a gutter wide enough for "Very high" so they never sit on a bar */}
       <div className={`relative mt-10 ${PLOT_H}`} aria-hidden>
-        {([[75, 'Critical'], [50, 'High']] as const).map(([g, name]) => <span key={g} className={`absolute left-0 translate-y-1/2 text-[12.5px] leading-none font-semibold ${g === 75 ? 'text-flame' : 'text-mute'}`} style={{ bottom: `${g}%` }}>{name}</span>)}
+        {([[75, 'Critical'], [50, 'High']] as const).map(([g, name]) => <span key={g} className={`absolute left-0 translate-y-1/2 text-[11.5px] leading-none font-semibold whitespace-nowrap sm:text-[12.5px] ${g === 75 ? 'text-flame' : 'text-mute'}`} style={{ bottom: `${g}%` }}>{levelLabel(name)}</span>)}
       </div>
 
       {/* Day labels */}
@@ -88,14 +88,14 @@ export default function RiskStrip({ timeline }: { timeline: RiskDay[] }) {
 
     {/* The same data for screen readers */}
     <ol className="sr-only">
-      {timeline.map((d) => <li key={d.date}>{dayLong(d.date)}, {PHASE[d.kind].sr}: risk index {d.score}, {d.level}.</li>)}
+      {timeline.map((d) => <li key={d.date}>{dayLong(d.date)}, {PHASE[d.kind].sr}: {levelLabel(d.level)} fire risk, {d.score} out of 100.</li>)}
     </ol>
 
     <figcaption className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12px] text-mute">
       <InfoPopover k="pastDay" className="gap-1.5"><span aria-hidden className="h-3 w-3 rounded-[2px] bg-mute/70" />Past days, estimated</InfoPopover>
       <InfoPopover k="todayDay" className="gap-1.5"><span aria-hidden className="h-3 w-3 rounded-[2px] bg-ink-800 ring-1 ring-edge" />Today</InfoPopover>
-      <InfoPopover k="predictedDay" className="gap-1.5"><span aria-hidden className="hatch h-3 w-3 rounded-[2px] border-[1.5px] border-mute" style={{ '--c': '#52615a' } as CSSProperties} />Forecast</InfoPopover>
-      <span className="inline-flex items-center gap-1.5"><span aria-hidden className="w-4 border-t border-dashed border-fg/50" />Where <InfoPopover k="level.High" className="underline decoration-dotted underline-offset-2">High (50)</InfoPopover> and <InfoPopover k="level.Critical" className="underline decoration-dotted underline-offset-2">Critical (75)</InfoPopover> begin</span>
+      <InfoPopover k="predictedDay" className="gap-1.5"><span aria-hidden className="hatch h-3 w-3 rounded-[2px] border-[1.5px] border-mute" style={{ '--c': '#52615a' } as CSSProperties} />Expected</InfoPopover>
+      <span className="inline-flex items-center gap-1.5"><span aria-hidden className="w-4 border-t border-dashed border-fg/50" />Where <InfoPopover k="level.High" className="underline decoration-dotted underline-offset-2">High (50)</InfoPopover> and <InfoPopover k="level.Critical" className="underline decoration-dotted underline-offset-2">Very high (75)</InfoPopover> begin</span>
     </figcaption>
   </figure>
 }
