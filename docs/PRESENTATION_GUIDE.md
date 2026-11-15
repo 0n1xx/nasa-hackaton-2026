@@ -10,14 +10,14 @@ Words are timed at about 135 per minute. Stage time includes pauses, silence and
 | --- | --- | --- | --- | --- |
 | 0:00–0:14 | 1 | The question, then ten seconds of silence | Slide 1: the question | 10 |
 | 0:14–0:29 | 1 | "Five percent." Then the 42% line | Slide 2: 5%, then 42% | 19 |
-| 0:29–1:16 | 1 | Thunder Bay, why those places, ancestral land, hand-off question | Slide 2 stays | 103 |
-| 1:16–2:20 | 2 | The warning signs, what the site does, who it's for, honest limits | Slide 3: name and line | 135 |
-| 2:20–3:50 | 3 | Live demo: five screens | The website | 170 |
-| 3:50–4:22 | 2 | The ask: three things | Slide 4: 5% / 42% | 72 |
-| 4:22–4:40 | 1 | Callback to the opening number, final line | Slide 4 stays | 34 |
-| **Total** | | | | **543** |
+| 0:29–1:15 | 1 | Thunder Bay, why those places, ancestral land, hand-off question | Slide 2 stays | 109 |
+| 1:15–2:20 | 2 | The warning signs, what the site does, who it helps, honest limit | Slide 3: name and line | 135 |
+| 2:20–3:50 | 3 | Live demo: five steps | The website | 170 |
+| 3:50–4:22 | 2 | The ask: three things, with the Auditor General's 78% | Slide 4: 5% / 42% | 83 |
+| 4:22–4:45 | 1 | Callback to the opening number, final line | Slide 4 stays | 34 |
+| **Total** | | | | **560** |
 
-Time on stage per person: Speaker 1 about 1:35 (166 words plus the silence), Speaker 2 about 1:35 (207 words), Speaker 3 about 1:30 (170 words plus clicks).
+Time on stage per person: Speaker 1 about 1:40 (172 words plus the silence), Speaker 2 about 1:40 (218 words), Speaker 3 about 1:30 (170 words plus typing and clicks).
 
 ## The pitch techniques, and where each one is used
 
@@ -60,14 +60,14 @@ If the slides and the site are on the same laptop, practise the switch (Alt+Tab,
 
 ## The live demo, click by click
 
-Before you go on stage: browser full screen (F11), zoom 100%, the home page (**Find your community**) open, header toggle on **Example scenario**, search box empty. Open the community page and click **Satellite photo** once beforehand so the NASA photo is cached, then go back home.
+Before you go on stage: browser full screen (F11), zoom 100%, the home page (**Find your community**) open, header toggle on **Example scenario**, search box empty. Open the community page and click **Satellite photo, July 2026** once beforehand so the NASA photo is cached, then go back home.
 
 | # | Time | Click | What should appear | If it fails |
 | --- | --- | --- | --- | --- |
 | 1 | 2:20 | Type "White" in the search box, click **Whitesand First Nation** | The community page | Click Whitesand in the **Highest fire risk** list |
-| 2 | 2:32 | Nothing. Point at the first sentence. | "Fire risk is very high today…", the 4-step meter, **How sure are we?**, **Why: 5 warning signs right now** | Click **Example scenario**; still failing, play the recording |
+| 2 | 2:32 | Point at the first sentence, then scroll the left panel to **Why: 5 warning signs right now** | "Fire risk is very high today…", the 4-step meter, **How sure are we?**, **Why: 5 warning signs right now** | Click **Example scenario**; still failing, play the recording |
 | 3 | 2:58 | **Who can send firefighters?** (right column) | 911 first, then 310-FIRE, then Indigenous Services Canada's Ontario emergency office | Say the line; it is in the recording |
-| 4 | 3:12 | **Satellite photo** (top of the map) | Real NASA photo of 14 July 2026: smoke and fire | Say the line, click **Map** |
+| 4 | 3:12 | **Satellite photo, July 2026** (top left of the map) | Real NASA photo of 14 July 2026: smoke and fire | Say the line, click **Map** |
 | 5 | 3:28 | **Ask for help** (blue, bottom left) | The 911 box, what you need, who to send it to, the letter | Say the line and step away |
 
 The figures come from the example scenario. If the numbers on screen differ on the day, say what the screen says, not what the script says.

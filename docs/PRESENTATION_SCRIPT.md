@@ -1,6 +1,6 @@
 # Before the Smoke: five-minute pitch script
 
-Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 seconds of margin for the live demo.
+Three speakers. About 560 spoken words. Ends at about 4:45, leaving roughly 15 seconds of margin for the live demo.
 
 - Words in plain text are spoken.
 - Stage directions are in [BRACKETS]. Never read them aloud.
@@ -73,15 +73,13 @@ Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 ## SPEAKER 3: the live demo (2:20–3:50)
 
-**[BEFORE GOING ON STAGE: browser full screen (F11), zoom 100%, site open at the home page (**Find your community**), header toggle on **Example scenario**, search box empty.]**
+**[BEFORE GOING ON STAGE: browser full screen (F11), zoom 100%, the home page (**Find your community**) open, header toggle on **Example scenario**, search box empty.]**
 
 ### Step 1: find your community (2:20–2:32)
 
-**2:20** This is Before the Smoke. It's November, so we're showing an example: a summer day, July fourteenth, the week of the real evacuations. The banner says so on every screen.
+**2:20** This is Before the Smoke, showing an example summer day, July fourteenth, the week of the real evacuations. A community member starts by finding their community.
 
 **[CLICK the search box, TYPE "White", CLICK **Whitesand First Nation**.]**
-
-**2:27** It starts the way a community member would: find your community.
 
 > *If search is slow:* click **Whitesand First Nation** in the **Highest fire risk** list instead.
 
@@ -89,11 +87,11 @@ Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 **[Point at the first sentence on the left.]**
 
-**2:32** Whitesand First Nation. Fire risk is very high today, and expected to stay very high for the next three days.
+**2:32** Whitesand First Nation. In plain words: fire risk is very high today, and expected to stay that way. How sure are we? Not very sure, and it says why.
 
-**2:40** How sure are we? It says so honestly: not very sure, and why.
+**[SCROLL the left panel down slowly to **Why: 5 warning signs right now**.]**
 
-**2:45** And why the risk is high: ten degrees hotter than last week, dry air, no soaking rain for six days. And from forty-two years of NASA records, today is hotter than ninety-six of every hundred mid-July days since 1984.
+**2:44** Why: ten degrees hotter than last week, dry air, no soaking rain for six days. And from forty-two years of NASA records, today is hotter than ninety-six of every hundred mid-July days.
 
 > *If the page shows "Couldn't load":* click **Example scenario** in the top right. Still failing: play the screen recording.
 
@@ -101,13 +99,13 @@ Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 **[CLICK **Who can send firefighters?** in the right-hand column.]**
 
-**3:00** Anyone can ask a question. It answers from the same data, instantly, even offline: call 911 first, report the fire, and who to contact for firefighters and equipment.
+**3:00** Anyone can ask a question. It answers instantly, even offline: call 911 first, report the fire, and who to contact for firefighters.
 
 ### Step 4: the real NASA photo (3:12–3:28)
 
-**[CLICK **Satellite photo** at the top of the map. Wait about two seconds.]**
+**[CLICK **Satellite photo, July 2026** at the top left of the map. Wait about two seconds.]**
 
-**3:14** And this part is real. NASA's satellite photo from that same day, July fourteenth, when Whitesand and four other Nations were being evacuated. The red is fire seen from space. The haze is smoke.
+**3:14** And this part is real: NASA's satellite photo from that week. The red is fire seen from space. The haze is smoke.
 
 > *If the photo doesn't draw within five seconds:* say the line anyway, click **Map**, and move on.
 
@@ -115,7 +113,7 @@ Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 **[CLICK the blue **Ask for help** button at the bottom left.]**
 
-**3:30** And this is the point. One click writes the request: firefighters ready nearby, pumps and sprinklers, addressed to the province and Indigenous Services Canada, with the evidence attached. Nothing is sent for them. The community decides, and sends it. Days before a fire, not after.
+**3:30** And this is the point. One click writes the request for firefighters and pumps, and shows who to send it to: the province and Indigenous Services Canada. The community decides, and sends it. Days before a fire, not after.
 
 **[Let the page sit for two seconds. Switch to SLIDE 4 and step away from the laptop.]**
 
@@ -135,7 +133,7 @@ You will finish about a minute early. Use the time to slow down. Do not add new 
 
 **3:50** So here's what we're asking for.
 
-**3:53** One. Fund the before. Canada's Auditor General found that 78 percent of emergency spending for First Nations goes to response and recovery, after the fact. Put resources where the risk is lining up, before the fire.
+**3:53** One. Fund the before. Canada's Auditor General found that 78 percent of emergency spending for First Nations went to response and recovery, after the fact. Put resources where the risk is lining up, before the fire.
 
 **4:04** Two. Build tools like this with Indigenous leadership, not for them. Communities should own their data.
 

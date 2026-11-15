@@ -59,7 +59,7 @@ function Row({ r, wideHidden }: { r: RankedPlace; wideHidden?: boolean }) {
 }
 
 function RankedList() {
-  const { horizon } = useApp()
+  const { horizon, mode } = useApp()
   // One request for the longer list; "Show the top 20" only reveals more rows, so nothing reloads.
   const ranked = useApi<RankedPlace[]>(`places/ranked?limit=${LONG}`)
   const [all, setAll] = useState(false)
@@ -74,11 +74,15 @@ function RankedList() {
       <p className="text-[17px]">Couldn't load the list. Try again.</p>
       <button type="button" onClick={ranked.reload} className="h-10 rounded-md border border-edge bg-white px-4 text-[16px] font-semibold text-fg hover:bg-ink-850">Try again</button>
     </div>
-      : !ranked.data ? <ul aria-label="Loading the list" className="mt-3 md:mt-2">
-        {Array.from({ length: SHORT }, (_, i) => <li key={i} className={`border-t border-line py-3 ${i >= SHORT_MD ? 'md:hidden' : ''}`}>
-          <div className="skeleton h-[18px] w-3/4" /><div className="skeleton mt-2 h-[16px] w-1/2" />
-        </li>)}
-      </ul>
+      : !ranked.data ? <>
+        {/* Live data scores every community from fresh weather; the first load after a quiet spell is slow. */}
+        {mode === 'live' && <p role="status" className="mt-3 text-[16px] text-mute">Getting today's weather for every community. The first time can take up to a minute; search works right away.</p>}
+        <ul aria-label="Loading the list" className="mt-3 md:mt-2">
+          {Array.from({ length: SHORT }, (_, i) => <li key={i} className={`border-t border-line py-3 ${i >= SHORT_MD ? 'md:hidden' : ''}`}>
+            <div className="skeleton h-[18px] w-3/4" /><div className="skeleton mt-2 h-[16px] w-1/2" />
+          </li>)}
+        </ul>
+      </>
         : <>
           <ul aria-busy={ranked.loading} className={`mt-3 border-b border-line transition-opacity md:mt-2 ${ranked.loading ? 'opacity-60' : ''}`}>
             {shown.map((r, i) => <Row key={r.id} r={r} wideHidden={!all && i >= SHORT_MD} />)}
