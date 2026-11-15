@@ -6,6 +6,7 @@ import type { StatusData } from '../../shared/types.ts'
 import { FACTORS, levelLabel } from '../../shared/risk.ts'
 import { SIGNS_NOTE, WETTING_RAIN_MM } from '../../shared/signals.ts'
 import HistoryContext from '../components/HistoryContext.tsx'
+import ScoreReceipt from '../components/about/ScoreReceipt.tsx'
 import { useApp } from '../state.tsx'
 
 const OAG = 'https://www.canada.ca/en/auditor-general/our-work/audit-reports/parl-oag-202211-08-e.html'
@@ -23,14 +24,54 @@ const OFFICIAL = [
   { where: 'Northwest Territories', name: 'Wildfire operations, Government of the Northwest Territories', url: 'https://www.gov.nt.ca/ecc/en/services/wildfire-operations' },
 ]
 
-const SOURCES = [
-  { name: 'NASA FIRMS', url: 'https://firms.modaps.eosdis.nasa.gov/', line: 'Heat spotted by satellites. NASA’s fire information system reports hot spots seen by the VIIRS and MODIS instruments as satellites pass over.' },
-  { name: 'NASA GIBS', url: 'https://nasa-gibs.github.io/gibs-api-docs/', line: 'The satellite photos on the map, including true-colour pictures, heat and smoke haze.' },
-  { name: 'NASA POWER', url: 'https://power.larc.nasa.gov/', line: 'Daily weather records since 1984 for every place, so today can be compared with 42 years of the past.' },
-  { name: 'Canadian Wildland Fire Information System (CWFIS)', url: 'https://cwfis.cfs.nrcan.gc.ca/', line: 'Run by Natural Resources Canada. Three things come from it: wildfires reported by provincial and territorial fire crews; satellite heat when no NASA key is set; and Canada’s official Fire Weather Index at about 800 weather stations, for today and the next two days.' },
-  { name: 'Open-Meteo weather', url: 'https://open-meteo.com/en/docs', line: 'Temperature, humidity, wind, rain, how dry the plants and ground are, and snow, for the past week and the days ahead.' },
-  { name: 'Open-Meteo air quality', url: 'https://open-meteo.com/en/docs/air-quality-api', line: 'Smoke in the air, from a computer model of the whole planet.' },
-  { name: 'Indigenous Services Canada, First Nations locations', url: 'https://open.canada.ca/data/en/dataset/b6567c5c-8339-4055-99fa-63f92114d9e4', line: 'The public location of each First Nation community. Contains information licensed under the Open Government Licence – Canada.' },
+/** Points a weight is worth out of 100, with halves written as ½ so the sources add up to exactly 100. */
+const half = (n: number) => { const r = Math.round(n * 2) / 2; return Number.isInteger(r) ? String(r) : `${Math.floor(r)}½` }
+const weight = (key: string) => (FACTORS.find((f) => f.key === key)?.weight ?? 0) * 100
+/** The most points a fact can add, from the weights in shared/risk.ts (when every fact is present). */
+const most = (key: string) => half(weight(key))
+const WEATHER = ['tMax', 'rhMin', 'precip7d', 'windMax', 'vpdMax', 'soil']
+
+/**
+ * Each source in grandma words: what we take from it, and what it does. `points` is null when the source
+ * adds nothing to the score and is only shown beside it.
+ */
+const SOURCES: { name: string; url: string; take: string; does: string; points: string | null }[] = [
+  { name: 'Open-Meteo weather forecast', url: 'https://open-meteo.com/en/docs',
+    take: 'Every day from a week ago to two weeks ahead: how hot it gets, how dry the air gets, the strongest wind, the rain, how wet the ground is, any snow, and how thirsty the air is (how hard it pulls water out of plants). It comes from computer weather models, not a station in the community.',
+    does: `Most of the score: heat up to ${most('tMax')} points, dry air up to ${most('rhMin')}, a week with no rain up to ${most('precip7d')}, wind up to ${most('windMax')}, thirsty air up to ${most('vpdMax')} and dry ground up to ${most('soil')}. Snow or frost cuts the total to a fifth. It also drives the warning signs.`,
+    points: `up to ${half(WEATHER.reduce((t, k) => t + weight(k), 0))} points` },
+  { name: 'Canada’s fire weather stations (Natural Resources Canada)', url: 'https://cwfis.cfs.nrcan.gc.ca/maps/fw?type=fwi',
+    take: 'One number: Canada’s official Fire Weather Index from the nearest weather station that is still reporting, within 200 km, for today and the next two days. Fire services use it to judge how easily a fire would start and spread.',
+    does: `Up to ${most('fwi')} points. It is also shown on each community’s page next to our estimate. Where there is no station nearby, the other facts share its points.`,
+    points: `up to ${most('fwi')} points` },
+  { name: 'NASA FIRMS (fire-spotting satellites)', url: 'https://firms.modaps.eosdis.nasa.gov/',
+    take: 'Spots of heat that NASA’s satellites saw from space in the last 24 hours: where each one is and how hot it is. If NASA’s service is down, we use Canada’s copy of the same satellite data.',
+    does: `Up to ${most('hotspots100km')} points, more when more spots are within 100 km. They are the orange squares on the map, and a warning sign.`,
+    points: `up to ${most('hotspots100km')} points` },
+  { name: 'Our own rough guess', url: '',
+    take: 'How often each area has burned in past years, set by hand by our team. It is not worked out from fire records yet.',
+    does: `Up to ${most('historyIndex')} points. Like wind, it only counts in full when the air can dry things out.`,
+    points: `up to ${most('historyIndex')} points` },
+  { name: 'Canada’s wildfire information system (CWFIS)', url: 'https://cwfis.cfs.nrcan.gc.ca/',
+    take: 'Wildfires reported by provincial and territorial fire crews: where they are, how big, whether they are under control, and when the crews last updated them.',
+    does: 'Shown on the map, as the nearest wildfire on each community’s page, and in the help letter. Reports nobody has updated in two weeks are left off, unless satellites still see heat there.',
+    points: null },
+  { name: 'Open-Meteo air quality', url: 'https://open-meteo.com/en/docs/air-quality-api',
+    take: 'How much fine smoke is in the air (PM2.5) now and over the next few days, from a computer model of the whole planet.',
+    does: 'The smoke line and the health advice on each community’s page.',
+    points: null },
+  { name: 'NASA POWER (42 years of weather records)', url: 'https://power.larc.nasa.gov/',
+    take: 'The weather for each place on every day since 1984.',
+    does: 'Compares today with the same weeks in each of the past 42 years, and checks whether summers there are getting hotter.',
+    points: null },
+  { name: 'NASA GIBS (satellite photos)', url: 'https://nasa-gibs.github.io/gibs-api-docs/',
+    take: 'Photos of the ground taken from space, including heat and smoke haze.',
+    does: 'The “Satellite photo” view on the map.',
+    points: null },
+  { name: 'Indigenous Services Canada', url: 'https://open.canada.ca/data/en/dataset/b6567c5c-8339-4055-99fa-63f92114d9e4',
+    take: 'Where each First Nation’s main community is, from the government’s public list. Contains information licensed under the Open Government Licence – Canada.',
+    does: 'Puts each community on the map and in the search.',
+    points: null },
 ]
 
 /** The warning-sign rules, in the same words and thresholds as shared/signals.ts. */
@@ -176,6 +217,27 @@ export default function About() {
         </ul>
       </section>
 
+      {/* How the fire risk is worked out, for anyone (the owner's ask: "explain like I'm a grandma") */}
+      <section className="mt-14" aria-labelledby="recipe">
+        <H2 id="recipe">How we work out the fire risk</H2>
+        <div className={`${prose} mt-4 space-y-4`}>
+          <p>Think of it as a weather forecast, but for fire. Every day, for every community, we gather a few simple facts, give each one some points, and add them up. The more points, the higher the fire risk.</p>
+          <p>Fire needs something dry to burn: dead grass, needles and twigs. They dry out the way washing does on a line. A hot, dry, windy day dries them fast. A cold, damp day hardly dries them at all, even when it is windy.</p>
+        </div>
+        <ol className={`${prose} mt-5 space-y-3`}>
+          <li><span className="font-semibold">1. We gather the facts.</span> How hot it is, how dry the air is, how windy, how much rain fell this week, how wet the ground is, whether satellites see fire nearby, and Canada’s official fire weather reading.</li>
+          <li><span className="font-semibold">2. Each fact can add points.</span> The more a fact helps a fire, the more points it adds. Very dry air can add up to {most('rhMin')} points, for example. The list further down shows the most each source can add.</li>
+          <li><span className="font-semibold">3. Damp air takes points away.</span> Wind and a dry week only count in full when the air is warm and dry enough to dry things out, like washing on a line. On a cold, damp day they count for little or nothing.</li>
+          <li><span className="font-semibold">4. We add up the points.</span> The total is out of 100. Under 25 is Low, 25 to 49 is Medium, 50 to 74 is High, and 75 or more is Very high.</li>
+          <li><span className="font-semibold">5. We do the same for the days ahead,</span> using the weather forecast. The further ahead, the less sure we are.</li>
+        </ol>
+        <p className={`${prose} mt-4 text-mute`}>It is our best estimate, not a promise. It cannot say where or when a fire will start.</p>
+
+        <h3 className="mt-8 text-[19px] font-semibold">A worked example</h3>
+        <p className={`${prose} mt-1`}>Here is one day’s fire risk for one community, added up like a shop receipt.</p>
+        <ScoreReceipt />
+      </section>
+
       {/* Why this matters */}
       <section className="mt-14" aria-labelledby="why">
         <H2 id="why">Why this matters</H2>
@@ -202,15 +264,21 @@ export default function About() {
 
       {/* Where the data comes from */}
       <section className="mt-14" aria-labelledby="sources">
-        <H2 id="sources">Where the data comes from</H2>
-        <ul className={`${prose} mt-4 space-y-4`}>
+        <H2 id="sources">Where each fact comes from</H2>
+        <p className={`${prose} mt-4`}>What we take from each source, and what it does. The first four add points to the fire risk. The rest are shown beside it, to help you see what is going on.</p>
+        <ul className="mt-5 max-w-[46rem]">
           {SOURCES.map((s) => (
-            <li key={s.name}>
-              <A href={s.url}>{s.name}</A>
-              <p className="mt-0.5">{s.line}</p>
+            <li key={s.name} className="border-t border-line py-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                <h3 className="text-[18px] font-semibold">{s.url ? <A href={s.url}>{s.name}</A> : s.name}</h3>
+                <span className={`num text-[15px] ${s.points ? 'font-semibold' : 'text-mute'}`}>{s.points ? `Adds ${s.points}` : 'Adds no points'}</span>
+              </div>
+              <p className="mt-1.5"><span className="font-semibold">What we take:</span> {s.take}</p>
+              <p className="mt-1"><span className="font-semibold">What it does:</span> {s.does}</p>
             </li>
           ))}
         </ul>
+        <div className="max-w-[46rem] border-t border-line" />
         <p className={`${prose} mt-4 text-[15px] text-mute`}>The background map is from Esri, and OpenStreetMap contributors on older screens.</p>
         <StatusTable />
       </section>
