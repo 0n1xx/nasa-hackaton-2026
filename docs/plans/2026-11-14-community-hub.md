@@ -56,12 +56,19 @@ Second audience: the people they contact (provincial fire service, Indigenous Se
 - [x] Tag `demo-stable-2026-11-14`, branch `community-hub`
 - [x] Wave 1: design critique (`docs/design/critique-and-direction.md`), contacts research (`docs/research/contacts.md`), preparedness research (`docs/research/preparedness.md`), ISC community locations (641 communities, `server/data/communities-isc.json`), one-number place API (`/api/place/:id`, search), plain-English pass
 - [x] Foundations: tokens, LevelMeter/LevelTag, shared `day`, routes (`/`, `/c/:id`, `/c/:id/help`, `/c/:id/ask`, `/about`), example banner, stubs
-- [ ] Wave 2 (running, one owner per file): map (HeroMap), home (search + ranked list + `/api/places/ranked|levels`), community view, assistant (built-in + optional Claude), ask for help (contacts + letter), about (+ trend sheet/history plain-first)
-- [ ] After each wave (me): click-through, panel overflow at 1440×900 and 390, typecheck, tests, build
-- [ ] Wave 3: visual cleanup from the critique; design review against references; code review
-- [ ] Rewrite script and guide for the new flow; README
-- [ ] Fresh clone, `npm ci`, build, start, smoke test
-- [ ] Merge to `main`, push `main` and the tag
+- [x] Wave 2: map (HeroMap), home (search + ranked list + `/api/places/ranked|levels`), community view, assistant (built-in + optional Claude), ask for help (contacts + letter), about (+ trend sheet/history plain-first)
+- [x] After each wave (me): click-through, panel overflow at 1440×900 and 390, typecheck, tests, build
+- [x] Wave 3: design review (`docs/design/review-wave3.md`) and code review (`docs/review/code-review-wave3.md`), fixes applied; example scenario anchored to 14 July 2026; assistant's Claude path hardened (latest question only, community required, rate limits)
+- [x] Rewrite script and guide for the new flow; README
+- [x] Fresh clone, `npm ci`, build, test, start, smoke test
+- [x] Merge to `main`, push `main` and the tag
+
+## Not done or not tested
+
+- The Claude assistant path has never run against the API (no credentials on the build machine).
+- Live-mode ranked list across 641 communities can be rate-limited by Open-Meteo on a cold start; it now retries once, skips failed chunks and serves the last good list.
+- Slides for the script are not made.
+- Older screens (/overview, /risk, /map, /air, /communities, /trends, /preparedness) still exist but are off the navigation and were not restyled.
 
 ## Facts and constraints
 
