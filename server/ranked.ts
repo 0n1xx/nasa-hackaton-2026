@@ -1,7 +1,7 @@
 // Every community on the map, scored at its own point with the same function as /api/place (services.ts
 // pointsRisk -> scorePoint), so a community's number on the home list, the map and its own page agree.
 //
-// One computation per mode (at MAX_HORIZON, sliced per look-ahead), cached 10 minutes, feeds both endpoints:
+// One computation per mode (at MAX_HORIZON, sliced per look-ahead), cached an hour, feeds both endpoints:
 //   GET /api/places/ranked?mode=&days=&limit=   highest expected risk over today + the look-ahead
 //   GET /api/places/levels?mode=&days=          every community's score for each day (map discs, "use my location")
 // Live weather comes from Open-Meteo in 40-point requests (pointsRisk chunks them), about 440 points in all.
@@ -15,7 +15,9 @@ import { MAX_HORIZON } from '../shared/horizon.ts'
  *  provinces, the Yukon and the North, not only the 48–62° N band. The home map still opens on that band
  *  (HeroMap HOME_BOUNDS), where most communities and the risk are; people pan out for the rest. */
 export const MAP_AREA = { latMin: 41.5, latMax: 69.5, lonMin: -141, lonMax: -52 }
-const TTL = 10 * 60 * 1000
+/** An hour: the weather models behind it update hourly, and one live refresh of all 641 communities costs roughly
+ *  1,000 to 1,300 of Open-Meteo's free-tier calls (by its fractional counting; limits 5,000 an hour, 10,000 a day). Every 10 minutes ran into HTTP 429. */
+const TTL = 60 * 60 * 1000
 
 export interface RankedPlace {
   id: string; name: string; kind: string; province: string
@@ -49,10 +51,11 @@ interface Computed { list: Scored[]; sources: SourceMeta[]; ms: number; partial:
 const CHUNK = 40
 /** Pause between live chunk requests that actually went upstream, to stay under Open-Meteo's per-minute limit. */
 const PACE_MS = 250
-/** A list with skipped chunks is kept for a minute only, so the missing communities come back soon. */
-const PARTIAL_TTL = 60 * 1000
+/** A list with skipped chunks is kept for 5 minutes, then the missing communities are tried again. Retrying every
+ *  minute while Open-Meteo was refusing requests kept the limit hit. */
+const PARTIAL_TTL = 5 * 60 * 1000
 /** After the TTL, the last good list is still served (and refreshed in the background) for up to this long. */
-const STALE_MS = 2 * 60 * 60 * 1000
+const STALE_MS = 3 * 60 * 60 * 1000
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 /**

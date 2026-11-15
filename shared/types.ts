@@ -1,4 +1,5 @@
 // Types shared by the backend (server/) and the frontend (src/).
+import type { OfficialFwi } from './fwi.ts'
 
 export type Mode = 'live' | 'sim'
 
@@ -38,6 +39,10 @@ export interface ActiveFire {
   startDate: string | null
   /** OC out of control, BH being held, UC under control, EX out, other agency codes passed through */
   stage: string
+  /** When the agency last changed the fire's status (CWFIS status_date) */
+  statusDate?: string | null
+  /** When this version of the record was published (CWFIS record_start) */
+  recordStart?: string | null
 }
 
 export interface Hotspot {
@@ -93,6 +98,8 @@ export interface RiskResult {
   confidence: 'High' | 'Medium' | 'Low'
   confidenceWhy: string
   snowGate: boolean
+  /** 0–1: how fast the air can dry fuels; wind, the dry spell and the regional baseline are multiplied by it (shared/risk.ts dryingPower) */
+  drying: number
   factors: RiskFactor[]
 }
 
@@ -298,6 +305,10 @@ export interface PlaceReport {
     historyIndex: number
     current: CurrentWeather
     days: DayWeather[]
+    /** Canada's Fire Weather Index today at the nearest station still reporting (shared/fwi.ts); null when none in range, or in the example */
+    official: OfficialFwi | null
+    /** every fire weather station within 150 km has stopped for the season */
+    fwiResting: boolean
   }
   /** shared/signals.ts warningSigns() at this location */
   signs: WarningSign[]

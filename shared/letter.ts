@@ -151,7 +151,8 @@ function historySentence(place: PlaceReport): string | null {
   const h = place.history
   if (!h || h.tMaxPercentile == null || h.todayTMax == null) return null
   const p = Math.round(h.tMaxPercentile)
-  const rank = p >= 100 ? 'hotter than almost every' : `hotter than ${p} out of 100`
+  const hot = h.todayTMax >= 15 ? 'hotter' : 'warmer'
+  const rank = p >= 100 ? `${hot} than almost every` : p >= 50 ? `${hot} than ${p} out of 100` : `cooler than ${100 - p} out of 100`
   let s = `NASA’s ${h.period.years}-year weather record for this location (${h.period.startYear} to ${h.period.endYear}): today’s high of ${Math.round(h.todayTMax * 10) / 10} °C is ${rank} days from ${h.window.label} in past years.`
   const t = h.fireSeasonTMax
   if (t.trend === 'rising' && t.mannKendallP < 0.05 && t.senPerDecade > 0) {

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import type { PlaceReport } from '../../../shared/types.ts'
 import { LevelTag, placeName } from '../ui.tsx'
 import { howSure, statusSentence, todayLevel } from './words.ts'
+import { officialLine } from './official.ts'
 
 /** The official rating lives with the provincial agencies; CWFIS maps all of them (docs/research/preparedness.md §5). */
 const OFFICIAL_RATING_URL = 'https://cwfis.cfs.nrcan.gc.ca/maps/fw?type=fwi'
@@ -11,6 +12,7 @@ export default function StatusBlock({ place }: { place: PlaceReport }) {
   const c = place.community
   const s = statusSentence(place)
   const sure = howSure(place)
+  const official = officialLine(place)
   const province = placeName(c.province)
   return <>
     <header>
@@ -28,7 +30,7 @@ export default function StatusBlock({ place }: { place: PlaceReport }) {
         <span className="num">({place.risk.today.score} out of 100)</span>
       </p>
       <p className="mt-1.5 text-[15px] text-mute">
-        Our estimate, not an official fire danger rating. <a href={OFFICIAL_RATING_URL} target="_blank" rel="noreferrer" className="text-action underline underline-offset-2 hover:text-action-deep">See the official rating</a>
+        Our estimate, not an official fire danger rating.{official ? <> {official}</> : null} <a href={OFFICIAL_RATING_URL} target="_blank" rel="noreferrer" className="text-action underline underline-offset-2 hover:text-action-deep">See the official map</a>
       </p>
     </section>
 

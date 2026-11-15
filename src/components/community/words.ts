@@ -162,22 +162,95 @@ export function signSentence(s: WarningSign, p: PlaceReport): string {
   }
 }
 
-/** "Today's high is hotter than 96 of every 100 mid-July days since 1984 (NASA records)." Null unless the record is in. */
+// ---------------------------------------------------------------------------------------------
+// 6. Compared with 42 years of NASA records (NASA POWER daily weather at the community's grid square)
+// Sentence first, number second. The test names stay inside "How we tested this" (glossary).
+
+/** A no-break space: keeps "p = 0.30" and "0.1 °C" on one line. */
+const NB = String.fromCharCode(0xa0)
+/** "p = 0.30", "p = 0.012", "p < 0.001": the exact form, as on /about. */
+export const fmtP = (p: number) => (p < 0.001 ? `p${NB}<${NB}0.001` : `p${NB}=${NB}${p < 0.1 ? p.toFixed(3) : p.toFixed(2)}`)
+/** Below this size (°C per decade) a change reads as "no real change", never "−0.0". */
+export const tiny = (v: number) => Math.abs(v) < 0.05
+/** "+0.11", "−0.30", or "0" when tiny. */
+export const signed = (v: number, d = 1) => (tiny(v) ? '0' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(d)}`)
+/** A change is called real only when p < 0.05 (/about, "Trend tests"). */
+export const SIGNIFICANT_P = 0.05
+/** " °C" after a no-break space, so "0.1 °C" never wraps between the number and the unit. */
+const C = `${NB}°C`
+
+/** "7 to 21 July", "28 June to 12 July": a comparison window given as MMDD strings. */
+export function windowDates(w: { startMMDD: string; endMMDD: string }): string {
+  const m = (mmdd: string) => at(`2001-${mmdd.slice(0, 2)}-${mmdd.slice(2, 4)}`).toLocaleDateString('en-CA', { month: 'long' })
+  const d = (mmdd: string) => Number(mmdd.slice(2, 4))
+  return m(w.startMMDD) === m(w.endMMDD) ? `${d(w.startMMDD)} to ${d(w.endMMDD)} ${m(w.endMMDD)}` : `${d(w.startMMDD)} ${m(w.startMMDD)} to ${d(w.endMMDD)} ${m(w.endMMDD)}`
+}
+
+/** "Today's high is hotter than 96 of every 100 mid-July days since 1984." Null unless the record is in. */
 export function historySentence(p: PlaceReport): string | null {
   const h = p.history
   if (p.historyStatus !== 'ok' || !h || h.tMaxPercentile == null) return null
   const n = Math.round(h.tMaxPercentile)
   const w = h.window
-  let days: string
-  if (/^mid-/i.test(w.label)) days = `${w.label} days`
-  else {
-    const m = (mmdd: string) => at(`2001-${mmdd.slice(0, 2)}-${mmdd.slice(2, 4)}`).toLocaleDateString('en-CA', { month: 'long' })
-    const d = (mmdd: string) => Number(mmdd.slice(2, 4))
-    days = m(w.startMMDD) === m(w.endMMDD) ? `days from ${d(w.startMMDD)} to ${d(w.endMMDD)} ${m(w.endMMDD)}` : `days from ${d(w.startMMDD)} ${m(w.startMMDD)} to ${d(w.endMMDD)} ${m(w.endMMDD)}`
-  }
-  const since = `since ${h.period.startYear} (NASA records)`
-  if (n >= 100) return `Today's high is hotter than any of the ${days} ${since}.`
-  return n >= 50 ? `Today's high is hotter than ${n} of every 100 ${days} ${since}.` : `Today's high is cooler than ${100 - n} of every 100 ${days} ${since}.`
+  const days = /^mid-/i.test(w.label) ? `${w.label} days` : `days from ${windowDates(w)}`
+  const since = `since ${h.period.startYear}`
+  // "Hotter" for a summer day; "warmer" when today's high is cold ("hotter" at -1 °C reads oddly).
+  const hot = h.todayTMax == null || h.todayTMax >= 15 ? 'hotter' : 'warmer'
+  if (n >= 100) return `Today's high is ${hot} than any of the ${days} ${since}.`
+  return n >= 50 ? `Today's high is ${hot} than ${n} of every 100 ${days} ${since}.` : `Today's high is cooler than ${100 - n} of every 100 ${days} ${since}.`
+}
+
+/**
+ * The long-term direction of fire-season daytime highs, in words, with the p-value last.
+ * "Daytime highs from May to September have warmed by about 0.4 °C every 10 years here since 1984. This is very unlikely to be chance (p < 0.01)."
+ * "Daytime highs from May to September have warmed a little here since 1984, about 0.1 °C every 10 years. That is small enough that it could be chance (p = 0.30)."
+ */
+export function trendSentence(p: PlaceReport): string | null {
+  const h = p.history
+  if (p.historyStatus !== 'ok' || !h) return null
+  const { senPerDecade: sen, mannKendallP: pv } = h.fireSeasonTMax
+  if (!Number.isFinite(sen) || !Number.isFinite(pv)) return null
+  const since = h.period.startYear
+  const pShort = pv < 0.01 ? `p${NB}<${NB}0.01` : fmtP(pv)
+  const highs = 'Daytime highs from May to September'
+  if (tiny(sen)) return `${highs} have barely changed here since ${since} (${pShort}).`
+  const dir = sen > 0 ? 'warmed' : 'cooled'
+  const size = `about ${Math.abs(sen).toFixed(1)}${C} every 10 years`
+  if (pv < SIGNIFICANT_P) return `${highs} have ${dir} by ${size} here since ${since}. This is ${pv < 0.01 ? 'very unlikely' : 'unlikely'} to be chance (${pShort}).`
+  return `${highs} have ${dir} a little here since ${since}, ${size}. That is small enough that it could be chance (${pShort}).`
+}
+
+const deg = (v: number, pos: string, neg: string) => `${Math.abs(v)}° ${v >= 0 ? pos : neg}`
+/** "23.3", "−0.7" (a true minus sign), never "−0.0". */
+const c1 = (v: number) => { const s = v.toFixed(1); return s === '-0.0' ? '0.0' : s.replace('-', '−') }
+
+/**
+ * "How we tested this": which data, which tests, and the numbers they gave. Each part is a heading and one
+ * short paragraph. The percentile part is left out when there is no reading for today.
+ */
+export function recordDetails(p: PlaceReport): { title: string; text: string }[] {
+  const h = p.history
+  if (p.historyStatus !== 'ok' || !h) return []
+  const { period, point, window: w, tMax } = h
+  const t = h.fireSeasonTMax
+  const out: { title: string; text: string }[] = [{
+    title: 'The data',
+    text: `NASA POWER daily weather from ${period.startYear} to ${period.endYear}: ${period.years} years, ${period.days.toLocaleString('en-CA')} days. `
+      + `The values are for a grid square about 50 km across, centred at ${deg(point.lat, 'N', 'S')}, ${deg(point.lon, 'E', 'W')}, not for a single weather station.`,
+  }]
+  if (h.todayTMax != null && h.tMaxPercentile != null) out.push({
+    title: 'Percentile rank of today’s high',
+    text: `We ranked today’s high, ${c1(h.todayTMax)}${C}, among the ${tMax.window.n.toLocaleString('en-CA')} daily highs from ${windowDates(w)} in every year of the record. `
+      + `Its percentile rank is ${Math.round(h.tMaxPercentile)} out of 100. The average of those daily highs is ${c1(tMax.window.mean)}${C}.`,
+  })
+  const sig = t.mannKendallP < SIGNIFICANT_P
+  out.push({
+    title: 'Mann–Kendall trend test and Sen’s slope',
+    text: `We took the average daytime high of each fire season (1 May to 30 September), ${tMax.annual.length} values. `
+      + `The Mann–Kendall test on them gives Kendall’s τ${NB}=${NB}${t.tau.toFixed(2)} and ${fmtP(t.mannKendallP)}, ${sig ? 'significant' : 'not significant'} at p${NB}<${NB}0.05. `
+      + `Sen’s slope is ${tiny(t.senPerDecade) ? 'about 0' : signed(t.senPerDecade, 2)}${C} per decade.`,
+  })
+  return out
 }
 
 // ---------------------------------------------------------------------------------------------

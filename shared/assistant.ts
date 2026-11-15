@@ -25,6 +25,12 @@ export const SUGGESTED: { question: string; intent: Intent }[] = [
 ]
 export const SUGGESTED_QUESTIONS = SUGGESTED.map((s) => s.question)
 
+/** The suggested questions for a page: the first one names today's level ("Why is the risk low?"), so it never asks why a low risk is high. */
+export function suggestedFor(level: RiskLevel | null | undefined): string[] {
+  if (!level) return SUGGESTED_QUESTIONS
+  return [`Why is the risk ${levelLabel(level).toLowerCase()}?`, ...SUGGESTED_QUESTIONS.slice(1)]
+}
+
 /**
  * A link under an answer. `to` is one of:
  * '#id' (scroll to that part of the community page), '/path' (a page in this site),
@@ -249,8 +255,8 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
     case 'data_sources':
       return {
         text: join([
-          'Our fire risk estimate uses the weather forecast, heat spotted by NASA satellites and wildfires reported to Canada’s wildfire information system.',
-          'Smoke comes from an air quality forecast, and the 42-year weather record comes from NASA.',
+          'Our fire risk estimate uses the weather forecast, heat spotted by NASA satellites, and Canada’s official Fire Weather Index from the nearest fire weather station.',
+          'Wildfires come from Canada’s wildfire information system, smoke from an air quality forecast, and the 42-year weather record from NASA.',
           sim ? 'In this example scenario, the numbers are made up for the demo and are not real conditions.' : 'It is our estimate, not an official fire danger rating.',
         ]),
         from: 'From the About the data page.',
@@ -349,11 +355,13 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
       let first: string
       if (t.snowGate) first = say(ctx, `fire risk is ${lv(t.level)} today (${t.score} out of 100), because snow or freezing temperatures are keeping it down.`)
       else if (RANK[t.level] >= RANK.High) first = say(ctx, `fire risk is ${lv(t.level)} today (${t.score} out of 100), and ${plural(n, 'warning sign')} ${n === 1 ? 'is' : 'are'} showing.`)
-      else first = say(ctx, `fire risk is ${lv(t.level)} today (${t.score} out of 100), so it is not high right now${n ? `, but ${plural(n, 'warning sign')} ${n === 1 ? 'is' : 'are'} showing` : ''}.`)
+      else first = say(ctx, `fire risk is ${lv(t.level)} today (${t.score} out of 100)${n ? `, but ${plural(n, 'warning sign')} ${n === 1 ? 'is' : 'are'} showing` : ''}.`)
+      // Drying power (shared/risk.ts): on cold or damp days wind and a dry spell count for little.
+      const damp = !t.snowGate && RANK[t.level] < RANK.High && (t.drying ?? 1) < 0.3 ? 'The air is too cool or damp to dry out grass, needles and twigs, so wind and dry days count for little right now.' : null
       const second = phrases.length ? `The biggest: ${list(phrases.slice(0, 3))}.` : 'None of the warning signs we watch are showing today.'
       const third = phrases.length > 3 ? `Also, ${list(phrases.slice(3, 5))}.` : null
       return {
-        text: join([first, second, third]),
+        text: join([first, damp, second, third]),
         from: 'From the weather forecast, NASA satellite heat detections and our fire risk estimate.',
         actions: [page('#why')],
       }

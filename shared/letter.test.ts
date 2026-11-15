@@ -24,12 +24,14 @@ function place(over: Partial<PlaceReport> = {}): PlaceReport {
     horizon: 3,
     risk: {
       todayDate: '2026-11-15',
-      today: { score: 40, level: 'Moderate', uncertainty: 8, confidence: 'Medium', confidenceWhy: '', snowGate: false, factors: [] },
+      today: { score: 40, level: 'Moderate', uncertainty: 8, confidence: 'Medium', confidenceWhy: '', snowGate: false, drying: 1, factors: [] },
       timeline,
       hotspots100km: 12,
       historyIndex: 0.6,
       current: { time: '2026-11-15T12:00', temp: 20, rh: 30, wind: 20, windDir: 270, precip: 0 },
       days: [day('2026-11-14', 'historical', 20), day('2026-11-15', 'historical', 22), day('2026-11-16', 'forecast', 38), day('2026-11-17', 'forecast', 25)],
+      official: null,
+      fwiResting: false,
     },
     signs: [
       sign('heat', true, '+10.2 °C in 7 days', 'The daily high went from 20.3 °C to 30.5 °C.'),
@@ -188,4 +190,15 @@ test('contacts: verified rows only, federal fallback elsewhere', () => {
   }
   assert.equal(contactsFor('NU').reportFire, null)
   assert.equal(contactsFor('NB').isc.name, 'Indigenous Services Canada, Atlantic region')
+})
+
+test('NASA record line: cooler days say cooler, cold days say warmer', () => {
+  const hist = (todayTMax: number, tMaxPercentile: number) => ({
+    point: { lat: 50, lon: -89 }, period: { startYear: 1984, endYear: 2025, years: 42 }, window: { label: 'mid-July', startMMDD: '0707', endMMDD: '0721' },
+    todayTMax, tMaxPercentile, fireSeasonTMax: { senPerDecade: 0.1, mannKendallP: 0.3, tau: 0.1, trend: 'none', unit: '°C' }, tMax: {},
+  }) as unknown as NonNullable<PlaceReport['history']>
+  const body = (h: NonNullable<PlaceReport['history']>) => buildLetter({ place: place({ history: h, historyStatus: 'ok' }), needs: defaults, contacts: on, mode: 'live' }).body
+  assert.match(body(hist(18.4, 8)), /is cooler than 92 out of 100 days/)
+  assert.match(body(hist(-1, 58)), /is warmer than 58 out of 100 days/)
+  assert.match(body(hist(30.5, 96)), /is hotter than 96 out of 100 days/)
 })

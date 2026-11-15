@@ -19,7 +19,7 @@ export function getActiveFires(): Promise<ActiveFire[]> {
       const p = f.properties ?? {}
       const lat = num(p.latitude) ?? num(f.geometry?.coordinates?.[1]), lon = num(p.longitude) ?? num(f.geometry?.coordinates?.[0])
       if (lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180) return [] // drop malformed rows
-      return [{ id: String(p.national_fire_id ?? p.id ?? i), name: String(p.agency_fire_id ?? p.national_fire_id ?? 'Unnamed'), agency: String(p.agency_code ?? '').toUpperCase(), lat, lon, hectares: Math.max(0, num(p.fire_size) ?? 0), startDate: p.situation_report_date ?? null, stage: String(p.stage_of_control_status ?? '').toUpperCase() }]
+      return [{ id: String(p.national_fire_id ?? p.id ?? i), name: String(p.agency_fire_id ?? p.national_fire_id ?? 'Unnamed'), agency: String(p.agency_code ?? '').toUpperCase(), lat, lon, hectares: Math.max(0, num(p.fire_size) ?? 0), startDate: p.situation_report_date ?? null, stage: String(p.stage_of_control_status ?? '').toUpperCase(), statusDate: p.status_date ?? null, recordStart: p.record_start ?? null }]
     })
   })
 }

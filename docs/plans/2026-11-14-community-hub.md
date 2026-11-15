@@ -48,7 +48,7 @@ Second audience: the people they contact (provincial fire service, Indigenous Se
 | PM2.5, US AQI | "smoke in the air" with plain health advice; the number second |
 | Simulated mode | "Example scenario" (toggle: "Live data" / "Example scenario") |
 | Situation brief | "Ask for help" (the request letter) |
-| Mann–Kendall, p-value, R², Sen's slope | only under "Details for experts" |
+| Mann–Kendall, p-value, R², Sen's slope | under "How we tested this" on the community page and "Details for experts" on About. The community page's "Compared with 42 years of NASA records" may add one p-value in brackets after the plain sentence (the user asked on 15 November 2026 to see where the tests are used) |
 | VPD, soil moisture | "how dry the plants are", "how dry the ground is" |
 
 ## Waves and checklist
@@ -66,7 +66,9 @@ Second audience: the people they contact (provincial fire service, Indigenous Se
 ## Not done or not tested
 
 - The Claude assistant path has never run against the API (no credentials on the build machine).
-- Live-mode ranked list across 641 communities can be rate-limited by Open-Meteo on a cold start; it now retries once, skips failed chunks and serves the last good list.
+- Live-mode ranked list across 641 communities can be rate-limited by Open-Meteo on a cold start; it now retries once, skips failed chunks and serves the last good list. One refresh costs roughly 1,000 to 1,300 of Open-Meteo's 10,000 free daily calls, so the list is cached an hour; the cache does not survive an API restart.
+- 15 November 2026 (branch data-fixes): the live status line with the official Fire Weather Index was checked at 1440 only; 390 and 768 were not, because Open-Meteo was refusing requests after a day of testing. The fire map popup's "Last update" line was checked on the live CWFIS feed.
+- The agreement with Canada's official Fire Weather Index (server/risk-calibration.test.ts) covers one November day. There is no summer check and no test against real fires.
 - Slides for the script are not made.
 - Older screens (/overview, /risk, /map, /air, /communities, /trends, /preparedness) still exist but are off the navigation and were not restyled.
 

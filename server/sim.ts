@@ -74,10 +74,24 @@ function smoke(lat: number, lon: number): number {
 /** Heat/dryness anomaly: strongest over NW Ontario, weaker elsewhere. */
 const anomaly = (lat: number, lon: number) => Math.exp(-(((lat - 50.5) / 5) ** 2 + ((lon + 90.5) / 9) ** 2))
 
+/**
+ * Background moisture, 0–1: wetter coasts and a few broad rainy regions, so the rest of the country is not one
+ * even shade of "warm and dry". Smooth and deterministic (no random draws, so the scenario's sequences do
+ * not shift), and squared away near the anomaly and the fire clusters, so the Northwestern Ontario
+ * communities keep their numbers and burning areas stay dry.
+ */
+export const wetness = (lat: number, lon: number) => {
+  const wave = 0.5 + 0.5 * Math.sin(lon * 0.35 + lat * 0.2) * Math.cos(lat * 0.45 - 1)
+  const coast = lon < -122 ? 0.4 : lon > -67 ? 0.3 : 0
+  // Dry where the example's fires are burning: a fire cluster sits in a dry spell, not a wet one.
+  const nearFire = Math.max(...CLUSTERS.map(([cLat, cLon]) => Math.exp(-((km(lat, lon, cLat, cLon) / 350) ** 2))))
+  return Math.min(1, wave + coast) * (1 - anomaly(lat, lon)) ** 2 * (1 - nearFire)
+}
+
 /** 7 past days, today and `horizon` days ahead. The first 11 days (-7 … +3) are identical for any horizon. */
 export function simWeather(pts: Pt[], horizon = DEFAULT_HORIZON): WeatherResult[] {
   return pts.map((p) => {
-    const r = rng(hash(p.lat, p.lon)), a = anomaly(p.lat, p.lon)
+    const r = rng(hash(p.lat, p.lon)), a = anomaly(p.lat, p.lon), w = wetness(p.lat, p.lon)
     // Days beyond +3 draw from their own generator so the original 11-day sequence never shifts.
     const rx = rng(hash(p.lat, p.lon) + 9173)
     const days = Array.from({ length: 8 + horizon }, (_, i) => {
@@ -87,14 +101,14 @@ export function simWeather(pts: Pt[], horizon = DEFAULT_HORIZON): WeatherResult[
       // Heat and dryness build through the week from a cool, damp start, so the
       // scenario shows warning signs lining up days before the peak.
       const build = 0.1 + 0.9 * Math.min(1, i / 7)
-      const tMax = 19 + 13 * a * build + (g() - 0.5) * 3 - Math.max(0, p.lat - 55) * 0.5
-      const rhMin = Math.max(14, 62 - 40 * a * build + (g() - 0.5) * 10)
-      const wet = i <= 1 ? g() < 0.55 + 0.4 * a : g() < 0.14 - 0.12 * a
+      const tMax = 19 + 13 * a * build + (g() - 0.5) * 3 - Math.max(0, p.lat - 55) * 0.5 - 4 * w
+      const rhMin = Math.min(95, Math.max(14, 62 - 40 * a * build + (g() - 0.5) * 10 + 22 * w))
+      const wet = i <= 1 ? g() < 0.55 + 0.4 * a : g() < 0.14 - 0.12 * a + 0.5 * w
       return {
         date: localDay(SIM_NOW_MS + off * 86400000), kind: off > 0 ? 'forecast' as const : 'historical' as const,
         tMax: +tMax.toFixed(1), rhMin: Math.round(rhMin), windMax: +(12 + g() * 16 + 10 * a * (off >= -1 ? 1 : 0.4)).toFixed(1), windDir: Math.round(200 + g() * 90),
         precip: wet ? +((i <= 1 ? 8 : 1) + g() * 9).toFixed(1) : 0, vpdMax: +(0.6108 * Math.exp((17.27 * tMax) / (tMax + 237.3)) * (1 - rhMin / 100)).toFixed(2),
-        soil: +(0.3 - 0.17 * a * build + (g() - 0.5) * 0.03).toFixed(3), snow: 0,
+        soil: +(0.3 - 0.17 * a * build + (g() - 0.5) * 0.03 + 0.08 * w).toFixed(3), snow: 0,
       }
     })
     const t = days[7]

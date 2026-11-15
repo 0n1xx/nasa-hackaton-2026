@@ -64,6 +64,9 @@ function pageContext(report: PlaceReport | null, mode: Mode) {
     wildfiresReportedByFireCrews: report.fires ? { within50km: report.fires.within50km, within100km: report.fires.within100km, nearest: report.fires.nearest.slice(0, 3).map((f) => ({ name: f.name, distanceKm: f.distanceKm, direction: f.bearing, hectares: f.hectares, stage: ({ OC: 'out of control', BH: 'being held', UC: 'under control', EX: 'out' } as Record<string, string>)[f.stage] ?? f.stage })) } : 'unknown (source unavailable)',
     heatSpottedBySatellitesLast24h: report.hotspots24h ?? 'unknown (source unavailable)',
     smoke: report.air ? { usAirQualityIndexNow: report.air.now.usAqi, highestNext3Days: report.air.max3d.usAqi, highestDay: report.air.max3d.date ? weekday(report.air.max3d.date) : null } : 'unknown (source unavailable)',
+    canadasOfficialFireWeatherIndexToday: mode === 'sim' ? 'not part of the example scenario'
+      : report.risk.official ? { station: report.risk.official.station, distanceKm: report.risk.official.km, fireWeatherIndex: Math.round(report.risk.official.fwi * 10) / 10, band: levelLabel(report.risk.official.level) }
+      : report.risk.fwiResting ? 'the fire weather stations near this community have stopped for the season' : 'no station within 200 km',
     nasaRecord: report.history ? { todayHighC: report.history.todayTMax, hotterThanPercentOfSameSeasonDaysSince1984: report.history.tMaxPercentile } : null,
     contacts: { emergency: '911 if lives or homes are in danger', province: code ? PROVINCE_CONTACTS[code] ?? null : null, indigenousServicesCanada: code ? ISC_OFFICES[code] ?? null : null },
     pages: { askForHelp: 'The Ask for help page writes a request letter for firefighters and equipment; nothing is sent by the site.' },

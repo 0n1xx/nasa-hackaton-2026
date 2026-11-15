@@ -11,7 +11,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "tsx --env-file-if-exists=.env server/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test shared/risk.test.ts shared/signals.test.ts shared/stats.test.ts shared/horizon.test.ts shared/outlook.test.ts shared/province.test.ts shared/assistant.test.ts shared/letter.test.ts server/sim.test.ts server/place.test.ts server/ranked.test.ts"
+    "test": "tsx --test shared/risk.test.ts shared/signals.test.ts shared/stats.test.ts shared/horizon.test.ts shared/outlook.test.ts shared/province.test.ts shared/assistant.test.ts shared/letter.test.ts server/sim.test.ts server/place.test.ts server/ranked.test.ts shared/fwi.test.ts server/fires.test.ts server/risk-calibration.test.ts server/fwi-hold.test.ts src/components/community/official.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

@@ -2,7 +2,7 @@
 // that never leak undefined/NaN or code words, across levels, modes, provinces and missing data.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { SUGGESTED, SUGGESTED_QUESTIONS, answer, classifyIntent, type Intent } from './assistant.ts'
+import { SUGGESTED, SUGGESTED_QUESTIONS, answer, classifyIntent, suggestedFor, type Intent } from './assistant.ts'
 import { levelFor } from './risk.ts'
 import { riskOutlook } from './outlook.ts'
 import type { PlaceReport, RiskLevel } from './types.ts'
@@ -120,7 +120,7 @@ test('assistant: levels use the page words and the risk is honest when it is not
   assert.match(why.text, /very high today \(\d+ out of 100\)/)
   assert.ok(why.actions.some((a) => a.to === '#why'))
   const low = answer('why', { report: atScore(r, 10), mode: 'live' })
-  assert.match(low.text, /^Fire risk is low today \(10 out of 100\), so it is not high right now/)
+  assert.match(low.text, /^Fire risk is low today \(10 out of 100\)[.,]/)
   const sure = answer('how_sure', { report: r, mode: 'sim' })
   assert.match(sure.text, /not very sure/)
   assert.match(sure.text, /not an official fire danger rating/)
@@ -169,4 +169,11 @@ test('smoke: a reading of 183 is "heavy" on the page, in the letter and in the a
   assert.match(smokeWords(r)!.number!, /^Smoke reading: 183 on the US air quality scale \(over 300 is the worst level\)\.$/)
   assert.match(answer('smoke_health', { report: r, mode: 'live' }).text, /there is heavy smoke in the air today/i)
   assert.match(buildLetter({ place: r, needs: [], contacts: contactsFor('ON'), mode: 'live' }).body, /Smoke in the air today: heavy \(/)
+})
+
+test('assistant: the first suggested question names today’s level, and still gets the "why" answer', () => {
+  assert.equal(suggestedFor('Low')[0], 'Why is the risk low?')
+  assert.equal(suggestedFor('Critical')[0], 'Why is the risk very high?')
+  assert.deepEqual(suggestedFor(null), SUGGESTED_QUESTIONS)
+  for (const l of ['Low', 'Moderate', 'High', 'Critical'] as const) assert.equal(classifyIntent(suggestedFor(l)[0]), 'why')
 })

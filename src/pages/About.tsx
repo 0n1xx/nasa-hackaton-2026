@@ -27,7 +27,7 @@ const SOURCES = [
   { name: 'NASA FIRMS', url: 'https://firms.modaps.eosdis.nasa.gov/', line: 'Heat spotted by satellites. NASA’s fire information system reports hot spots seen by the VIIRS and MODIS instruments as satellites pass over.' },
   { name: 'NASA GIBS', url: 'https://nasa-gibs.github.io/gibs-api-docs/', line: 'The satellite photos on the map, including true-colour pictures, heat and smoke haze.' },
   { name: 'NASA POWER', url: 'https://power.larc.nasa.gov/', line: 'Daily weather records since 1984 for every place, so today can be compared with 42 years of the past.' },
-  { name: 'Canadian Wildland Fire Information System (CWFIS)', url: 'https://cwfis.cfs.nrcan.gc.ca/', line: 'Wildfires reported by provincial and territorial fire crews, and satellite heat when no NASA key is set. Run by Natural Resources Canada.' },
+  { name: 'Canadian Wildland Fire Information System (CWFIS)', url: 'https://cwfis.cfs.nrcan.gc.ca/', line: 'Run by Natural Resources Canada. Three things come from it: wildfires reported by provincial and territorial fire crews; satellite heat when no NASA key is set; and Canada’s official Fire Weather Index at about 800 weather stations, for today and the next two days.' },
   { name: 'Open-Meteo weather', url: 'https://open-meteo.com/en/docs', line: 'Temperature, humidity, wind, rain, how dry the plants and ground are, and snow, for the past week and the days ahead.' },
   { name: 'Open-Meteo air quality', url: 'https://open-meteo.com/en/docs/air-quality-api', line: 'Smoke in the air, from a computer model of the whole planet.' },
   { name: 'Indigenous Services Canada, First Nations locations', url: 'https://open.canada.ca/data/en/dataset/b6567c5c-8339-4055-99fa-63f92114d9e4', line: 'The public location of each First Nation community. Contains information licensed under the Open Government Licence – Canada.' },
@@ -160,7 +160,7 @@ export default function About() {
       <section className="mt-12" aria-labelledby="how">
         <H2 id="how">How this works</H2>
         <div className={`${prose} mt-4 space-y-4`}>
-          <p>This site shows an estimate of fire risk near each First Nation in Canada, for today and the coming days. It brings together heat spotted by NASA satellites, weather forecasts, and 42 years of NASA weather records for each place.</p>
+          <p>This site shows an estimate of fire risk near each First Nation in Canada, for today and the coming days. It brings together heat spotted by NASA satellites, weather forecasts, Canada’s official Fire Weather Index from the nearest weather station, and 42 years of NASA weather records for each place.</p>
           <p>It is our estimate, not an official fire danger rating. It is not an alert, and it does not predict that a fire will start. It shows when the conditions that help fire start and spread are lining up: heat, dry air, no soaking rain, strong wind, and fire already nearby.</p>
           <p>It is for members of First Nations who want an early, plain picture of what is coming, and for the people they work with: fire services, Indigenous Services Canada and leadership. You can use it to ask for firefighters and equipment before a fire reaches you.</p>
           <p>Your community decides what to do. Your leadership, emergency coordinator and fire service know your land and your plans. If lives or homes are in danger, call 911 and follow official evacuation orders.</p>
@@ -250,7 +250,7 @@ export default function About() {
 
         <Expert id="score" title="How the fire risk score is calculated">
           <div className={`${prose} space-y-3`}>
-            <p>The score is 100 × the sum of (weight × sub-score) over eight inputs. Each sub-score is a straight-line ramp from 0 to 1, using the rule below.</p>
+            <p>The score is 100 × the sum of (weight × sub-score) over nine inputs. Each sub-score is a straight-line ramp from 0 to 1, using the rule below.</p>
           </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[36rem] text-left text-[15px]">
@@ -268,11 +268,13 @@ export default function About() {
           </div>
           <ul className={`${prose} mt-5 list-disc space-y-2 pl-5`}>
             <li>Levels: {LEVELS.map((l, i) => <span key={l.level}>{levelLabel(l.level)} {l.range}{i < LEVELS.length - 1 ? ', ' : '.'}</span>)}</li>
+            <li>Drying power: wind, the rain of the last 7 days and the regional baseline only count as far as the air can dry dead grass, needles and twigs. Their points are multiplied by a drying power from 0 to 1, set by the vapour pressure deficit: 0 at 0.2 kPa or less (cold or damp air), 1 at 1.0 kPa or more. Without it, a cold, windy November day with no rain scored like a summer fire day.</li>
+            <li>Checked against Canada’s official index, on the weather alone (without the index as an input): on 15 November 2026, at 80 communities across every province, 66 of the 71 places the official Fire Weather Index rated low came out Low here. Before drying power was added, only 23 of those 71 did. The weather alone misses the dry prairies: of the 5 places the official index rated high or very high, 3 came out Low. That is why the official index is also an input; with it, all 5 come out Medium or High. This is one November day of agreement with the official index, not a test against real fires.</li>
             <li>Snow or frost: with more than 2 cm of snow on the ground, or a daily high at or below 0 °C, the score is multiplied by 0.2. Fuels under snow or frost cannot carry fire.</li>
-            <li>A missing input is left out and the other weights are scaled up so the score stays out of 100. Confidence then falls: High with all live inputs, Medium for forecast days or one missing input, Low for the example scenario or three or more missing inputs.</li>
+            <li>A missing input is left out and the other weights are scaled up so the score stays out of 100. Confidence then falls: High with all live inputs, Medium for forecast days or one missing input, Low for the example scenario or three or more missing inputs. The official Fire Weather Index is the exception: it only exists within 200 km of a station that is still reporting, so when it is absent it is left out without lowering confidence. Stations that have stopped for the winter are skipped. The stations cover today and the next two days; for later days the last reading is held, so the score does not jump on the day the official index runs out.</li>
             <li>The likely range shown around a score is a rule of thumb (8 points, plus 4 for each missing input, 4 for forecast days and 6 for example data), not a statistical interval.</li>
             <li>Weights and thresholds were chosen by the team to be easy to read. They have not been fitted to, or tested against, fire records. The score is a relative estimate, not a chance of fire.</li>
-            <li>Plant greenness and the official drought codes are not inputs yet. Vapour pressure deficit and soil moisture stand in for how dry the plants and ground are.</li>
+            <li>Plant greenness is not an input yet. Beyond the official index’s two days, vapour pressure deficit and soil moisture stand in for how dry the plants and ground are.</li>
           </ul>
         </Expert>
 

@@ -5,11 +5,14 @@ import { DEFAULT_HORIZON } from '../shared/horizon.ts'
 import { REGIONS, historyIndexAt, regionById } from './data/regions.ts'
 import { COMMUNITIES } from './data/communities.ts'
 import { getActiveFires, getHotspots24h } from './sources/cwfis.ts'
+import { getFwiStations } from './sources/cwfisStations.ts'
+import { FwiLookup, type OfficialFwi } from '../shared/fwi.ts'
 import { firmsConfigured, firmsSourceLabel, getFirmsHotspots } from './sources/firms.ts'
 import { getAirNow, getAirSeries, getAirTrend, getWeather, type Pt, type WeatherResult } from './sources/openMeteo.ts'
 import { getClimate } from './sources/power.ts'
 import { simActiveFires, simAirNow, simAirSeries, simClimate, simHotspots, simWeather } from './sim.ts'
 import { km, src } from './util.ts'
+import { NO_HEAT_DAYS, STALE_DAYS, currentFires } from './fires.ts'
 
 const SIM_NOTE = 'Simulated demonstration scenario — not an observation'
 export const simSrc = (id: string, what: string): SourceMeta => src(id, `Simulated ${what}`, 'simulated', undefined, SIM_NOTE)
@@ -19,7 +22,10 @@ export class BadRequest extends Error {}
 
 export async function activeFires(mode: Mode): Promise<Envelope<ActiveFire[]>> {
   if (mode === 'sim') return { data: simActiveFires(), sources: [simSrc('sim-fires', 'active fires')] }
-  return { data: await getActiveFires(), sources: [src('cwfis-active', 'CWFIS active fires (agency-reported)', 'observed', 'https://cwfis.cfs.nrcan.gc.ca/datamart', 'Updated daily by provincial, territorial and Parks Canada fire agencies')] }
+  const [all, hs] = await Promise.all([getActiveFires(), softHotspots(mode)])
+  const { kept, hidden } = currentFires(all, hs.list, Date.now())
+  const note = `Reported by provincial, territorial and Parks Canada fire agencies. Fires not yet declared out stay on this list for months, so ${hidden} report${hidden === 1 ? '' : 's'} ${hs.list ? `with no update in ${STALE_DAYS} days and no satellite heat nearby` : `with no update in ${NO_HEAT_DAYS} days (satellite heat could not be checked)`} ${hidden === 1 ? 'is' : 'are'} left off.`
+  return { data: kept, sources: [src('cwfis-active', 'CWFIS active fires (agency-reported)', 'observed', 'https://cwfis.cfs.nrcan.gc.ca/datamart', note)] }
 }
 
 export async function hotspots(mode: Mode, days: number, date?: string): Promise<Envelope<Hotspot[]>> {
@@ -46,8 +52,21 @@ export const riskSrc = () => src('risk-model', 'Before the Smoke risk index v0.1
 /** How many of pts lie within radius km of (lat, lon). */
 export const within = (pts: { lat: number; lon: number }[], lat: number, lon: number, radius: number) => pts.reduce((n, p) => n + (km(lat, lon, p.lat, p.lon) <= radius ? 1 : 0), 0)
 
+/**
+ * Canada's Fire Weather Index for a day. The stations cover today and the next two days; after the last day they
+ * cover, the last reading is held (a persistence forecast), so the score does not jump on the day the official
+ * index runs out. Days before the first covered day (the past days) have none.
+ */
+export function fwiOn(fwiByDay: Map<string, number> | undefined, date: string): number | null {
+  if (!fwiByDay?.size) return null
+  const hit = fwiByDay.get(date)
+  if (hit != null) return hit
+  const last = [...fwiByDay.keys()].sort().at(-1)!
+  return date > last ? fwiByDay.get(last)! : null
+}
+
 /** Risk for each day we can score (needs at least 3 days of rain history before it), up to `days` ahead of today. */
-export function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode, days = DEFAULT_HORIZON) {
+export function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode, days = DEFAULT_HORIZON, fwiByDay?: Map<string, number>) {
   const today = wx.days.filter((d) => d.kind === 'historical').at(-1)?.date
   const out: { day: DayWeather; inputs: RiskInputs }[] = []
   let ahead = 0
@@ -56,7 +75,7 @@ export function riskDays(wx: WeatherResult, hotspots100km: number | null, histor
     if (day.kind === 'forecast' && ++ahead > days) return
     const prior = wx.days.slice(Math.max(0, i - 7), i).map((d) => d.precip).filter((v): v is number => v != null)
     const precip7d = prior.length ? (prior.reduce((a, b) => a + b, 0) * 7) / prior.length : null
-    out.push({ day, inputs: { tMax: day.tMax, rhMin: day.rhMin, windMax: day.windMax, precip7d: precip7d == null ? null : +precip7d.toFixed(1), soil: day.soil, vpdMax: day.vpdMax, hotspots100km, historyIndex, snow: day.snow, quality: mode === 'sim' ? 'simulated' : day.kind === 'forecast' ? 'forecast' : 'observed' } })
+    out.push({ day, inputs: { tMax: day.tMax, rhMin: day.rhMin, windMax: day.windMax, precip7d: precip7d == null ? null : +precip7d.toFixed(1), soil: day.soil, vpdMax: day.vpdMax, hotspots100km, historyIndex, snow: day.snow, fwi: fwiOn(fwiByDay, day.date), quality: mode === 'sim' ? 'simulated' : day.kind === 'forecast' ? 'forecast' : 'observed' } })
   })
   return { today, out }
 }
@@ -64,6 +83,14 @@ export function riskDays(wx: WeatherResult, hotspots100km: number | null, histor
 /** Hotspots are optional for risk: if that source is down we still score, with lower confidence. */
 export async function softHotspots(mode: Mode): Promise<{ list: Hotspot[] | null; sources: SourceMeta[] }> {
   try { const h = await hotspots(mode, 1); return { list: h.data, sources: h.sources } } catch { return { list: null, sources: [] } }
+}
+/** Canada's Fire Weather Index at stations (live only). Optional for risk: if CWFIS is down we score without it. */
+export async function softFwi(mode: Mode): Promise<{ lookup: FwiLookup | null; sources: SourceMeta[] }> {
+  if (mode === 'sim') return { lookup: null, sources: [] }
+  try {
+    const lookup = new FwiLookup(await getFwiStations())
+    return { lookup, sources: [src('cwfis-fwi', 'CWFIS fire weather stations (Fire Weather Index)', 'model', 'https://cwfis.cfs.nrcan.gc.ca/maps/fw', `Canada’s official Fire Weather Index at about 800 stations, for ${lookup.dates.join(', ')}`)] }
+  } catch { return { lookup: null, sources: [] } }
 }
 export async function softFires(mode: Mode): Promise<{ list: ActiveFire[] | null; sources: SourceMeta[] }> {
   try { const f = await activeFires(mode); return { list: f.data, sources: f.sources } } catch { return { list: null, sources: [] } }
@@ -81,25 +108,33 @@ export interface PointRisk {
   today: RiskResult
   timeline: RiskDay[]
   wx: WeatherResult
+  /** Canada's Fire Weather Index today at the nearest station still reporting; null when none in range, or in the example */
+  official: OfficialFwi | null
+  /** every fire weather station near this point has stopped for the season */
+  fwiResting: boolean
 }
 
 /**
  * THE risk computation for a point. The map grid, region panels, region summaries and /api/place all score
  * through here, so the same point with the same weather always gets the same number. Pure (no I/O).
  */
-export function scorePoint(wx: WeatherResult, hs: Hotspot[] | null, pt: Pt, mode: Mode, days: number): PointRisk {
+export function scorePoint(wx: WeatherResult, hs: Hotspot[] | null, pt: Pt, mode: Mode, days: number, fwi: FwiLookup | null = null): PointRisk {
   const historyIndex = historyIndexAt(pt.lat, pt.lon)
   const n = hs ? within(hs, pt.lat, pt.lon, 100) : null
-  const { today, out } = riskDays(wx, n, historyIndex, mode, days)
+  const { today, out } = riskDays(wx, n, historyIndex, mode, days, fwi?.byDay(pt.lat, pt.lon))
   const todayEntry = out.find((o) => o.day.date === today) ?? out.at(-1)!
   const timeline: RiskDay[] = out.map((o) => { const r = computeRisk(o.inputs); return { date: o.day.date, kind: o.day.date === today ? 'today' : o.day.kind, score: r.score, level: r.level, confidence: r.confidence, uncertainty: r.uncertainty } })
-  return { lat: pt.lat, lon: pt.lon, historyIndex, hotspots100km: n, todayDate: todayEntry.day.date, today: computeRisk(todayEntry.inputs), timeline, wx }
+  const todayDate = todayEntry.day.date
+  return {
+    lat: pt.lat, lon: pt.lon, historyIndex, hotspots100km: n, todayDate, today: computeRisk(todayEntry.inputs), timeline, wx,
+    official: fwi?.nearest(pt.lat, pt.lon, todayDate) ?? null, fwiResting: fwi?.resting(pt.lat, pt.lon, todayDate) ?? false,
+  }
 }
 
-/** Score many points with one weather fetch (chunked) and one hotspot fetch. */
+/** Score many points with one weather fetch (chunked), one hotspot fetch and one fire weather station fetch. */
 export async function pointsRisk(mode: Mode, pts: Pt[], days = DEFAULT_HORIZON) {
-  const [wx, hs] = await Promise.all([weather(mode, pts, days), softHotspots(mode)])
-  return { points: pts.map((p, i) => scorePoint(wx[i], hs.list, p, mode, days)), hotspots: hs.list, hotspotSources: hs.sources, sources: [wxSrc(mode), ...hs.sources, riskSrc()] }
+  const [wx, hs, fwi] = await Promise.all([weather(mode, pts, days), softHotspots(mode), softFwi(mode)])
+  return { points: pts.map((p, i) => scorePoint(wx[i], hs.list, p, mode, days, fwi.lookup)), hotspots: hs.list, hotspotSources: hs.sources, sources: [wxSrc(mode), ...hs.sources, ...fwi.sources, riskSrc()] }
 }
 
 /** Risk at one point (weather fetched at that point). */

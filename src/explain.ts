@@ -69,7 +69,7 @@ export const EXPLAIN: Record<string, Explain> = {
   confidence: {
     title: 'How sure we are',
     body: 'How much you can trust an estimate, based on how complete and how fresh the data behind it is. Days ahead are less sure than today.',
-    detail: 'Low when inputs are simulated or 3 or more of 8 are missing; Medium with forecast inputs or any missing; High otherwise. A rule of thumb; the model itself is not validated.',
+    detail: 'Low when inputs are simulated or 3 or more of 8 are missing (Canada’s Fire Weather Index, a ninth input, only counts when a station is in range); Medium with forecast inputs or any missing; High otherwise. A rule of thumb; the model itself is not validated.',
   },
   crewsAction: {
     title: 'Ask for help early',

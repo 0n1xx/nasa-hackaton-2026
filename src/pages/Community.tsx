@@ -1,6 +1,6 @@
 // The community view, /c/:id (docs/design/critique-and-direction.md §3.3 desktop, §3.4 phone).
 // It answers, in order: is fire risk coming near us and when, how sure are you, what can we do, the days
-// ahead, why, and then the main action, Ask for help. Every number comes from one PlaceReport (usePlace).
+// ahead, why, how today compares with 42 years of NASA records, and then the main action, Ask for help. Every number comes from one PlaceReport (usePlace).
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import HeroMap from '../components/HeroMap.tsx'
@@ -8,6 +8,7 @@ import Assistant from '../components/Assistant.tsx'
 import StatusBlock from '../components/community/StatusBlock.tsx'
 import LookAhead from '../components/community/LookAhead.tsx'
 import WhySigns from '../components/community/WhySigns.tsx'
+import NasaRecord from '../components/community/NasaRecord.tsx'
 import WhatToDo from '../components/community/WhatToDo.tsx'
 import FireAndSmoke from '../components/community/FireAndSmoke.tsx'
 import { todayLevel } from '../components/community/words.ts'
@@ -33,6 +34,8 @@ const HELP_LINE = 'Write a request for firefighters and equipment before a fire 
 const DISCLAIMER = 'A student prototype for NASA Space Apps 2026. Not an emergency alerting service, and it does not speak for any First Nation.'
 /** A reported wildfire this close puts the 911 line on screen whatever the level. */
 const FIRE_NEAR_KM = 25
+/** How many times to ask again (5 s apart) while the NASA record is still downloading. */
+const HISTORY_TRIES = 6
 const btnPrimary = 'inline-flex h-12 items-center justify-center rounded-md bg-action px-4 text-[17px] font-semibold text-white hover:bg-action-deep'
 const btnSecondary = 'inline-flex h-12 items-center justify-center rounded-md border border-edge bg-white px-4 text-[17px] font-semibold text-fg hover:bg-ink-800'
 
@@ -60,14 +63,17 @@ export default function Community() {
   useEffect(() => { setDay(null); return () => setDay(null) }, [id, setDay])
 
   // The 42-year NASA record downloads on first request: ask again until it is in (a few tries).
+  // Counted afresh for each community and mode; after the last try the NASA record section stays hidden.
   const { reload } = place
   const historyLoading = place.data?.historyStatus === 'loading'
   const [tries, setTries] = useState(0)
+  useEffect(() => { setTries(0) }, [id, mode])
   useEffect(() => {
-    if (!historyLoading || tries >= 6) return
+    if (!historyLoading || tries >= HISTORY_TRIES) return
     const t = setTimeout(() => { setTries((n) => n + 1); reload() }, 5000)
     return () => clearTimeout(t)
   }, [historyLoading, tries, reload])
+  const historyWaiting = historyLoading && tries < HISTORY_TRIES
 
   // Keep showing the last report while a new look-ahead loads; only a different community blanks the panel.
   const data = place.data && (place.data.community.id === id || !place.loading) ? place.data : null
@@ -101,6 +107,7 @@ export default function Community() {
       <WhatToDo place={data} count={2} />
       <LookAhead place={data} layout={wide ? 'cells' : 'list'} />
       <WhySigns place={data} />
+      <NasaRecord place={data} example={example} waiting={historyWaiting} />
       <FireAndSmoke place={data} example={example} />
     </div>
     {mapSlot}

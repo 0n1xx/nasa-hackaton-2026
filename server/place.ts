@@ -81,7 +81,7 @@ export async function placeCore(mode: Mode, id: string, days = DEFAULT_HORIZON):
     community: { id: c.id, name: c.name, kind: c.kind, province: c.province, regionId: c.regionId, lat: c.lat, lon: c.lon, source: c.source, bandNumber: c.bandNumber, reported: c.reported },
     region,
     horizon: days,
-    risk: { todayDate: p.todayDate, today: p.today, timeline: p.timeline, hotspots100km: p.hotspots100km, historyIndex: p.historyIndex, current: p.wx.current, days: p.wx.days },
+    risk: { todayDate: p.todayDate, today: p.today, timeline: p.timeline, hotspots100km: p.hotspots100km, historyIndex: p.historyIndex, current: p.wx.current, days: p.wx.days, official: p.official, fwiResting: p.fwiResting },
     signs,
     daysBuilding: daysBuilding(signs, p.todayDate),
     outlook: riskOutlook(p.timeline)!,

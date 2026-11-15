@@ -6,15 +6,12 @@ import type { ClimateHistory, RegionRisk } from '../../shared/types.ts'
 import { percentileRank } from '../../shared/stats.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
+// The same p-value format, "no real change" rule and 0.05 cut-off as the community page's NASA record section.
+import { SIGNIFICANT_P, fmtP, signed, tiny } from './community/words.ts'
 
 const EMBER = '#c24a17'
 const INK = '#1f2328'
 const MUTE = '#4a524e'
-
-const fmtP = (p: number) => (p < 0.001 ? 'p < 0.001' : `p = ${p < 0.1 ? p.toFixed(3) : p.toFixed(2)}`)
-/** Below this size a change reads as "No real change", never "−0.0". */
-const tiny = (v: number) => Math.abs(v) < 0.05
-const signed = (v: number, d = 1) => (tiny(v) ? '0' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(d)}`)
 
 function Answer({ q, a, line }: { q: string; a: string; line?: string }) {
   return (
@@ -49,7 +46,7 @@ export default function HistoryContext() {
   const sen = tr.senPerDecade
   const since = period.startYear
   // Same rule as the trend test elsewhere: a change is called real only when p < 0.05.
-  const significant = p < 0.05
+  const significant = p < SIGNIFICANT_P
   const first = t.annual[0]?.year ?? period.startYear
   const rows = t.annual.map((a) => ({ year: a.year, v: a.value, fit: tr.senIntercept + (sen / 10) * (a.year - first) }))
 
@@ -84,7 +81,7 @@ export default function HistoryContext() {
         <Answer q="Are fire seasons getting hotter here?" a={seasonAnswer} line={seasonLine} />
         <Answer
           q="Today compared with the past"
-          a={rank == null ? 'There is no reading for today yet.' : `Today is hotter than ${rank} in every 100 ${windowDays} since ${since}.`}
+          a={rank == null ? 'There is no reading for today yet.' : `Today is ${today?.tMax != null && today.tMax < 15 ? 'warmer' : 'hotter'} than ${rank} in every 100 ${windowDays} since ${since}.`}
           line={today?.tMax != null ? `Today’s high is ${today.tMax.toFixed(0)} °C. ${typical} ${t.window.mean.toFixed(0)} °C.` : undefined}
         />
         <Answer

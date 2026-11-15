@@ -10,7 +10,7 @@
 // POST /api/assistant, which may use Claude when the server has a key; any failure answers locally.
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { SUGGESTED_QUESTIONS, answer, classifyIntent, type AssistantAction } from '../../shared/assistant.ts'
+import { answer, classifyIntent, suggestedFor, type AssistantAction } from '../../shared/assistant.ts'
 import { usePlace } from '../place.ts'
 import { useApp } from '../state.tsx'
 
@@ -104,7 +104,8 @@ export default function Assistant({ communityId, variant = 'column' }: { communi
   }
 
   const asked = new Set(turns.map((t) => t.question))
-  const remaining = SUGGESTED_QUESTIONS.filter((q) => !asked.has(q))
+  const suggested = suggestedFor(report?.risk.today.level)
+  const remaining = suggested.filter((q) => !asked.has(q))
   const actionCls = 'inline-flex min-h-11 items-center rounded border border-edge bg-ink-950 px-3 py-2 text-left text-[15px] font-semibold text-action hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action'
 
   function ActionLink({ a }: { a: AssistantAction }) {
@@ -139,7 +140,7 @@ export default function Assistant({ communityId, variant = 'column' }: { communi
 
   const thread = (
     <div className="space-y-6">
-      {turns.length === 0 && questionButtons(SUGGESTED_QUESTIONS)}
+      {turns.length === 0 && questionButtons(suggested)}
       {turns.map((t) => (
         <article key={t.id} id={`assistant-turn-${t.id}`} className="scroll-mt-4" aria-live="polite">
           <p className="text-[15px] text-mute">You asked</p>

@@ -5,6 +5,7 @@ import L from 'leaflet'
 import { Flame, Play, Square } from 'lucide-react'
 import type { ActiveFire, CommunityExposure, Hotspot, RiskGrid, RiskLevel, SourceMeta } from '../../shared/types.ts'
 import { LEVEL_COLORS, levelFor, levelLabel } from '../../shared/risk.ts'
+import { lastTouched } from '../../shared/fires.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
 import { InfoPopover, LevelMeter, placeName } from './ui.tsx'
@@ -379,6 +380,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
               {STATUS[f.stage] && <div>{STATUS[f.stage]}</div>}
               <div>{fireSize(f.hectares)}</div>
               {f.startDate && <div>Reported {longDay(anyDate(f.startDate))}{!sim && f.agency ? ` by ${placeName(f.agency)} fire crews` : ''}</div>}
+              {!sim && lastTouched(f) && <div>Last update {longDay(anyDate(lastTouched(f)!))}</div>}
               {focus && <div>{whereFrom(f, focus)}</div>}
             </Card>
           </Popup>

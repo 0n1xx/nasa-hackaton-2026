@@ -38,7 +38,7 @@ The look-ahead and the data mode are shared by every screen. One number per plac
 
 The switch is in the top bar.
 
-- **Live data** calls the real providers. If one is unreachable the page says so in words; live mode never substitutes invented numbers.
+- **Live data** calls the real providers. If one is unreachable the page says so in words; live mode never substitutes invented numbers. Agency fire reports that no one has updated in 14 days, and that no satellite still sees heat at, are left off (`server/fires.ts`): the CWFIS list keeps fires until an agency declares them out, and many never are (on 15 November 2026 it still held 105 fires, including Quebec fires from 2020 and 2023; 13 were current).
 - **Example scenario** is a seeded, invented summer day, Tuesday 14 July 2026, the week of the real evacuations near Thunder Bay. A banner on every screen says so, example fires are labelled, and an example letter is marked "EXAMPLE ONLY" with an empty To line. The NASA satellite photo of 14 July 2026 is real.
 
 Set `DEFAULT_MODE=sim` in `.env` to start in the example scenario.
@@ -61,7 +61,8 @@ Keys are read only in `server/` and never reach the browser; `.env` is git-ignor
 ```
 shared/     Types, risk model, warning signs, statistics, letter, assistant rules, contacts, province lookup
 server/     Express API (TypeScript, run with tsx)
-  sources/  One module per provider: cwfis, firms, openMeteo, power, powerDaily (NASA POWER since 1984)
+  sources/  One module per provider: cwfis, cwfisStations (official Fire Weather Index), firms, openMeteo, power, powerDaily (NASA POWER since 1984)
+  fires.ts  Which agency fire reports count as current (stale reports left off)
   data/     Regions, hand-checked community list, ISC First Nations locations (communities-isc.json)
   place.ts  One community's full report (/api/place/:id)
   ranked.ts Every community scored the same way, for the ranked list and the map
@@ -76,7 +77,7 @@ scripts/    build-communities.ts (rebuilds the community list from the ISC open 
 
 ## Risk model
 
-`shared/risk.ts`. Score = 100 × Σ(weight × sub-score), with eight inputs mapped linearly to 0–1: minimum humidity (18%), 7-day rain (16%), wind (14%), maximum temperature (12%), satellite detections within 100 km (12%), vapour pressure deficit (10%), soil moisture (10%), and a hand-set regional history baseline (8%). Snow cover or sub-zero maxima scale the result to 20%. Levels shown as Low, Medium, High, Very high (under 25, 25–49, 50–74, 75 and over).
+`shared/risk.ts`. Score = 100 × Σ(weight × sub-score), with nine inputs mapped linearly to 0–1: Canada's official Fire Weather Index at the nearest CWFIS station still reporting, within 200 km, for today and the next two days (25%, left out without lowering confidence when absent); minimum humidity (13.5%), 7-day rain (12%), wind (10.5%), maximum temperature (9%), satellite detections within 100 km (9%), vapour pressure deficit (7.5%), soil moisture (7.5%), and a hand-set regional history baseline (6%). Wind, rain and the baseline are multiplied by a drying power (0 at a vapour pressure deficit of 0.2 kPa, 1 at 1.0 kPa), so cold, damp, windy days are not scored as fire days. `server/risk-calibration.test.ts` checks the weather-only score against the official index on real data from 15 November 2026 (66 of 71 official-low places Low; 23 before drying power); the weather alone misses the dry prairies (3 of 5 official-high places Low), which is why the index is also an input. After the stations' last day (+2), the last reading is held. Snow cover or sub-zero maxima scale the result to 20%. Levels shown as Low, Medium, High, Very high (under 25, 25–49, 50–74, 75 and over).
 
 It is a relative estimate. The weights were chosen for readability and have not been fitted to or validated against fire records, so it is never shown as a probability, and the site says "our estimate, not an official fire danger rating" next to every level, with a link to the province's official rating.
 
@@ -89,13 +90,15 @@ Community locations come from Indigenous Services Canada's open data (Open Gover
 | | Status |
 |---|---|
 | Home, community, ask for help, assistant, about: desktop 1440×900 and phone 390 px, example scenario | Clicked through in a browser |
-| Unit tests (risk, signs, statistics, horizon, outlook, letter, assistant, ranking, province, scenario dates) | `npm test` passes |
-| Live calls to Open-Meteo, CWFIS, NASA POWER (daily and climatology) and NASA GIBS | Called successfully on 14 November 2026 |
+| Unit tests (risk, signs, statistics, horizon, outlook, letter, assistant, ranking, province, scenario dates, stale fire reports, Fire Weather Index lookup) | `npm test` passes |
+| Weather-only risk score against Canada's official Fire Weather Index, real data from 15 November 2026 (80 communities) | `server/risk-calibration.test.ts` passes: 66 of 71 official-low places Low. One day, not a test against real fires |
+| Live calls to Open-Meteo, CWFIS (fires, hotspots, fire weather stations), NASA POWER (daily and climatology) and NASA GIBS | Called successfully on 14–15 November 2026 |
 | NASA FIRMS (needs a key), the Claude assistant path (needs a key) | Not tested |
-| Live-mode ranked list | Works; the first load for 641 communities takes several seconds, then it is cached for 10 minutes |
+| Live-mode ranked list | Works; the first load for 641 communities takes several seconds, then it is cached for an hour (one refresh costs roughly 1,000 to 1,300 of Open-Meteo’s 10,000 free daily calls) |
 
 ## Known gaps
 
 - Province for the ISC locations comes from simplified border lines (`shared/province.ts`, tested on border towns); a point within a few kilometres of a border can land on the wrong side.
 - Some provinces publish no confirmed phone or email for the agencies we list; the site links the official page instead of guessing.
-- No official Fire Weather Index or AQHI yet; the official ratings are linked, not shown.
+- Canada's official Fire Weather Index is an input for today and the next two days only (that is all the station feed covers). No AQHI yet; the official provincial danger ratings are linked, not shown.
+- Open-Meteo rate-limits repeated cold loads of all 641 communities (HTTP 429). Restarting the API clears the cache, so restart sparingly before a live demo.
