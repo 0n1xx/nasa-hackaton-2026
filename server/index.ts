@@ -51,7 +51,7 @@ app.get('/api/risk-grid', route((req) => riskGrid(mode(req), horizon(req))))
 app.get('/api/climate-history/:id', route((req) => climateHistory(mode(req), req.params.id)))
 app.get('/api/places/ranked', route((req) => rankedPlaces(mode(req), horizon(req), intParam(req.query.limit, 8, 1, 50))))
 app.get('/api/places/levels', route((req) => placeLevels(mode(req), horizon(req))))
-app.post('/api/assistant', express.json({ limit: '64kb' }), route((req) => assistantReply({ messages: Array.isArray(req.body?.messages) ? req.body.messages : [], communityId: typeof req.body?.communityId === 'string' ? req.body.communityId : null, mode: mode(req), days: horizon(req) }).then((data) => ({ data, sources: [] }))))
+app.post('/api/assistant', express.json({ limit: '64kb' }), route((req) => assistantReply({ messages: Array.isArray(req.body?.messages) ? req.body.messages : [], communityId: typeof req.body?.communityId === 'string' ? req.body.communityId : null, mode: mode(req), days: horizon(req), visitor: req.ip ?? req.socket.remoteAddress ?? 'unknown' }).then((data) => ({ data, sources: [] }))))
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Unknown API route' }))
 
 // In production (after `npm run build`) the same server also serves the UI.

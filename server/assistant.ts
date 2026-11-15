@@ -12,13 +12,14 @@ import { ISC_OFFICES, PROVINCE_CONTACTS, answer, classifyIntent, provinceCode } 
 import { levelFor, levelLabel } from '../shared/risk.ts'
 import { placeReport } from './place.ts'
 
-export interface AssistantRequest { messages: { role: 'user' | 'assistant'; content: string }[]; communityId?: string | null; mode: Mode; days: number }
+/** messages: the visitor's conversation as the browser holds it; only the latest user question is used.
+ *  visitor: who is asking (the client IP), for the Claude rate limit. */
+export interface AssistantRequest { messages: { role: 'user' | 'assistant'; content: string }[]; communityId?: string | null; mode: Mode; days: number; visitor?: string }
 export interface AssistantReply { text: string; from: string; actions: { label: string; to: string }[]; engine: 'built-in' | 'claude' }
 
 const MODEL = 'claude-opus-5-5'
 const TIMEOUT_MS = 15_000
 const MAX_QUESTION = 500
-const MAX_TURNS = 8
 
 const hasCredentials = () => !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN)
 
@@ -69,15 +70,26 @@ function pageContext(report: PlaceReport | null, mode: Mode) {
   }
 }
 
-/** Claude's answer, or null for any reason to use the built-in one instead. */
-async function claudeAnswer(req: AssistantRequest, report: PlaceReport | null): Promise<string | null> {
-  const turns = req.messages
-    .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
-    .slice(-MAX_TURNS)
-    .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_QUESTION) }))
-  while (turns.length && turns[0].role !== 'user') turns.shift()
-  if (!turns.length || turns.at(-1)!.role !== 'user') return null
+// Spending and abuse guard for the Claude path (the built-in answers are free and unlimited):
+// per-visitor and site-wide caps over a sliding window. Over a cap, the built-in answer is used.
+const PER_VISITOR_PER_MINUTE = 6
+const SITE_WIDE_PER_HOUR = 300
+const calls = new Map<string, number[]>()
+const siteCalls: number[] = []
+function allowClaudeCall(visitor: string, now = Date.now()): boolean {
+  const recent = (calls.get(visitor) ?? []).filter((t) => now - t < 60_000)
+  while (siteCalls.length && now - siteCalls[0] >= 3_600_000) siteCalls.shift()
+  if (recent.length >= PER_VISITOR_PER_MINUTE || siteCalls.length >= SITE_WIDE_PER_HOUR) { calls.set(visitor, recent); return false }
+  recent.push(now); siteCalls.push(now); calls.set(visitor, recent)
+  if (calls.size > 5000) calls.clear() // bound memory under a flood of distinct visitors
+  return true
+}
 
+/** Claude's answer, or null for any reason to use the built-in one instead.
+ *  Only the visitor's latest question is sent: earlier turns come from the browser and could be forged,
+ *  so they are never replayed to the model as its own words. */
+async function claudeAnswer(question: string, req: AssistantRequest, report: PlaceReport): Promise<string | null> {
+  if (!question.trim()) return null
   const res = await getClient().beta.messages.create({
     model: MODEL,
     max_tokens: 1024,
@@ -85,7 +97,7 @@ async function claudeAnswer(req: AssistantRequest, report: PlaceReport | null): 
     fallbacks: 'default',
     output_config: { effort: 'low' },
     system: `${SYSTEM_RULES}\n\nPage data (JSON):\n${JSON.stringify(pageContext(report, req.mode))}`,
-    messages: turns,
+    messages: [{ role: 'user', content: question }],
   })
   if (res.stop_reason === 'refusal' || res.stop_reason === 'max_tokens') return null
   const text = res.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim()
@@ -101,9 +113,10 @@ export async function assistantReply(req: AssistantRequest): Promise<AssistantRe
   const intent = classifyIntent(question)
   const builtIn = answer(intent, { report, mode: req.mode, question })
 
-  if (intent === 'unknown' && hasCredentials()) {
+  // Claude only for a free-form question about an open community, within the caps.
+  if (intent === 'unknown' && report && hasCredentials() && allowClaudeCall(req.visitor ?? 'unknown')) {
     try {
-      const text = await claudeAnswer(req, report)
+      const text = await claudeAnswer(question, req, report)
       if (text) return { text, from: 'From this page’s data.', actions: [], engine: 'claude' }
     } catch {
       // Missing or bad credentials, network, timeout, API error: the built-in answer covers it.

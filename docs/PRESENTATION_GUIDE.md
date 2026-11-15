@@ -41,7 +41,7 @@ The slides are minimal on purpose. People should watch the speaker, then the web
 
 1. **The question.** White text on black: "What percentage of Canada's population is Indigenous?" Nothing else.
 2. **The contrast.** "5%" alone. On Speaker 1's next line, "42%" appears beside it, larger. Small source line at the bottom: *Christianson et al., Canadian Wildland Fire Evacuation Database, 1980–2021. Counts evacuation events, not evacuees.*
-3. **The name.** "Before the Smoke", with the line "See fire risk building. Act before anyone has to leave." Optional small text: "NASA FIRMS · NASA GIBS · NASA POWER".
+3. **The name.** "Before the Smoke", with the line "See it coming. Ask for help before anyone has to leave." Optional small text: "NASA FIRMS, NASA GIBS, NASA POWER".
 4. **The close.** "5% of the population. 42% of wildfire evacuation events."
 
 ## Who advances what
@@ -60,27 +60,27 @@ If the slides and the site are on the same laptop, practise the switch (Alt+Tab,
 
 ## The live demo, click by click
 
-Everything happens on one screen: a full-screen map with one panel on the left. Before you go on stage: home screen, header toggle **Simulated**, panel region **Thunder Bay**. Reload the page as Speaker 3 starts: the map replays the week by itself.
+Before you go on stage: browser full screen (F11), zoom 100%, the home page (**Find your community**) open, header toggle on **Example scenario**, search box empty. Open the community page and click **Satellite photo** once beforehand so the NASA photo is cached, then go back home.
 
 | # | Time | Click | What should appear | If it fails |
 | --- | --- | --- | --- | --- |
-| 1 | 2:20 | Reload (or the round **Play** button at the bottom of the map) | Risk zones play day by day from Tuesday to the predicted days; the red grows around Northwestern Ontario | Skip to the panel. |
-| 2 | 2:40 | Nothing. Point at the panel. | **67** High, "Predicted Critical tomorrow", "Pre-position crews by today", the warning signs | Click **Simulated**, or play the recording. |
-| 3 | 2:58 | **See trend** (above the small bar chart in the panel), then Esc | Time series with trend line and 95% band; cards: Mann–Kendall "Rising, p = 0.002", "+3.3 pts/day", "+7.2 °C above normal" | Say the line while it loads, then Esc. |
-| 4 | 3:15 | **NASA satellite · 14 July 2026** (top right of the map) | Real NASA imagery: smoke plumes, red fire detections, First Nations labelled | Say the fallback line, click **Today**. |
-| 5 | 3:35 | **Send situation brief** (bottom of the panel) | One-page brief for agencies and community leadership | Say the line and step away. |
+| 1 | 2:20 | Type "White" in the search box, click **Whitesand First Nation** | The community page | Click Whitesand in the **Highest fire risk** list |
+| 2 | 2:32 | Nothing. Point at the first sentence. | "Fire risk is very high today…", the 4-step meter, **How sure are we?**, **Why: 5 warning signs right now** | Click **Example scenario**; still failing, play the recording |
+| 3 | 2:58 | **Who can send firefighters?** (right column) | 911 first, then 310-FIRE, then Indigenous Services Canada's Ontario emergency office | Say the line; it is in the recording |
+| 4 | 3:12 | **Satellite photo** (top of the map) | Real NASA photo of 14 July 2026: smoke and fire | Say the line, click **Map** |
+| 5 | 3:28 | **Ask for help** (blue, bottom left) | The 911 box, what you need, who to send it to, the letter | Say the line and step away |
 
-The figures come from the simulated scenario. If the numbers on screen differ on the day, say what the screen says, not what the script says.
+The figures come from the example scenario. If the numbers on screen differ on the day, say what the screen says, not what the script says.
 
-**If a judge asks about the statistics:** the Mann–Kendall test checks whether a series keeps going up (or down) more consistently than chance would give; it makes no assumption about the shape of the curve. The linear trend is an ordinary least-squares fit with a t-test on the slope; the band is its 95% confidence interval. Both run on only eight daily values, so they show the direction is real, not how accurate the forecast is. The forecast days themselves come from the weather model's three-day forecast pushed through the same risk formula.
+Other screens exist but are not in the demo: **About the data** (how the estimate works, sources, and "Details for experts" with the trend tests and the 42-year NASA record) and **Live data** (in November it correctly shows low risk).
 
 ## Before you go on stage
 
-1. **Run the site on the presenting laptop and the venue network beforehand.** Pull `main`, run `npm install`, then `npm run dev` and open <http://localhost:5173>. Click **NASA satellite · 14 July 2026** (top right of the map) once, so the NASA imagery is already cached in the browser.
-2. **Use the Simulated scenario.** It is November. Live mode will correctly show few or no fires and low risk, which is true and unconvincing on stage. Always say out loud that it is simulated. Never present the scenario as real data. The NASA imagery for 14 July 2026 is real.
-3. **Set the starting state.** Home screen (the map), header toggle **Simulated**, panel region **Thunder Bay**, map on **Today**.
-4. **Browser:** full screen (F11). Zoom 100%, so the whole panel, including the button at its bottom, fits on screen. Notifications off, other tabs closed, laptop plugged in.
-5. **Offline fallback:** `npm run build && npm start`, then open <http://localhost:8787>. Simulated mode needs no internet. The background map tiles and the NASA imagery do.
+1. **Run the site on the presenting laptop and the venue network beforehand.** Pull `main`, run `npm install`, then `npm run dev` and open <http://localhost:5173>. Open Whitesand First Nation and click **Satellite photo** once, so the NASA imagery is already cached in the browser.
+2. **Use the Example scenario.** It is November. Live data will correctly show low risk, which is true and unconvincing on stage. Always say out loud that it is an example. Never present the scenario as real data. The NASA photo for 14 July 2026 is real.
+3. **Set the starting state.** The home page (**Find your community**), header toggle **Example scenario**, look ahead **3 days**, search box empty.
+4. **Browser:** full screen (F11). Zoom 100%, so the community page's **Ask for help** button and the assistant column both fit on screen. Notifications off, other tabs closed, laptop plugged in.
+5. **Offline fallback:** `npm run build && npm start`, then open <http://localhost:8787>. The example scenario and the assistant need no internet. The background map tiles and the NASA photo do.
 6. **Screen recording backup:** record the five demo steps (about 80 seconds) and keep the file open in a second window. If the site fails, play it and talk over it.
 7. **Rehearse with a timer three times.** The ten seconds of silence will feel far too long. Hold it anyway.
 
@@ -116,3 +116,18 @@ Two groups. Fire and emergency management agencies deciding where to pre-positio
 
 **"Why 'events' and not people?"**
 The evacuation database counts evacuation events. One event can be a few dozen people or a whole town, so we keep the wording precise.
+
+**"Is the assistant an AI chatbot?"**
+The suggested questions are answered by built-in rules from the same data as the page, so they work offline and give the same answer every time. If the site is given an Anthropic API key, free-form questions can be answered by Claude, using only that community's page data. On stage it runs without a key.
+
+**"Where do the contacts come from?"**
+Only from official government pages we checked on 14 November 2026, each linked with its source: provincial report-a-fire numbers and wildfire services, and Indigenous Services Canada's regional emergency offices. Where we could not confirm a number, the site links the official page instead of guessing.
+
+**"Does the site send the request?"**
+No. It writes the letter; the community decides whether to send it, and to whom. In the example scenario the letter is marked as an example and the To line is left empty, so a made-up request can't be emailed by mistake.
+
+**"Where does the 78 percent come from?"**
+Auditor General of Canada, Report 8, Emergency Management in First Nations Communities, tabled 15 November 2022: about 78% of Indigenous Services Canada's emergency management spending went to response and recovery rather than preparedness and mitigation.
+
+**"How many communities does it cover?"**
+All First Nations in Indigenous Services Canada's open location data (641 places in our directory, including a few Métis settlements from our demonstration list), using the published band-office location. No other community data is used or collected.

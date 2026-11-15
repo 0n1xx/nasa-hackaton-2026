@@ -302,7 +302,9 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
       {/* Fixed panes keep zones under rings under heat under fires under communities, whatever loads first.
           The zones pane has its own SVG renderer, so the soft-edge blur in styles.css applies to it alone. */}
       <Pane name="hero-zones" style={{ zIndex: 340 }}>
-        {!nasa && grid && gi >= 0 && grid.cells.map((c, i) => {
+        {/* Not on a community's own map: one 1°×1.5° cell would wash the whole zoomed-in view in one
+            colour. There the panel gives the community's own level and the discs carry theirs. */}
+        {!nasa && !focus && grid && gi >= 0 && grid.cells.map((c, i) => {
           const v = c.scores[gi]
           const shown = validScore(v) && levelFor(v) !== 'Low'
           return <Rectangle key={i} bounds={cellBounds[i]} interactive={false}
