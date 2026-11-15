@@ -9,6 +9,7 @@ import StatusBlock from '../components/community/StatusBlock.tsx'
 import LookAhead from '../components/community/LookAhead.tsx'
 import WhySigns from '../components/community/WhySigns.tsx'
 import NasaRecord from '../components/community/NasaRecord.tsx'
+import Trends from '../components/community/Trends.tsx'
 import WhatToDo from '../components/community/WhatToDo.tsx'
 import FireAndSmoke from '../components/community/FireAndSmoke.tsx'
 import { todayLevel } from '../components/community/words.ts'
@@ -102,6 +103,7 @@ export default function Community() {
       <WhatToDo place={data} count={2} />
       <LookAhead place={data} layout={wide ? 'cells' : 'list'} />
       <WhySigns place={data} />
+      <Trends place={data} example={example} />
       <NasaRecord place={data} example={example} waiting={historyWaiting} />
       <FireAndSmoke place={data} example={example} />
     </div>

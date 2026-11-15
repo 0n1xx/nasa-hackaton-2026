@@ -2,7 +2,7 @@
 // so the wording can be checked from the command line against a saved /api/place response.
 // Voice: docs/plans/2026-11-14-community-hub.md (plain, warm, "expected", never "forecast" or "predicted").
 
-import type { Compass8, PlaceFire, PlaceReport, RiskDay, RiskLevel } from '../../../shared/types.ts'
+import type { Compass8, DayWeather, PlaceFire, PlaceReport, RiskDay, RiskLevel } from '../../../shared/types.ts'
 import type { WarningSign } from '../../../shared/signals.ts'
 import { levelFor, levelLabel } from '../../../shared/risk.ts'
 import { SMOKE_MEDICAL, SMOKE_RANK, aqiFromPm25, smokePlain, smokeReading, type SmokeWord } from '../../../shared/aqi.ts'
@@ -251,6 +251,186 @@ export function recordDetails(p: PlaceReport): { title: string; text: string }[]
       + `Sen’s slope is ${tiny(t.senPerDecade) ? 'about 0' : signed(t.senPerDecade, 2)}${C} per decade.`,
   })
   return out
+}
+
+// ---------------------------------------------------------------------------------------------
+// 7. How things are changing (Trends.tsx): one plain sentence above each chart, from the same days the chart
+// draws. Past days say "has"; days ahead say "expected". Small wobbles read as "about the same".
+
+/** One day on the trend charts: the risk timeline day and the weather for the same date. */
+export interface TrendDay { date: string; kind: RiskDay['kind']; risk: RiskDay; wx: DayWeather | null }
+
+/**
+ * The risk timeline (past days, today, the days ahead) with each day's weather joined by date. risk.days holds
+ * more past days than the timeline and calls today 'historical', so it is never read by position.
+ */
+export function trendDays(p: PlaceReport): TrendDay[] {
+  const wx = new Map(p.risk.days.map((d) => [d.date, d]))
+  return p.risk.timeline.map((d) => ({ date: d.date, kind: d.kind, risk: d, wx: wx.get(d.date) ?? null }))
+}
+
+/** Index of today on the timeline (the last past day if the timeline has no 'today'). */
+export function todayIndex(days: { kind: RiskDay['kind'] }[]): number {
+  const i = days.findIndex((d) => d.kind === 'today')
+  if (i >= 0) return i
+  const firstAhead = days.findIndex((d) => d.kind === 'forecast')
+  return Math.max(0, (firstAhead < 0 ? days.length : firstAhead) - 1)
+}
+
+/** Wind at or above this (km/h) is "strong": the same line as the wind warning sign (shared/signals.ts). */
+export const STRONG_WIND_KMH = 30
+/** A day with at least this much rain (mm) counts as a day with rain. */
+export const RAIN_DAY_MM = 1
+
+/** A whole number with a true minus sign and never "−0". */
+const whole = (v: number) => { const n = Math.round(v); return n === 0 ? '0' : n < 0 ? `−${-n}` : String(n) }
+const degC = (v: number) => `${whole(v)}${C}`
+const pct = (v: number) => `${whole(v)}%`
+const kmh = (v: number) => `${whole(v)}${NB}km/h`
+const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
+
+/** "today", or "on Friday" for another day: past days by weekday, days ahead as the status sentence says them. */
+const whenWord = (iso: string, todayIso: string) => (iso === todayIso ? 'today' : onDay(iso, todayIso))
+
+type Pick1 = (d: TrendDay) => number | null | undefined
+/** The days up to and including today, and the days ahead, that have a value. */
+function split(days: TrendDay[], get: Pick1) {
+  const t = todayIndex(days)
+  const has = (d: TrendDay) => { const v = get(d); return v != null && Number.isFinite(v) }
+  return { upTo: days.slice(0, t + 1).filter(has), ahead: days.slice(t + 1).filter(has), today: days[t]?.date ?? '' }
+}
+
+/**
+ * Fire risk, past days to the days ahead: "Fire risk has gone up 4 days in a row and is expected to stay very high."
+ * A run counts only from 3 days and 5 points, so a wobble of a point or two never reads as a rise.
+ */
+export function riskTrendSentence(p: PlaceReport): string {
+  const tl = p.risk.timeline
+  const t = todayIndex(tl)
+  const upTo = tl.slice(0, t + 1), ahead = tl.slice(t + 1)
+  const T = upTo[upTo.length - 1]
+  if (!T) return 'There is no fire risk estimate for these days.'
+  const todayIso = T.date
+  let up = 0, down = 0
+  for (let i = upTo.length - 1; i > 0 && upTo[i].score > upTo[i - 1].score; i--) up++
+  for (let i = upTo.length - 1; i > 0 && upTo[i].score < upTo[i - 1].score; i--) down++
+  const n = upTo.length
+  let past: string
+  let dir: 'up' | 'down' | 'flat'
+  if (up >= 3 && T.score - upTo[n - 1 - up].score >= 5) { past = `Fire risk has gone up ${up} days in a row`; dir = 'up' }
+  else if (down >= 3 && upTo[n - 1 - down].score - T.score >= 5) { past = `Fire risk has come down ${down} days in a row`; dir = 'down' }
+  else if (n > 1 && upTo.every((d) => d.level === T.level)) { past = `Fire risk has been ${lower(T.level)} for the last ${n} days`; dir = 'flat' }
+  else if (n > 1 && T.score - upTo[0].score >= 10) { past = `Fire risk has gone up since ${weekdayLong(upTo[0].date)}`; dir = 'up' }
+  else if (n > 1 && upTo[0].score - T.score >= 10) { past = `Fire risk has come down since ${weekdayLong(upTo[0].date)}`; dir = 'down' }
+  else if (n > 1) { past = `Fire risk has gone up and down, but is about where it was on ${weekdayLong(upTo[0].date)}`; dir = 'flat' }
+  else { past = `Fire risk is ${lower(T.level)} today`; dir = 'flat' }
+
+  if (!ahead.length) return `${past}.`
+  const rankT = RANK[T.level]
+  const top = ahead.reduce((a, b) => (RANK[b.level] > RANK[a.level] ? b : a))
+  let next: string, nextDir: 'up' | 'down' | 'flat'
+  if (RANK[top.level] > rankT) { next = `expected to reach ${lower(top.level)} ${onDay(top.date, todayIso)}`; nextDir = 'up' }
+  else if (ahead.every((d) => d.level === T.level)) { next = `expected to stay ${lower(T.level)}`; nextDir = 'flat' }
+  else if (ahead.every((d) => RANK[d.level] < rankT)) { next = 'expected to come down'; nextDir = 'down' }
+  else { next = `expected to stay at or below ${lower(T.level)}`; nextDir = 'flat' }
+  const turn = (dir === 'up' && nextDir === 'down') || (dir === 'down' && nextDir === 'up') || (dir === 'flat' && nextDir === 'up' && /^Fire risk has been/.test(past))
+  return `${past}${turn ? ', but is' : ' and is'} ${next}.`
+}
+
+/** Daily highs: "Daytime highs have gone up from 26 °C on Friday to 31 °C today." Changes under 3 °C are "about the same". */
+export function heatTrendSentence(days: TrendDay[]): string | null {
+  const v = (d: TrendDay) => d.wx?.tMax
+  const { upTo, ahead, today } = split(days, v)
+  if (!upTo.length) return null
+  const first = upTo[0], last = upTo[upTo.length - 1]
+  const a = v(first)!, b = v(last)!
+  let s: string
+  if (upTo.length > 1 && b - a >= 3) s = `Daytime highs have gone up from ${degC(a)} ${onDay(first.date, today)} to ${degC(b)} ${whenWord(last.date, today)}`
+  else if (upTo.length > 1 && a - b >= 3) s = `Daytime highs have gone down from ${degC(a)} ${onDay(first.date, today)} to ${degC(b)} ${whenWord(last.date, today)}`
+  else s = upTo.length > 1 ? `Daytime highs have stayed about the same, around ${degC(avg(upTo.map((d) => v(d)!)))}` : `Today's high is ${degC(b)}`
+  if (ahead.length) {
+    const hot = ahead.reduce((x, y) => (v(y)! > v(x)! ? y : x)), cool = ahead.reduce((x, y) => (v(y)! < v(x)! ? y : x))
+    if (v(hot)! - b >= 3) s += `, and ${degC(v(hot)!)} is expected ${onDay(hot.date, today)}`
+    else if (b - v(cool)! >= 3) s += `, and cooler days are expected, down to ${degC(v(cool)!)} ${onDay(cool.date, today)}`
+  }
+  return `${s}.`
+}
+
+/** Lowest humidity: "The air has been getting drier: humidity is down from 40% on Friday to 23% today." Under 8 points is "about the same". */
+export function humidityTrendSentence(days: TrendDay[]): string | null {
+  const v = (d: TrendDay) => d.wx?.rhMin
+  const { upTo, ahead, today } = split(days, v)
+  if (!upTo.length) return null
+  const first = upTo[0], last = upTo[upTo.length - 1]
+  const a = v(first)!, b = v(last)!
+  let s: string
+  if (upTo.length > 1 && a - b >= 8) s = `The air has been getting drier: humidity is down from ${pct(a)} ${onDay(first.date, today)} to ${pct(b)} ${whenWord(last.date, today)}`
+  else if (upTo.length > 1 && b - a >= 8) s = `The air has been getting damper: humidity is up from ${pct(a)} ${onDay(first.date, today)} to ${pct(b)} ${whenWord(last.date, today)}`
+  else {
+    const m = upTo.length > 1 ? avg(upTo.map((d) => v(d)!)) : b
+    s = m <= 35 ? `The air has stayed dry, with humidity around ${pct(m)}` : m >= 60 ? `The air has stayed damp, with humidity around ${pct(m)}` : `Humidity has stayed about the same, around ${pct(m)}`
+  }
+  if (ahead.length) {
+    const dry = ahead.reduce((x, y) => (v(y)! < v(x)! ? y : x)), damp = ahead.reduce((x, y) => (v(y)! > v(x)! ? y : x))
+    if (b - v(dry)! >= 8) s += `, and drier air is expected ${onDay(dry.date, today)}, down to ${pct(v(dry)!)}`
+    else if (v(damp)! - b >= 15) s += `, and damper air is expected ${onDay(damp.date, today)}`
+  }
+  return `${s}.`
+}
+
+/** Strongest wind, today and the days ahead: "Strong wind is expected on Thursday, up to 38 km/h." */
+export function windTrendSentence(days: TrendDay[]): string | null {
+  const v = (d: TrendDay) => d.wx?.windMax
+  const { upTo, ahead, today } = split(days, v)
+  const todays = upTo.length && upTo[upTo.length - 1].date === today ? [upTo[upTo.length - 1]] : []
+  const win = [...todays, ...ahead]
+  if (!win.length) return null
+  const peak = win.reduce((x, y) => (v(y)! > v(x)! ? y : x))
+  const w = v(peak)!
+  if (w >= STRONG_WIND_KMH) return peak.date === today ? `Strong wind today, up to ${kmh(w)}.` : `Strong wind is expected ${onDay(peak.date, today)}, up to ${kmh(w)}.`
+  return `No strong wind is expected, at most ${kmh(w)} ${whenWord(peak.date, today)}.`
+}
+
+/** Rain: "No rain in the last 5 days, and none is expected for the next 3 days." A rain day has 1 mm or more. */
+export function rainTrendSentence(days: TrendDay[]): string | null {
+  const v = (d: TrendDay) => d.wx?.precip
+  const { upTo, ahead, today } = split(days, v)
+  if (!upTo.length && !ahead.length) return null
+  const wet = (d: TrendDay) => v(d)! >= RAIN_DAY_MM
+  const n = upTo.length, k = upTo.filter(wet).length
+  let s = ''
+  let dry = false
+  if (n) {
+    if (k === 0) { s = upTo.some((d) => v(d)! >= 0.2) ? `Hardly any rain in the last ${n} days` : `No rain in the last ${n} days`; dry = true }
+    else if (k === n) s = `Rain every day for the last ${n} days`
+    else s = `Rain on ${k} of the last ${n} days`
+  }
+  if (!ahead.length) return s ? `${s}.` : null
+  const wetAhead = ahead.filter(wet)
+  let next: string
+  if (!wetAhead.length) next = ahead.length === 1 ? 'none is expected tomorrow' : `none is expected ${aheadPhrase(ahead.length)}`
+  else if (wetAhead.length === 1) next = `rain is expected ${onDay(wetAhead[0].date, today)}`
+  else next = `rain is expected on ${wetAhead.length} of the next ${ahead.length} days`
+  if (!s) return `${next[0].toUpperCase()}${next.slice(1)}.`
+  return `${s}${dry && wetAhead.length ? ', but' : ', and'} ${next}.`
+}
+
+/**
+ * The 42 summers chart, in one line. The same rule as trendSentence: tiny is "about the same", p of 0.05 or more is
+ * "not clearly", and only a real change is sized (Sen's slope over the years of the record).
+ * "Summers here have not clearly warmed since 1984." / "Summers here have warmed by about 1.2 °C since 1984."
+ */
+export function summersSentence(p: PlaceReport): string | null {
+  const h = p.history
+  if (p.historyStatus !== 'ok' || !h) return null
+  const { senPerDecade: sen, mannKendallP: pv } = h.fireSeasonTMax
+  if (!Number.isFinite(sen) || !Number.isFinite(pv)) return null
+  const start = h.period.startYear
+  if (tiny(sen)) return `Summers here are about the same as in the ${Math.floor(start / 10) * 10}s.`
+  const dir = sen > 0 ? 'warmed' : 'cooled'
+  if (pv >= SIGNIFICANT_P) return `Summers here have not clearly ${dir} since ${start}.`
+  const years = (h.tMax.annual.at(-1)?.year ?? h.period.endYear) - (h.tMax.annual[0]?.year ?? start)
+  return `Summers here have ${dir} by about ${(Math.abs(sen) * years / 10).toFixed(1)}${C} since ${start}.`
 }
 
 // ---------------------------------------------------------------------------------------------
