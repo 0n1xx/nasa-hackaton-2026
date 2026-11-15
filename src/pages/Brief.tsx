@@ -1,7 +1,7 @@
 // Situation brief: a one-page, printable summary of the early warning for the
 // selected region, addressed to fire and emergency management agencies and to
 // community leadership. Every sentence is generated from the data on screen.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { CommunityExposure, Region, RegionAir, RegionRisk, SourceMeta } from '../../shared/types.ts'
 import { LEVEL_COLORS } from '../../shared/risk.ts'
@@ -10,9 +10,8 @@ import { aqiBand } from '../../shared/aqi.ts'
 import type { ApiState } from '../api.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
-import { ACTIONS, DISCLAIMER, FOCUS, dayLabel, summarize, type Summary } from '../actions.ts'
-import { SignList } from '../components/Signals.tsx'
-import { Async, KIND, Sources, fmt, fmtTime } from '../components/ui.tsx'
+import { ACTIONS, DISCLAIMER, FOCUS, LEVEL_RANK, dayLabel, summarize, type Summary } from '../actions.ts'
+import { Async, KIND, fmt, fmtTime } from '../components/ui.tsx'
 
 // The app shell scrolls inside <main> at full viewport height, which would clip a
 // printout to one page. While the brief is mounted, let the page flow for print.
@@ -99,29 +98,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
   } catch { return false }
 }
 
-function Section({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
-  return <section className="mt-10 border-t border-line pt-5 print:mt-7 print:pt-4">
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 break-after-avoid">
-      <h2 className="font-display condensed text-[23px] leading-tight font-semibold print:text-[19px]">{title}</h2>
-      {aside && <p className="text-[13px] text-mute">{aside}</p>}
-    </div>
-    <div className="mt-3">{children}</div>
-  </section>
-}
-
-function Figure({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
-  return <div className="min-w-0">
-    <dt className="text-[12.5px] text-mute">{label}</dt>
-    <dd className="mt-1 text-[22px] leading-none font-semibold print:text-[18px]">{children}</dd>
-    {hint && <dd className="mt-1 text-[12px] text-dim">{hint}</dd>}
-  </div>
-}
-
-function AqiCell({ aqi }: { aqi: number | null }) {
-  const b = aqiBand(aqi)
-  if (!b) return <span className="num text-dim">—</span>
-  return <span className="inline-flex items-baseline gap-1.5"><span className="h-2 w-2 shrink-0 translate-y-[-1px] self-center rounded-full" style={{ background: b.color }} aria-hidden /><span className="num font-medium">{aqi}</span><span className="text-mute">{b.label}</span></span>
-}
+const shortStamp = (d: Date) => d.toLocaleString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 
 export default function Brief() {
   const { region, mode } = useApp()
@@ -164,125 +141,82 @@ export default function Brief() {
     timer.current = window.setTimeout(() => setCopy('idle'), ok ? 2000 : 6000)
   }
 
-  // Same look as ButtonLink in ui.tsx (these are <button>s, so they cannot use it directly).
-  const btn = 'inline-flex min-h-11 items-center justify-center rounded-md px-5 text-[15px] font-semibold whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50'
+  const btn = 'inline-flex min-h-10 items-center justify-center rounded-md px-4 text-[14px] font-semibold whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50'
+  const h2 = 'font-display condensed text-[20px] leading-tight font-semibold print:text-[17px]'
 
-  return <div className="fade-in md:rounded-2xl md:bg-ink-900 md:px-6 md:py-7 lg:px-8 lg:py-8 print:rounded-none print:bg-transparent print:p-0">
+  return <div className="fade-in mx-auto max-w-[760px] bg-ink-950 px-4 py-8 md:px-0 md:py-12 print:max-w-none print:p-0">
     <style>{PRINT_CSS}</style>
 
-    <div className="mx-auto mb-5 flex max-w-[880px] flex-wrap items-center justify-between gap-3 print:hidden">
-      <Link to="/risk" className="text-[13.5px] text-mute underline decoration-line underline-offset-4 hover:text-fg">Back to early warning</Link>
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={onCopy} disabled={!ready} className={`${btn} min-w-[140px] border border-edge bg-ink-950 text-fg hover:border-fg`}>{copy === 'copied' ? 'Copied' : 'Copy as text'}</button>
-        <button type="button" onClick={() => window.print()} disabled={!ready} className={`${btn} bg-ember-deep text-white hover:bg-[#a63f12]`}>Print brief</button>
+    <div className="mb-12 flex flex-wrap items-center justify-between gap-3 print:hidden">
+      <Link to="/" className="text-[14px] text-mute hover:text-fg">← Back to map</Link>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={onCopy} disabled={!ready} className={`${btn} min-w-[112px] border border-line text-fg hover:border-fg`}>{copy === 'copied' ? 'Copied' : 'Copy text'}</button>
+        <button type="button" onClick={() => window.print()} disabled={!ready} className={`${btn} bg-fg text-white hover:opacity-90`}>Print</button>
       </div>
       <p role="status" aria-live="polite" className={copy === 'failed' ? 'w-full text-[13px] text-flame sm:text-right' : 'sr-only'}>
-        {copy === 'failed' ? 'Copy did not work: this browser blocked clipboard access. Select the text below, or use Print brief to save a PDF.' : copy === 'copied' ? 'Brief copied as plain text.' : ''}
+        {copy === 'failed' ? 'Copy did not work: this browser blocked clipboard access. Use Print to save a PDF.' : copy === 'copied' ? 'Brief copied as plain text.' : ''}
       </p>
     </div>
 
-    <article className="mx-auto max-w-[880px] bg-ink-950 md:rounded-xl md:border md:border-line md:px-10 md:py-10 lg:px-14 lg:py-12 md:shadow-[0_1px_2px_rgb(19_33_27/0.04),0_12px_32px_-12px_rgb(19_33_27/0.12)] print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none">
+    <article>
       <Async state={view} height={640}>{(r) => {
         const sm = s!
-        const c = LEVEL_COLORS[r.today.level]
-        const aqi = airHere?.now.usAqi ?? null, band = aqiBand(aqi)
+        const peak = sm.ahead.length ? sm.ahead.reduce((a, b) => (LEVEL_RANK[b.level] > LEVEL_RANK[a.level] ? b : a)) : null
+        const active = signs.filter((x) => x.active)
         return <>
-          <header>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-mute">
-              <span className="font-semibold text-fg">Before the Smoke</span>
-              <span>Early warning prototype, NASA Space Apps Challenge 2026</span>
-            </div>
-            <h1 className="mt-5 font-display condensed text-[36px] leading-[1.02] font-semibold tracking-[-0.01em] md:text-[48px] print:text-[34px]">Situation brief: {r.region.name}</h1>
-            <dl className="mt-5 grid grid-cols-[88px_1fr] gap-x-4 gap-y-1.5 text-[13.5px]">
-              <dt className="text-mute">Generated</dt><dd className="num">{stamp(generated)}</dd>
-              <dt className="text-mute">Data</dt><dd>{simulated ? 'Simulated scenario' : 'Live data from the sources listed at the end'}</dd>
-              <dt className="text-mute">For</dt><dd>{FOR_WHOM}</dd>
-            </dl>
-            {simulated && <p className="mt-5 rounded-lg border-2 border-sun bg-sun/8 px-4 py-3 text-[15px] font-semibold text-sun">
-              Simulated scenario: not real conditions. <span className="font-normal">Every figure in this brief is invented for demonstration.</span>
-            </p>}
+          <header className="border-b border-line pb-8">
+            <h1 className="font-display condensed text-[40px] leading-none font-semibold tracking-[-0.01em] md:text-[44px] print:text-[34px]">Situation brief</h1>
+            <p className="mt-3 text-[15px] text-mute">{r.region.name} · <span className="num">{shortStamp(generated)}</span></p>
+            {simulated && <p className="mt-2 text-[13px] font-medium text-sun">Simulated scenario, not real conditions.</p>}
           </header>
 
-          <Section title="Bottom line">
-            <p className="border-l-4 pl-4 text-[19px] leading-snug font-medium md:text-[23px] print:text-[17px]" style={{ borderColor: LEVEL_COLORS[sm.guidance] }}>{sm.bottomLine}</p>
-            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4 print:grid-cols-4">
-              <Figure label="Risk index today" hint="0–100, relative"><span aria-hidden className="mr-2 inline-block h-3 w-3 rounded-[3px] align-[2px]" style={{ background: c }} /><span className="num">{r.today.score}</span> <span className="text-[16px] font-medium text-mute">{r.today.level}</span></Figure>
-              <Figure label="Warning signs active"><span className="num">{sm.activeSigns}</span><span className="text-[16px] text-mute"> of {signs.length}</span></Figure>
-              <Figure label="Satellite detections" hint="Within 100 km, last 24 hours"><span className="num">{r.hotspots100km}</span></Figure>
-              <Figure label="US AQI now" hint={band ? band.label : 'Not available'}><span className="num">{aqi ?? '—'}</span></Figure>
-            </dl>
-            {sm.ahead.length > 0 && <div className="mt-6">
-              <p className="text-[12.5px] text-mute">Risk index, today and the next {sm.ahead.length * 24} hours</p>
-              <ol className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 print:grid-cols-4">
-                {[{ date: r.timeline.find((t) => t.kind === 'today')?.date ?? '', score: r.today.score, level: r.today.level, today: true }, ...sm.ahead.map((d) => ({ ...d, today: false }))].map((d) =>
-                  <li key={d.date || 'today'} className="rounded-md border border-line px-3 py-2 break-inside-avoid" style={{ borderLeft: `4px solid ${LEVEL_COLORS[d.level]}` }}>
-                    <p className="text-[12.5px] text-mute">{d.today ? 'Today' : cap(dayLabel(d.date, sm.todayIso))}</p>
-                    <p className="mt-0.5"><span className="num text-[18px] font-semibold">{d.score}</span> <span className="text-[13px] font-medium text-mute">{d.level}</span></p>
-                  </li>)}
-              </ol>
-            </div>}
-          </Section>
+          <p className="mt-10 text-[21px] leading-snug font-medium md:text-[24px] print:mt-7 print:text-[18px]">{sm.bottomLine}</p>
 
-          <Section title="Warning signs" aside={`${sm.activeSigns} of ${signs.length} active`}>
-            {sm.building && <p className="mb-3 text-[14px]">{sm.building}</p>}
-            <SignList signs={signs} compact />
-            {!airHere && <p className="mt-3 text-[12.5px] text-mute">Air quality data could not be loaded, so the smoke sign is not included.</p>}
-            <p className="mt-3 text-[12px] text-dim">{SIGNS_NOTE}</p>
-          </Section>
-
-          <Section title="Communities in this region">
-            <Async state={communities} height={200} empty={() => (comms && comms.length === 0 ? 'No communities in this region are in the demonstration list.' : null)}>{() => <>
-              <div className="-mx-1 overflow-x-auto px-1 print:mx-0 print:overflow-visible print:px-0">
-                <table className="w-full min-w-[560px] text-[13px] print:min-w-0 print:text-[11.5px]">
-                  <thead><tr className="border-b border-line text-left text-[12px] text-mute">
-                    <th className="py-2 pr-4 font-normal">Community</th>
-                    <th className="py-2 pr-4 text-right font-normal">Nearest active fire</th>
-                    <th className="py-2 pr-4 text-right font-normal">Detections within 100 km</th>
-                    <th className="py-2 pr-4 text-right font-normal">PM2.5 µg/m³</th>
-                    <th className="py-2 font-normal">US AQI</th>
-                  </tr></thead>
-                  <tbody>{(comms ?? []).map((x) => <tr key={x.id} className="border-b border-line/70 align-top break-inside-avoid">
-                    <td className="py-2 pr-4"><span className="font-medium">{x.name}</span><span className="block text-[12px] text-dim">{x.kind}</span></td>
-                    <td className="num py-2 pr-4 text-right">{x.nearestFireKm == null ? '—' : `${x.nearestFireKm} km`}</td>
-                    <td className="num py-2 pr-4 text-right">{x.hotspots100km}</td>
-                    <td className="num py-2 pr-4 text-right">{fmt(x.pm25, 1)}</td>
-                    <td className="py-2"><AqiCell aqi={x.usAqi} /></td>
-                  </tr>)}</tbody>
-                </table>
-              </div>
-            </>}</Async>
-            <p className="mt-3 text-[12.5px] leading-relaxed text-mute">{COMMUNITY_NOTE}</p>
-          </Section>
-
-          <Section title="Recommended actions before ignition">
-            <p className="text-[14px] leading-relaxed text-mute">{guidanceNote(r, sm)}</p>
-            <div className="mt-5 grid gap-x-10 gap-y-6 md:grid-cols-2 print:grid-cols-2">
-              <div className="break-inside-avoid">
-                <h3 className="text-[15px] font-semibold">For fire and emergency management agencies</h3>
-                <ol className="mt-2.5 space-y-2.5 text-[13.5px] leading-relaxed print:text-[12px]">
-                  {ACTIONS[sm.guidance].agency.map((a, i) => <li key={a} className="flex gap-3"><span className="num mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white" style={{ background: LEVEL_COLORS[sm.guidance] }}>{i + 1}</span>{a}</li>)}
-                </ol>
-              </div>
-              <div className="break-inside-avoid">
-                <h3 className="text-[15px] font-semibold">For community leadership to consider</h3>
-                <p className="mt-0.5 text-[12.5px] text-mute">Prompts for discussion, not instructions. Each community decides what applies.</p>
-                <ul className="mt-2.5 space-y-2.5 text-[13.5px] leading-relaxed print:text-[12px]">
-                  {ACTIONS[sm.guidance].community.map((a) => <li key={a} className="flex gap-3"><span className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-mute" />{a}</li>)}
-                </ul>
-              </div>
+          <dl className="mt-10 grid grid-cols-3 gap-6 print:mt-7">
+            <div>
+              <dt className="text-[13px] text-mute">Risk today</dt>
+              <dd className="mt-2 leading-none font-semibold" style={{ color: LEVEL_COLORS[r.today.level] }}><span className="num text-[34px] md:text-[44px]">{r.today.score}</span> <span className="text-[15px] md:text-[18px]">{r.today.level}</span></dd>
             </div>
-          </Section>
+            <div>
+              <dt className="text-[13px] text-mute">Next {sm.ahead.length ? sm.ahead.length * 24 : 72} h</dt>
+              <dd className="mt-2 text-[28px] leading-none font-semibold md:text-[44px]" style={peak ? { color: LEVEL_COLORS[peak.level] } : undefined}>{peak ? peak.level : '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-[13px] text-mute">Warning signs</dt>
+              <dd className="mt-2 leading-none font-semibold"><span className="num text-[34px] md:text-[44px]">{sm.activeSigns}</span><span className="text-[15px] text-mute md:text-[18px]"> of {signs.length}</span></dd>
+            </div>
+          </dl>
 
-          <Section title="Sources and caveats">
-            <Sources sources={sources} />
-            <ul className="mt-4 space-y-1.5 text-[12.5px] leading-relaxed text-mute">
-              {simulated && <li className="font-medium text-sun">Every figure in this brief comes from a simulated scenario invented for demonstration. It does not describe real conditions.</li>}
-              <li>{DISCLAIMER}</li>
-              <li>{INDEX_NOTE}</li>
-              <li>{SIGNS_NOTE}</li>
-              {!simulated && <li>Smoke and air quality figures are model estimates, not ground monitor readings.</li>}
-            </ul>
-          </Section>
+          <div className="mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2 print:mt-8 print:grid-cols-2">
+            <section className="break-inside-avoid">
+              <h2 className={h2}>Warning signs</h2>
+              {active.length
+                ? <ul className="mt-3 space-y-2 text-[15px] print:text-[13px]">
+                    {active.map((x) => <li key={x.key} className="flex items-baseline justify-between gap-4"><span>{x.label}</span><span className="num shrink-0 text-right text-mute">{x.value}</span></li>)}
+                  </ul>
+                : <p className="mt-3 text-[15px] text-mute">None active.</p>}
+            </section>
+
+            <section className="break-inside-avoid">
+              <h2 className={h2}>Communities</h2>
+              <Async state={communities} height={120} empty={() => (comms && comms.length === 0 ? 'No communities in this region are in the list.' : null)}>{() =>
+                <ul className="mt-3 space-y-2 text-[15px] print:text-[13px]">
+                  {(comms ?? []).map((x) => <li key={x.id} className="flex items-baseline justify-between gap-4"><span>{x.name}</span><span className="num shrink-0 text-right text-mute">{x.nearestFireKm == null ? '—' : `${x.nearestFireKm} km from fire`}</span></li>)}
+                </ul>}</Async>
+              <p className="mt-3 text-[12.5px] text-dim">Public locations only. We do not speak for any community.</p>
+            </section>
+          </div>
+
+          <section className="mt-12 break-inside-avoid print:mt-8">
+            <h2 className={h2}>Move before ignition</h2>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-[15px] leading-relaxed marker:text-mute print:text-[13px]">
+              {ACTIONS[sm.guidance].agency.slice(0, 4).map((a) => <li key={a} className="pl-1">{a}</li>)}
+            </ol>
+          </section>
+
+          <p className="mt-14 text-[12px] leading-relaxed text-mute print:mt-8">
+            Risk index is an unvalidated prototype, not a probability. Data: NASA GIBS, NASA POWER, CWFIS, Open-Meteo.{simulated && ' Simulated scenario.'}
+          </p>
         </>
       }}</Async>
     </article>

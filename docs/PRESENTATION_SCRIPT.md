@@ -73,51 +73,41 @@ Three speakers. About 540 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 ## SPEAKER 3: the live demo (2:20–3:50)
 
-**[BEFORE GOING ON STAGE: site open on Overview, scrolled to the top. Top bar: Region = Thunder Bay District, data = Simulated. Browser full screen (F11). Zoom so the headline AND the whole day-by-day risk strip fit on the first screen, usually 90–100%.]**
+**[BEFORE GOING ON STAGE: site open at the home screen (the map). Header toggle on **Simulated**. Region in the panel: **Thunder Bay**. Browser full screen (F11), zoom 100%.]**
 
-### Step 1: Overview (2:20–2:54)
+### Step 1: the panel (2:20–2:50)
 
-**2:20** This is Before the Smoke. It's November, so fire season is over. What you're seeing is a **Simulated** summer scenario, and the site labels it that way.
+**2:20** This is Before the Smoke. It's November, so fire season is over. What you're seeing is a simulated summer scenario, and the site says so right here.
 
-**[Point to the headline and the day-by-day risk strip.]**
+**[Point at the big number in the panel.]**
 
-**2:32** **Thunder Bay District**. Fire conditions have been building for six days. The risk went from fifty-four to sixty-seven: **High** today. Tomorrow, **Critical**.
+**2:30** Thunder Bay District. Sixty-seven. High today. And tomorrow, Critical.
 
-**[SCROLL down slowly to **Warning signs** and point down the cards.]**
+**2:37** Why? Five warning signs are on. Ten degrees hotter this week. Humidity down to twenty-nine percent. Six days without rain. Wind coming. And satellites already see fire nearby.
 
-**2:42** Six of seven **warning signs** are on. Ten degrees hotter in a week. Humidity at twenty-nine percent. Six days without soaking rain. And fire already detected nearby.
+> *If the panel shows "Couldn't load data":* click **Simulated** in the top right. Still failing: play the screen recording and keep talking.
 
-> *If the page shows "Data unavailable":* click **Simulated** in the top bar and say, "We run on a saved scenario when the venue Wi-Fi is slow." If it still fails, play the screen recording and keep talking over it.
+### Step 2: the map (2:50–3:00)
 
-### Step 2: Early warning (2:54–3:06)
+**[Sweep a hand across the coloured circles on the map.]**
 
-**[CLICK **Early warning** in the menu.]**
+**2:50** Every circle is a region, coloured by risk. The redder it is, the sooner crews and equipment should be there.
 
-**2:56** **Early warning** breaks the score down. You can see exactly what's driving it, and where it's heading over the next three days.
+### Step 3: the real NASA imagery (3:00–3:25)
 
-> *If it is slow to load:* don't wait. Say the line while pointing back at the warning signs, then go to the map.
+**[CLICK **NASA satellite · 14 July 2026** at the bottom of the map. Wait about two seconds for the imagery.]**
 
-### Step 3: the real NASA imagery (3:06–3:24)
+**3:03** Now this part is real. NASA satellite imagery from the fourteenth of July, the week of the evacuations. The red is fire seen from space. That haze is the smoke.
 
-**[CLICK **Map** in the menu. CLICK **Show NASA imagery: 14 July 2026** (above the map). The map flies to Thunder Bay and the First Nations are labelled. Wait for the imagery to draw, about two seconds.]**
+**3:15** And these labels are the First Nations that had to leave. Whitesand. Collins. Gull Bay.
 
-**3:10** Now this part is real. NASA satellite imagery from the fourteenth of July, the week of the evacuations. Those red spots are fires seen from space. That haze is the smoke.
+> *If the imagery doesn't draw within five seconds:* say, "NASA's imagery for that day shows smoke across this whole region. It's in our recording." Click **Today** and move on.
 
-> *If the imagery doesn't draw:* say, "NASA's imagery for that day shows smoke plumes across this whole region. It's in our recording." Then move on. Do not wait more than five seconds.
+### Step 4: the situation brief (3:25–3:50)
 
-### Step 4: Communities (3:24–3:37)
+**[CLICK **Today**, then the orange **Send situation brief** button at the bottom of the panel.]**
 
-**[CLICK **Communities** in the menu. The big 5% and 42% are on screen; let them sit while you talk. Then scroll to **Geographic exposure right now**.]**
-
-**3:26** Who's exposed: the First Nations nearby, the closest fire, and the smoke. Public locations only. We don't speak for these Nations.
-
-> *If the table is empty:* click **All listed** above the table.
-
-### Step 5: Situation brief (3:37–3:50)
-
-**[CLICK the orange **Situation brief** button just above the table.]**
-
-**3:39** One click turns this into a **situation brief** for fire agencies and community leaders. What to send, before the fire.
+**3:28** And this is the point. One click turns all of it into a situation brief for fire agencies and community leaders: the risk, the warning signs, the communities, and what to move in before the fire starts.
 
 **[Let the brief sit on screen for two seconds. Then switch to SLIDE 4 and step away from the laptop. The movement tells the room the demo is over.]**
 

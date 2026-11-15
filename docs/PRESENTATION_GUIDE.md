@@ -60,26 +60,25 @@ If the slides and the site are on the same laptop, practise the switch (Alt+Tab,
 
 ## The live demo, click by click
 
-Before you go on stage, the site is open on **Overview**, the top bar shows Region **Thunder Bay District** and data **Simulated**.
+Everything happens on one screen: a full-screen map with one panel on the left. Before you go on stage, the site is on the home screen, the header toggle shows **Simulated**, and the panel shows **Thunder Bay**.
 
 | # | Time | Click | What should appear | If it fails |
 | --- | --- | --- | --- | --- |
-| 1 | 2:20 | Point at the headline and the strip. At 2:42 scroll down to **Warning signs**. | Headline about Thunder Bay District conditions building for six days. The day-by-day risk strip: about 54 a few days ago, 67 today (**High**), 81 tomorrow (**Critical**). Six of seven **warning signs** on. | "Data unavailable": click **Simulated** in the top bar. Still failing: play the screen recording and keep talking. |
-| 2 | 2:54 | **Early warning** in the menu | The risk level, what's driving it, the 72-hour outlook | Slow to load: say the line while pointing back at the warning signs, then go to the map. |
-| 3 | 3:06 | **Map** in the menu, then **Show NASA imagery: 14 July 2026** | Real NASA true-colour imagery, red fire detections and smoke plumes over Northwestern Ontario | Imagery doesn't draw within five seconds: "NASA's imagery for that day shows smoke plumes across this whole region. It's in our recording." Move on. |
-| 4 | 3:24 | **Communities** in the menu. The big 5% and 42% show first. Scroll to **Geographic exposure right now** | First Nations near the fires, distance to the closest fire, smoke levels | Empty table: click **All listed**. |
-| 5 | 3:37 | The orange **Situation brief** button above the table | A one-page brief: level, warning signs, communities, what to pre-position | Button missing: say the line and step away. |
+| 1 | 2:20 | Nothing. Point at the panel. | Big **67**, High, "Critical tomorrow", the warning signs with icons | "Couldn't load data": click **Simulated**. Still failing: play the recording. |
+| 2 | 2:50 | Nothing. Sweep a hand over the map. | Regions as coloured circles with their scores | Say the line anyway. |
+| 3 | 3:00 | **NASA satellite · 14 July 2026** (bottom of the map) | Real NASA imagery: smoke plumes, red fire detections, First Nations labelled | Imagery slow: say the fallback line, click **Today**. |
+| 4 | 3:25 | **Today**, then **Send situation brief** (bottom of the panel) | A one-page brief: risk, signs, communities, what to move in | Say the line and step away. |
 
-Leave out Air quality, Trends, Preparedness and Data. Mention them only if a judge asks.
+The other pages (Early warning, Communities, Air quality, Trends, Data) still exist but are not linked from the home screen. Mention them only if a judge asks; **About the data** in the header covers sources and method.
 
-The figures in step 1 come from the simulated scenario. If the numbers on screen differ on the day, say what the screen says, not what the script says.
+The figures come from the simulated scenario. If the numbers on screen differ on the day, say what the screen says, not what the script says.
 
 ## Before you go on stage
 
-1. **Run the site on the presenting laptop and the venue network beforehand.** Get the `pitch-mvp` branch, run `npm install`, then `npm run dev` and open <http://localhost:5173>. Open the map and click **Show NASA imagery: 14 July 2026** once, so the NASA imagery is already cached in the browser.
+1. **Run the site on the presenting laptop and the venue network beforehand.** Pull `main`, run `npm install`, then `npm run dev` and open <http://localhost:5173>. Click **NASA satellite · 14 July 2026** once, so the NASA imagery is already cached in the browser.
 2. **Use the Simulated scenario.** It is November. Live mode will correctly show few or no fires and low risk, which is true and unconvincing on stage. Always say out loud that it is simulated. Never present the scenario as real data. The NASA imagery for 14 July 2026 is real.
-3. **Set the starting state.** Region **Thunder Bay District**, data **Simulated**, page **Overview**, scrolled to the top.
-4. **Browser:** full screen (F11). Set zoom so the Overview headline and the whole day-by-day risk strip fit on the first screen; on most laptops that is 90–100%. Zooming in further pushes the strip below the fold. Notifications off, other tabs closed, laptop plugged in.
+3. **Set the starting state.** Home screen (the map), header toggle **Simulated**, panel region **Thunder Bay**, map on **Today**.
+4. **Browser:** full screen (F11). Zoom 100%, so the whole panel, including the button at its bottom, fits on screen. Notifications off, other tabs closed, laptop plugged in.
 5. **Offline fallback:** `npm run build && npm start`, then open <http://localhost:8787>. Simulated mode needs no internet. The background map tiles and the NASA imagery do.
 6. **Screen recording backup:** record the five demo steps (about 80 seconds) and keep the file open in a second window. If the site fails, play it and talk over it.
 7. **Rehearse with a timer three times.** The ten seconds of silence will feel far too long. Hold it anyway.
