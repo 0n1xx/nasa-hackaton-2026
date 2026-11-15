@@ -330,6 +330,33 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
       </Card>
     </Popup>
 
+  // The big layers (hundreds of grid cells, community discs and heat spots) are built once per change of
+  // data or day, not on every render. Opening the map key, a resize or a playback tick that changes nothing
+  // here then costs nothing; without this, every such render restyled each shape, which phones feel.
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const zoneLayer = useMemo(() => (!grid || gi < 0 ? null : grid.cells.map((c, i) => {
+    const v = c.scores[gi]
+    const shown = validScore(v) && levelFor(v) !== 'Low'
+    return <Rectangle key={i} bounds={cellBounds[i]} interactive={false}
+      pathOptions={{ className: 'risk-cell', stroke: false, weight: 0, fillColor: shown ? LEVEL_COLORS[levelFor(v)] : '#ffffff', fillOpacity: shown ? 0.25 : 0 }} />
+  })), [grid, gi, cellBounds])
+
+  const heatLayer = useMemo(() => heat.map((h, i) => <Marker key={`${h.lat},${h.lon},${i}`} position={[h.lat, h.lon]} icon={HEAT_ICON} keyboard={false}>
+    <Tooltip pane="tooltipPane" className="hero-tip">{sim ? 'Example heat spot (not real)' : 'Heat spotted by satellites'}</Tooltip>
+  </Marker>), [heat, sim])
+
+  // placePopup reads sim, day, knownDays and navigate; discRadius reads whether a community is in view.
+  const discLayer = useMemo(() => placeDiscs.map((p) => {
+    const v = p.scores[li]
+    const level = validScore(v) ? levelFor(v) : null
+    return <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={discRadius(level)}
+      pathOptions={{ color: INK, weight: 1.5, opacity: 1, fillColor: level ? LEVEL_COLORS[level] : '#ffffff', fillOpacity: 1 }}>
+      <Tooltip pane="tooltipPane" className="hero-tip">{p.name}</Tooltip>
+      {placePopup(p, level, true)}
+    </CircleMarker>
+  }), [placeDiscs, li, !focus, sim, day, knownDays, navigate])
+  /* eslint-enable react-hooks/exhaustive-deps */
+
   // Flat, bordered controls, the same as the panel's segmented ones (community/LookAhead.tsx).
   const btn = (active: boolean, first: boolean) => `inline-flex h-9 items-center ${wideBar ? 'px-3.5' : 'px-2.5'} text-[14px] whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg ${first ? '' : 'border-l border-edge'} ${active ? 'bg-fg font-semibold text-white' : 'text-fg hover:bg-ink-800'}`
   const smallBtn = 'inline-flex h-8 items-center gap-1.5 rounded-md border border-edge bg-white px-3 text-[14px] font-medium hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg'
@@ -353,12 +380,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
       <Pane name="hero-zones" style={{ zIndex: 340 }}>
         {/* Not on a community's own map: one 1°×1.5° cell would wash the whole zoomed-in view in one
             colour. There the panel gives the community's own level and the discs carry theirs. */}
-        {!nasa && !focus && grid && gi >= 0 && grid.cells.map((c, i) => {
-          const v = c.scores[gi]
-          const shown = validScore(v) && levelFor(v) !== 'Low'
-          return <Rectangle key={i} bounds={cellBounds[i]} interactive={false}
-            pathOptions={{ className: 'risk-cell', stroke: false, weight: 0, fillColor: shown ? LEVEL_COLORS[levelFor(v)] : '#ffffff', fillOpacity: shown ? 0.25 : 0 }} />
-        })}
+        {!nasa && !focus && zoneLayer}
       </Pane>
 
       <Pane name="hero-rings" style={{ zIndex: 400 }}>
@@ -368,9 +390,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
       </Pane>
 
       <Pane name="hero-heat" style={{ zIndex: 420 }}>
-        {!nasa && heat.map((h, i) => <Marker key={`${h.lat},${h.lon},${i}`} position={[h.lat, h.lon]} icon={HEAT_ICON} keyboard={false}>
-          <Tooltip pane="tooltipPane" className="hero-tip">{sim ? 'Example heat spot (not real)' : 'Heat spotted by satellites'}</Tooltip>
-        </Marker>)}
+        {!nasa && heatLayer}
       </Pane>
 
       <Pane name="hero-fires" style={{ zIndex: 430 }}>
@@ -389,15 +409,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
 
       <Pane name="hero-communities" style={{ zIndex: 450 }}>
         {/* Map view: every community filled with its level on the shared day (Low = sand). */}
-        {!nasa && placeDiscs.map((p) => {
-          const v = p.scores[li]
-          const level = validScore(v) ? levelFor(v) : null
-          return <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={discRadius(level)}
-            pathOptions={{ color: INK, weight: 1.5, opacity: 1, fillColor: level ? LEVEL_COLORS[level] : '#ffffff', fillOpacity: 1 }}>
-            <Tooltip pane="tooltipPane" className="hero-tip">{p.name}</Tooltip>
-            {placePopup(p, level, true)}
-          </CircleMarker>
-        })}
+        {!nasa && discLayer}
         {/* No levels yet: the short list of communities, neutral discs. */}
         {!nasa && !levels && (communities.data ?? []).filter((c) => c.id !== focus?.id).map((c) =>
           <CircleMarker key={c.id} center={[c.lat, c.lon]} radius={6}

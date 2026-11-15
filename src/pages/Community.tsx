@@ -1,10 +1,10 @@
 // The community view, /c/:id (docs/design/critique-and-direction.md §3.3 desktop, §3.4 phone).
 // It answers, in order: is fire risk coming near us and when, how sure are you, what can we do, the days
 // ahead, why, how today compares with 42 years of NASA records, and then the main action, Ask for help. Every number comes from one PlaceReport (usePlace).
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import HeroMap from '../components/HeroMap.tsx'
-import Assistant from '../components/Assistant.tsx'
+import HeroMap from '../components/LazyHeroMap.tsx'
+import { MapSheetButton, useMapSheet } from '../components/MapSheet.tsx'
 import StatusBlock from '../components/community/StatusBlock.tsx'
 import LookAhead from '../components/community/LookAhead.tsx'
 import WhySigns from '../components/community/WhySigns.tsx'
@@ -14,6 +14,10 @@ import FireAndSmoke from '../components/community/FireAndSmoke.tsx'
 import { todayLevel } from '../components/community/words.ts'
 import { usePlace } from '../place.ts'
 import { useApp } from '../state.tsx'
+
+// Phones never show the assistant on this screen (it has its own page, /c/:id/ask), so its code and the
+// answer engine load only where the column is drawn.
+const Assistant = lazy(() => import('../components/Assistant.tsx'))
 
 /** Matches a media query, live. HeroMap and Assistant are mounted once each and moved by layout,
  *  never hidden with CSS: a display:none Leaflet map mis-sizes, and two assistants would hold two conversations. */
@@ -48,16 +52,7 @@ export default function Community() {
   const [assistantOpen, setAssistantOpenRaw] = useState(readOpen)
   const setAssistantOpen = (v: boolean) => { setAssistantOpenRaw(v); saveOpen(v) }
   // Phone: the small map sits under a cover so a swipe scrolls the page; tapping opens it full screen (as on Home).
-  const [mapOpen, setMapOpen] = useState(false)
-
-  useEffect(() => {
-    // Leaflet only re-measures on window resize; nudge it when the map container changes size.
-    window.dispatchEvent(new Event('resize'))
-    if (!mapOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMapOpen(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [mapOpen])
+  const { open: mapOpen, setOpen: setMapOpen, sheetProps } = useMapSheet()
 
   // One day for the whole screen: start on Today, and leave Today behind for the next screen.
   useEffect(() => { setDay(null); return () => setDay(null) }, [id, setDay])
@@ -120,17 +115,9 @@ export default function Community() {
   if (!wide) {
     return <div className="flex min-h-full flex-col">
       <div className="flex-1 px-4 pt-4 pb-6">
-        {body(<div className={mapOpen ? 'fixed inset-0 z-[1200] isolate bg-white' : 'relative isolate mt-5 h-[220px] overflow-hidden rounded-md border border-line'}>
+        {body(<div {...sheetProps} className={mapOpen ? 'fixed inset-0 z-[1200] isolate bg-white' : 'relative isolate mt-5 h-[220px] overflow-hidden rounded-md border border-line'}>
           {map}
-          {mapOpen
-            ? <button type="button" onClick={() => setMapOpen(false)}
-              className="absolute top-3 right-3 z-[1001] h-11 rounded-md border border-edge bg-white px-4 text-[17px] font-semibold text-fg shadow-sm">
-              Close map
-            </button>
-            : <button type="button" onClick={() => setMapOpen(true)} aria-label="Open the map full screen"
-              className="absolute inset-0 z-[1001] flex items-end justify-center pb-3">
-              <span className="rounded-md border border-edge bg-white px-3 py-1.5 text-[15px] font-semibold text-fg shadow-sm">Open the map</span>
-            </button>}
+          <MapSheetButton open={mapOpen} setOpen={setMapOpen} />
         </div>)}
       </div>
       <nav aria-label="Get help" className="sticky bottom-0 z-[1100] grid grid-cols-2 gap-2 border-t border-line bg-white px-4 pt-2 pb-[max(8px,env(safe-area-inset-bottom))]">
@@ -146,7 +133,7 @@ export default function Community() {
       <div className="quiet-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-6 pt-4 pb-6">
         {body()}
         {/* 768–1023: no room for a third column, so the assistant follows the panel content. */}
-        {!desk && data && <section className="mt-6 min-h-[420px] border-t border-line pt-2"><Assistant communityId={id} variant="column" /></section>}
+        {!desk && data && <section className="mt-6 min-h-[420px] border-t border-line pt-2"><Suspense fallback={null}><Assistant communityId={id} variant="column" /></Suspense></section>}
       </div>
       <div className="shrink-0 border-t border-line bg-white px-6 pt-3 pb-4">
         <p className="text-[15px] leading-snug text-mute">{HELP_LINE}</p>
@@ -162,7 +149,7 @@ export default function Community() {
       ? <aside aria-label="Ask a question" className="relative flex w-[320px] shrink-0 flex-col border-l border-line bg-white xl:w-[360px]">
         <button type="button" onClick={() => setAssistantOpen(false)} aria-label="Hide the questions panel"
           className="absolute top-2 right-2 z-10 inline-flex min-h-9 items-center rounded-md bg-white px-2.5 text-[15px] text-action underline underline-offset-2 hover:text-action-deep">Hide</button>
-        <div className="flex min-h-0 flex-1 flex-col">{data ? <Assistant communityId={id} variant="column" /> : null}</div>
+        <div className="flex min-h-0 flex-1 flex-col">{data ? <Suspense fallback={null}><Assistant communityId={id} variant="column" /></Suspense> : null}</div>
       </aside>
       : <aside aria-label="Ask a question" className="flex w-12 shrink-0 border-l border-line bg-white">
         <button type="button" onClick={() => setAssistantOpen(true)} aria-label="Ask a question: show the questions panel"
