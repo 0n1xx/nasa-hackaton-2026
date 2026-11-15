@@ -140,3 +140,16 @@
   .risk-cell { transition: none; }
   .fire-pulse { animation: none; }
 }
+
+/* Hero map (HeroMap.tsx): soft risk field, flame and heat symbols, labels and popups at 14 px or more. */
+.leaflet-hero-zones-pane svg { filter: blur(6px); } /* Soft edges. If panning stutters on the demo laptop, delete this one rule. */
+.leaflet-container .leaflet-tooltip { font-size: 14px; padding: 3px 8px; }
+.leaflet-tooltip.community-label { background: #ffffff; border: 1.5px solid var(--color-fg); border-radius: 4px; box-shadow: 0 1px 3px rgb(27 31 29 / 0.25); padding: 2px 8px; font-size: 15px; font-weight: 600; color: var(--color-fg); white-space: nowrap; }
+.leaflet-tooltip.community-label::before { display: none; }
+.hero-popup .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 10px 24px rgb(27 31 29 / 0.18); }
+.hero-popup .leaflet-popup-content { margin: 14px 16px; font-size: 15px; line-height: 1.4; color: var(--color-fg); font-family: var(--font-sans); }
+.hero-popup .leaflet-popup-close-button { width: 32px; height: 32px; font-size: 22px; line-height: 30px; color: var(--color-mute); }
+.hero-fire-icon { display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: #a8231c; border: 1.5px solid #ffffff; box-shadow: 0 1px 4px rgb(27 31 29 / 0.45); box-sizing: border-box; }
+.hero-fire-key { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 9999px; background: #a8231c; }
+.hero-heat-icon { background: #ee6a1a; outline: 1px solid rgb(255 255 255 / 0.85); }
+.hero-ring-label { font-size: 14px; line-height: 20px; text-align: center; color: var(--color-mute); white-space: nowrap; text-shadow: 0 0 3px #ffffff, 0 0 3px #ffffff, 0 0 2px #ffffff; pointer-events: none; }

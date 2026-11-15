@@ -54,8 +54,9 @@ Second audience: the people they contact (provincial fire service, Indigenous Se
 ## Waves and checklist
 
 - [x] Tag `demo-stable-2026-11-14`, branch `community-hub`
-- [ ] Wave 1 (parallel): independent design critique of screenshots; research official contacts and request process per province + federal; research preparedness guidance (sources)
-- [ ] Wave 2 (parallel, one owner per file): community data + one-number API; community view UI; ask-for-help flow; assistant (built-in + optional Claude); plain-English pass over all strings and `src/explain.ts`; popover fixes
+- [x] Wave 1: design critique (`docs/design/critique-and-direction.md`), contacts research (`docs/research/contacts.md`), preparedness research (`docs/research/preparedness.md`), ISC community locations (641 communities, `server/data/communities-isc.json`), one-number place API (`/api/place/:id`, search), plain-English pass
+- [x] Foundations: tokens, LevelMeter/LevelTag, shared `day`, routes (`/`, `/c/:id`, `/c/:id/help`, `/c/:id/ask`, `/about`), example banner, stubs
+- [ ] Wave 2 (running, one owner per file): map (HeroMap), home (search + ranked list + `/api/places/ranked|levels`), community view, assistant (built-in + optional Claude), ask for help (contacts + letter), about (+ trend sheet/history plain-first)
 - [ ] After each wave (me): click-through, panel overflow at 1440×900 and 390, typecheck, tests, build
 - [ ] Wave 3: visual cleanup from the critique; design review against references; code review
 - [ ] Rewrite script and guide for the new flow; README
