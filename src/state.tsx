@@ -11,6 +11,9 @@ interface AppState {
   /** Forecast days ahead of today that every forecast view shows. */
   horizon: number
   setHorizon: (n: number) => void
+  /** The day the panel and the map both show, as YYYY-MM-DD; null means today. One day for the whole screen. */
+  day: string | null
+  setDay: (d: string | null) => void
   status: StatusData | null
   bootError: string | null
 }
@@ -29,6 +32,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [regionId, setRegionIdRaw] = useState(stored('bw.region') ?? 'thunder-bay')
   const [mode, setModeRaw] = useState<Mode | null>((stored('bw.mode') as Mode | null))
   const [horizon, setHorizonRaw] = useState(() => validHorizon(stored('bw.horizon')) ?? DEFAULT_HORIZON)
+  const [day, setDay] = useState<string | null>(null)
   const [status, setStatus] = useState<StatusData | null>(null)
   const [bootError, setBootError] = useState<string | null>(null)
 
@@ -42,9 +46,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     regions, region: regions.find((r) => r.id === regionId) ?? regions[0] ?? null,
     setRegionId: (id) => { setRegionIdRaw(id); store('bw.region', id) },
     mode: mode ?? 'live', setMode: (m) => { setModeRaw(m); store('bw.mode', m) },
-    horizon, setHorizon: (n) => { const h = validHorizon(n); if (h == null) return; setHorizonRaw(h); store('bw.horizon', String(h)) },
+    horizon, setHorizon: (n) => { const h = validHorizon(n); if (h == null) return; setHorizonRaw(h); store('bw.horizon', String(h)); setDay(null) },
+    day, setDay,
     status, bootError,
-  }), [regions, regionId, mode, horizon, status, bootError])
+  }), [regions, regionId, mode, horizon, day, status, bootError])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

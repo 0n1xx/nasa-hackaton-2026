@@ -5,7 +5,7 @@ import { useApp } from './state.tsx'
 export interface ApiState<T> { data: T | null; sources: SourceMeta[]; loading: boolean; error: string | null; reload: () => void }
 
 /** Endpoints that take ?days= (forecast days ahead). */
-const FORECAST_PATHS = ['risk/', 'risk-grid', 'summary', 'air/']
+const FORECAST_PATHS = ['risk/', 'risk-grid', 'summary', 'air/', 'place/', 'places/']
 
 /** GET /api/<path> in the current mode (and forecast horizon, for forecast endpoints). Pass null to skip. Re-runs when path, mode or horizon changes. */
 export function useApi<T>(path: string | null): ApiState<T> {

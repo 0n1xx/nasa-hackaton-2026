@@ -3,11 +3,31 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import type { DataKind, RiskLevel, SourceMeta } from '../../shared/types.ts'
-import { LEVEL_COLORS, levelLabel } from '../../shared/risk.ts'
+import { LEVEL_COLORS, LEVEL_STEP, levelLabel } from '../../shared/risk.ts'
 import { aqiBand } from '../../shared/aqi.ts'
 import type { ApiState } from '../api.ts'
 import { useApp } from '../state.tsx'
 import { EXPLAIN } from '../explain.ts'
+
+/**
+ * The 4-step level meter: 1 to 4 filled segments, each outlined in ink, so a level reads without
+ * colour (greyscale print, washed-out projector). Always pair it with the level word.
+ *   <LevelMeter level="High" />            [▮▮▮▯]
+ *   <LevelMeter level="High" size="lg" />  bigger segments for the community status
+ */
+export function LevelMeter({ level, size = 'md', className = '' }: { level: RiskLevel; size?: 'sm' | 'md' | 'lg'; className?: string }) {
+  const step = LEVEL_STEP[level], fill = LEVEL_COLORS[level]
+  const seg = size === 'lg' ? 'h-4 w-7' : size === 'sm' ? 'h-2.5 w-3.5' : 'h-3 w-5'
+  return <span role="img" aria-label={`${levelLabel(level)}: ${step} of 4`} className={`inline-flex shrink-0 items-center gap-[3px] ${className}`}>
+    {[1, 2, 3, 4].map((i) => <span key={i} className={`${seg} rounded-[2px] border-[1.5px] border-fg`}
+      style={{ background: i <= step ? fill : 'transparent', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }} />)}
+  </span>
+}
+
+/** "High" with its meter, the standard way to show a level in a sentence or a row. */
+export function LevelTag({ level, size = 'md' }: { level: RiskLevel; size?: 'sm' | 'md' | 'lg' }) {
+  return <span className="inline-flex items-center gap-2 whitespace-nowrap"><LevelMeter level={level} size={size} /><span className="font-semibold">{levelLabel(level)}</span></span>
+}
 
 // Colours follow the tokens in styles.css: moss (observed), sky (forecast), sun (simulated), mute (the rest).
 export const KIND: Record<DataKind, { label: string; color: string; desc: string }> = {

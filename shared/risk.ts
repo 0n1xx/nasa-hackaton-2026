@@ -49,9 +49,17 @@ export function levelLabel(level: RiskLevel): string {
   return ({ Low: 'Low', Moderate: 'Medium', High: 'High', Critical: 'Very high' } as Record<RiskLevel, string>)[level] ?? level
 }
 
+/** Level fills (docs/design/critique-and-direction.md §2). Fills only: text on them is ink,
+ *  white on Very high. No green: an unvalidated estimate should never say "safe". */
 export const LEVEL_COLORS: Record<RiskLevel, string> = {
-  Low: '#2e8b62', Moderate: '#c79a16', High: '#e0702b', Critical: '#c9302c',
+  Low: '#e6ddbf', Moderate: '#f0b43c', High: '#e36f27', Critical: '#a8231c',
 }
+
+/** Ink colour for text placed on a level fill. */
+export const LEVEL_TEXT: Record<RiskLevel, string> = { Low: '#1b1f1d', Moderate: '#1b1f1d', High: '#1b1f1d', Critical: '#ffffff' }
+
+/** Steps on the 4-segment level meter (1 = Low … 4 = Very high), so a level reads without colour. */
+export const LEVEL_STEP: Record<RiskLevel, 1 | 2 | 3 | 4> = { Low: 1, Moderate: 2, High: 3, Critical: 4 }
 
 export function computeRisk(inp: RiskInputs): RiskResult {
   let weightPresent = 0

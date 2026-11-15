@@ -6,21 +6,31 @@
 @import "@fontsource/ibm-plex-sans/500.css";
 @import "@fontsource/ibm-plex-sans/600.css";
 
-/* Design tokens. White ground, spruce-black ink, cool green-grey neutrals.
-   Ember is reserved for risk and for the one primary action on a screen.
-   Display: Archivo, condensed (font-stretch) for headlines, like fire-danger signage.
-   Body and data: IBM Plex Sans with tabular figures. Fonts are bundled, so the site works offline. */
+/* Design tokens: "a public notice, not a dashboard" (docs/design/critique-and-direction.md §2).
+   Warm off-white ground, white surfaces, near-black ink. Warm colours mean fire risk and nothing
+   else; the one action colour is a deep blue. IBM Plex Sans for everything; Archivo only in the
+   wordmark. Fonts are bundled, so the site works offline. */
 @theme {
-  --color-ink-950: #ffffff;   /* page ground */
-  --color-ink-900: #f7f8f6;   /* quiet surface */
-  --color-ink-850: #f0f2ef;
-  --color-ink-800: #e8ebe7;   /* hover, selected row */
-  --color-ink-700: #d9ded8;   /* tracks, empty bars */
-  --color-line: #d9ded9;      /* rules and borders */
-  --color-edge: #b9c3bc;      /* form control and button borders, a step stronger than line */
-  --color-fg: #13211b;        /* spruce-black ink */
-  --color-mute: #52615a;      /* secondary text */
-  --color-dim: #75827c;       /* tertiary text, captions */
+  --color-ground: #f7f6f2;    /* page behind the panels */
+  --color-ink-950: #ffffff;   /* surfaces: panels, cards */
+  --color-ink-900: #faf9f6;   /* quiet surface */
+  --color-ink-850: #f2f1ec;
+  --color-ink-800: #ebe9e2;   /* hover, selected row */
+  --color-ink-700: #dad9d2;   /* tracks, empty meter segments */
+  --color-line: #dad9d2;      /* rules and borders */
+  --color-edge: #b8b7ae;      /* form control and button borders */
+  --color-fg: #1b1f1d;        /* ink */
+  --color-mute: #4a524e;      /* secondary text, 8:1 on white */
+  --color-dim: #626a66;       /* tertiary text, still 5.6:1 on white */
+  --color-action: #1f4e79;    /* the primary button and links. Never a risk colour. */
+  --color-action-deep: #173b5c;
+  --color-danger: #b3261e;    /* the 911 box only */
+  --color-example: #e9eef3;   /* the Example scenario banner (cool, never reads as a level) */
+  --color-smoke: #6e7c88;
+  --color-level-low: #e6ddbf;
+  --color-level-medium: #f0b43c;
+  --color-level-high: #e36f27;
+  --color-level-veryhigh: #a8231c;
   --color-moss: #2e7d57;      /* ok, healthy, Low */
   --color-ember: #d4551f;     /* risk accent, primary action */
   --color-ember-deep: #c24a17; /* ember behind white text: 4.9:1, passes WCAG AA at body size */
@@ -28,7 +38,8 @@
   --color-sky: #2f6690;       /* links, smoke and air */
   --color-sun: #8a6400;       /* simulated-data marker */
   --breakpoint-wide: 87rem;   /* 1392px: the header fits on one row from here (1440 projector) */
-  --font-display: "Archivo Variable", "Arial Narrow", system-ui, sans-serif;
+  --font-display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-wordmark: "Archivo Variable", "IBM Plex Sans", system-ui, sans-serif;
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -38,14 +49,14 @@
 @layer base {
   html, body, #root { height: 100%; }
   body {
-    background: var(--color-ink-950);
+    background: var(--color-ground);
     color: var(--color-fg);
     font-family: var(--font-sans);
-    font-size: 14px;
-    line-height: 1.45;
+    font-size: 16px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { letter-spacing: -0.015em; }
+  h1, h2, h3 { letter-spacing: 0; }
   button, a, select, input { transition: background-color .15s, border-color .15s, color .15s; }
   :focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; border-radius: 4px; }
   select, input[type="date"] {
@@ -70,8 +81,8 @@
   select:hover { border-color: var(--color-mute); }
 }
 
-/* Condensed display type. Use on headlines and hero numbers: className="font-display condensed" */
-.condensed { font-stretch: 72%; }
+/* Retired: condensed poster type read as generated styling. A no-op so older markup is harmless. */
+.condensed { font-stretch: 100%; }
 
 .num { font-variant-numeric: tabular-nums; }
 .label { font-size: 12.5px; color: var(--color-mute); }
@@ -124,8 +135,7 @@
 
 /* Hero map: risk zones morph between days; active fires pulse. */
 .risk-cell { transition: fill .45s ease, fill-opacity .45s ease; }
-.fire-pulse { animation: firepulse 1.8s ease-out infinite; transform-origin: center; transform-box: fill-box; }
-@keyframes firepulse { 0% { stroke-opacity: .9; stroke-width: 1; } 100% { stroke-opacity: 0; stroke-width: 10; } }
+.fire-pulse { animation: none; } /* No pulsing: alarm motion is wrong for people who have been evacuated before. */
 @media (prefers-reduced-motion: reduce) {
   .risk-cell { transition: none; }
   .fire-pulse { animation: none; }

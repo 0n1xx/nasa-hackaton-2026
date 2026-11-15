@@ -1,7 +1,11 @@
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useApp } from './state.tsx'
 import Home from './pages/Home.tsx'
+import Community from './pages/Community.tsx'
+import AskForHelp from './pages/AskForHelp.tsx'
+import AssistantPage from './pages/AssistantPage.tsx'
+import About from './pages/About.tsx'
 import Overview from './pages/Overview.tsx'
 import MapPage from './pages/MapPage.tsx'
 import Air from './pages/Air.tsx'
@@ -10,58 +14,78 @@ import Communities from './pages/Communities.tsx'
 import Trends from './pages/Trends.tsx'
 import Preparedness from './pages/Preparedness.tsx'
 import DataPage from './pages/DataPage.tsx'
-import Brief from './pages/Brief.tsx'
 
+/** The wordmark is the logo: no clip-art. */
 export function Logo() {
-  return <NavLink to="/" className="flex shrink-0 items-center gap-2.5" aria-label="Before the Smoke home">
-    <svg viewBox="0 0 22 22" className="h-[22px] w-[22px]" aria-hidden><path d="M11 2l5 8h-3l4 7H5l4-7H6l5-8z" fill="#13211b" /><circle cx="18" cy="5" r="2.2" fill="#d4551f" /></svg>
-    <span className="font-display text-[17px] font-bold tracking-[-0.01em]">Before the Smoke</span>
-  </NavLink>
+  return <NavLink to="/" className="shrink-0 font-wordmark text-[19px] font-bold tracking-[-0.01em] text-fg" aria-label="Before the Smoke, home">Before the Smoke</NavLink>
 }
+
+/** Shown under the header on every screen while the example scenario is on. Screenshots travel, so it is never optional. */
+function ExampleBanner() {
+  const { mode, setMode } = useApp()
+  if (mode !== 'sim') return null
+  return <div role="status" className="flex shrink-0 items-center gap-3 border-b border-line border-l-4 border-l-fg bg-example px-4 py-2 text-[15px] md:px-6 print:border-0 print:bg-transparent print:px-0">
+    <p className="min-w-0 flex-1"><span className="font-semibold">Example scenario, not real conditions.</span><span className="hidden sm:inline"> Fires, weather and smoke here are made up to show how the site works. The NASA satellite photo is real.</span></p>
+    <button type="button" onClick={() => setMode('live')} className="shrink-0 rounded-md px-2 py-1 text-[15px] font-semibold text-action underline underline-offset-2 hover:text-action-deep print:hidden">Use live data</button>
+  </div>
+}
+
+/** Screens that fill the window themselves (map layouts); everything else scrolls in a reading column. */
+const FULL_SCREEN = (path: string) => path === '/' || /^\/c\/[^/]+\/?$/.test(path)
 
 export default function App() {
   const { region, mode, setMode, bootError } = useApp()
   const loc = useLocation()
-  const home = loc.pathname === '/'
+  const full = FULL_SCREEN(loc.pathname)
   useEffect(() => { document.querySelector('main')?.scrollTo({ top: 0 }) }, [loc.pathname])
 
   return <div className="flex h-full flex-col print:block print:h-auto">
     <header className="z-[1100] flex h-14 shrink-0 items-center gap-4 border-b border-line bg-white px-4 md:px-6 print:hidden">
       <Logo />
       <div className="ml-auto flex items-center gap-4">
-        {!home && <Link to="/" className="hidden text-[14px] text-mute hover:text-fg sm:inline">Map</Link>}
-        <Link to="/data" className="hidden text-[14px] text-mute hover:text-fg sm:inline">About the data</Link>
+        {loc.pathname !== '/' && <Link to="/" className="hidden text-[15px] text-mute hover:text-fg sm:inline">All communities</Link>}
+        <Link to="/about" className="hidden text-[15px] text-mute hover:text-fg sm:inline">About the data</Link>
         <div className="flex shrink-0 rounded-full bg-ink-800 p-0.5" role="group" aria-label="Which data to show">
           {(['live', 'sim'] as const).map((m) => <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
-            className={`rounded-full px-3 py-1.5 text-[13px] whitespace-nowrap sm:px-3.5 ${mode === m ? 'bg-white font-medium text-fg shadow-sm' : 'text-mute hover:text-fg'}`}>
-            {/* Short words on phones so the header fits 390 px */}
+            className={`rounded-full px-3 py-1.5 text-[14px] whitespace-nowrap sm:px-3.5 ${mode === m ? 'bg-white font-semibold text-fg shadow-sm' : 'text-mute hover:text-fg'}`}>
             <span className="sm:hidden">{m === 'live' ? 'Live' : 'Example'}</span>
             <span className="hidden sm:inline">{m === 'live' ? 'Live data' : 'Example scenario'}</span>
           </button>)}
         </div>
       </div>
     </header>
+    <ExampleBanner />
 
-    <main className={`relative min-h-0 flex-1 print:overflow-visible ${home ? 'overflow-hidden md:overflow-hidden' : 'overflow-y-auto'}`}>
-      {bootError ? <div role="alert" className="p-8 text-flame">{bootError}</div> : !region ? <div className="skeleton m-8 h-64" /> :
-        home ? <Home /> :
-        <div className="mx-auto max-w-[1080px] px-4 pt-8 pb-12 md:px-8 md:pt-10">
-          <Routes>
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/air" element={<Air />} />
-            <Route path="/risk" element={<Risk />} />
-            <Route path="/communities" element={<Communities />} />
-            <Route path="/trends" element={<Trends />} />
-            <Route path="/preparedness" element={<Preparedness />} />
-            <Route path="/data" element={<DataPage />} />
-            <Route path="/brief" element={<Brief />} />
-            <Route path="*" element={<div className="py-6">Page not found. <NavLink className="underline" to="/">Back to the map</NavLink></div>} />
-          </Routes>
-          <footer className="mt-16 border-t border-line pt-5 text-[12px] text-dim print:hidden">
-            A student prototype for NASA Space Apps 2026. Not an emergency alerting service, and it does not speak for any Indigenous community.
-          </footer>
-        </div>}
+    <main className={`relative min-h-0 flex-1 print:overflow-visible ${full ? 'overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'}`}>
+      {bootError ? <div role="alert" className="p-8 text-danger">{bootError}</div> : !region ? <div className="skeleton m-8 h-64" /> :
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/c/:id" element={<Community />} />
+          <Route path="/c/:id/help" element={<Page><AskForHelp /></Page>} />
+          <Route path="/c/:id/ask" element={<AssistantPage />} />
+          <Route path="/about" element={<Page><About /></Page>} />
+          {/* Older screens: still reachable, not in the navigation. */}
+          <Route path="/overview" element={<Page><Overview /></Page>} />
+          <Route path="/map" element={<Page><MapPage /></Page>} />
+          <Route path="/air" element={<Page><Air /></Page>} />
+          <Route path="/risk" element={<Page><Risk /></Page>} />
+          <Route path="/communities" element={<Page><Communities /></Page>} />
+          <Route path="/trends" element={<Page><Trends /></Page>} />
+          <Route path="/preparedness" element={<Page><Preparedness /></Page>} />
+          <Route path="/data" element={<Page><DataPage /></Page>} />
+          <Route path="/brief" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Page><p className="py-6 text-[17px]">This page does not exist. <NavLink className="text-action underline" to="/">Find your community</NavLink></p></Page>} />
+        </Routes>}
     </main>
+  </div>
+}
+
+/** Reading column for non-map screens, with the standing disclaimer. */
+function Page({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto max-w-[1080px] px-4 pt-8 pb-12 md:px-8 md:pt-10">
+    {children}
+    <footer className="mt-16 border-t border-line pt-5 text-[14px] text-mute print:hidden">
+      A student prototype for NASA Space Apps 2026. Not an emergency alerting service, and it does not speak for any First Nation. In an emergency, call 911.
+    </footer>
   </div>
 }
