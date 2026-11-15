@@ -85,12 +85,6 @@ export function tTwoSidedP(t: number, df: number): number {
   return Math.min(1, Math.max(0, incompleteBeta(df / (df + t * t), df / 2, 0.5)))
 }
 
-/** Student-t CDF P(T ≤ t). */
-export function tCdf(t: number, df: number): number {
-  const p = tTwoSidedP(t, df) / 2
-  return t >= 0 ? 1 - p : p
-}
-
 /** Critical value t* with P(|T| ≥ t*) = alpha (bisection on the two-sided p). */
 export function tCritical(df: number, alpha = 0.05): number {
   let lo = 0, hi = 1000

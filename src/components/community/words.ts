@@ -23,7 +23,6 @@ export const dayOfMonth = (iso: string) => Number(iso.slice(8, 10))
 export const monthLong = (iso: string) => at(iso).toLocaleDateString('en-CA', { month: 'long' })
 /** "Tuesday 17 November" */
 export const fullDate = (iso: string) => `${weekdayLong(iso)} ${dayOfMonth(iso)} ${monthLong(iso)}`
-const daysBetween = (a: string, b: string) => Math.round((at(b).getTime() - at(a).getTime()) / 86400000)
 
 /** The data's own today. Never new Date(): the example scenario is set on 14 July 2026, and live dates are local to the place. */
 export function todayOf(p: PlaceReport): string {
@@ -58,9 +57,6 @@ export function statusSentence(p: PlaceReport): { first: string; second: string 
   // One joined sentence for the steady case: 'Fire risk is high today and expected to stay high for the next 3 days.'
   return o.steady ? { first: first.slice(0, -1), second: `and ${o.text}.` } : { first, second: `It is ${o.text}.` }
 }
-
-/** "Very high (75 out of 100)": the number is secondary, after the word. */
-export const scoreLine = (p: PlaceReport) => `${levelLabel(todayLevel(p))} (${p.risk.today.score} out of 100)`
 
 // ---------------------------------------------------------------------------------------------
 // 3. How sure are we?
@@ -413,24 +409,6 @@ export function rainTrendSentence(days: TrendDay[]): string | null {
   else next = `rain is expected on ${wetAhead.length} of the next ${ahead.length} days`
   if (!s) return `${next[0].toUpperCase()}${next.slice(1)}.`
   return `${s}${dry && wetAhead.length ? ', but' : ', and'} ${next}.`
-}
-
-/**
- * The 42 summers chart, in one line. The same rule as trendSentence: tiny is "about the same", p of 0.05 or more is
- * "not clearly", and only a real change is sized (Sen's slope over the years of the record).
- * "Summers here have not clearly warmed since 1984." / "Summers here have warmed by about 1.2 °C since 1984."
- */
-export function summersSentence(p: PlaceReport): string | null {
-  const h = p.history
-  if (p.historyStatus !== 'ok' || !h) return null
-  const { senPerDecade: sen, mannKendallP: pv } = h.fireSeasonTMax
-  if (!Number.isFinite(sen) || !Number.isFinite(pv)) return null
-  const start = h.period.startYear
-  if (tiny(sen)) return `Summers here are about the same as in the ${Math.floor(start / 10) * 10}s.`
-  const dir = sen > 0 ? 'warmed' : 'cooled'
-  if (pv >= SIGNIFICANT_P) return `Summers here have not clearly ${dir} since ${start}.`
-  const years = (h.tMax.annual.at(-1)?.year ?? h.period.endYear) - (h.tMax.annual[0]?.year ?? start)
-  return `Summers here have ${dir} by about ${(Math.abs(sen) * years / 10).toFixed(1)}${C} since ${start}.`
 }
 
 // ---------------------------------------------------------------------------------------------

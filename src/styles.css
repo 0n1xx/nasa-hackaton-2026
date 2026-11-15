@@ -100,43 +100,16 @@
   }
 }
 
-/* Retired: condensed poster type read as generated styling. A no-op so older markup is harmless. */
-.condensed { font-stretch: 100%; }
-
 .num { font-variant-numeric: tabular-nums; }
 .label { font-size: 12.5px; color: var(--color-mute); }
 
-.panel { border-top: 1px solid var(--color-line); padding: 20px 0 8px; }
 .fade-in { animation: fade .25s ease both; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .skeleton { background: var(--color-ink-800); border-radius: 6px; animation: pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .5; } }
 
-
-/* Header navigation: horizontal scroll on narrow screens without a visible scrollbar. */
-.nav-scroll { scrollbar-width: none; }
-.nav-scroll::-webkit-scrollbar { display: none; }
-
-/* Risk strip (Overview hero). Columns rise once on load; forecast columns are hatched so they
-   read as different from observed days without relying on colour. */
-.strip-bar {
-  transform-origin: bottom;
-  animation: strip-rise .7s cubic-bezier(.2, .75, .25, 1) both;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-.strip-num { animation: strip-num .4s ease both; }
-@keyframes strip-rise { from { transform: scaleY(0); } }
-@keyframes strip-num { from { opacity: 0; transform: translateY(4px); } }
-.hatch {
-  background-color: #ffffff;
-  background-image: repeating-linear-gradient(135deg, var(--c) 0 3.5px, transparent 3.5px 7px);
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .fade-in, .skeleton, .strip-bar, .strip-num { animation: none; }
+  .fade-in, .skeleton { animation: none; }
 }
 
 /* Print: the app shell scrolls inside <main>; let the document flow so long pages print in full. */
@@ -152,12 +125,10 @@
 .leaflet-tooltip { background: var(--color-ink-950); color: var(--color-fg); border: 1px solid var(--color-line); box-shadow: 0 1px 4px rgb(19 33 27 / 0.08); font-size: 12px; }
 .leaflet-tooltip::before { display: none; }
 
-/* Hero map: risk zones morph between days; active fires pulse. */
+/* Hero map: risk zones morph between days. Fires never pulse: alarm motion is wrong for people who have been evacuated before. */
 .risk-cell { transition: fill .45s ease, fill-opacity .45s ease; }
-.fire-pulse { animation: none; } /* No pulsing: alarm motion is wrong for people who have been evacuated before. */
 @media (prefers-reduced-motion: reduce) {
   .risk-cell { transition: none; }
-  .fire-pulse { animation: none; }
 }
 
 /* Hero map (HeroMap.tsx): soft risk field, flame and heat symbols, labels and popups at 14 px or more. */
@@ -177,7 +148,7 @@
 .quiet-scroll { scrollbar-width: thin; scrollbar-color: var(--color-line) transparent; }
 
 /* Look-ahead forecast cells: white, with the hatch confined to an 8 px band along the top so it never runs behind
-   the words. Keep the --c alpha at 30% or less (LookAhead.tsx). .hatch above stays as is for RiskStrip. */
+   the words. Keep the --c alpha at 30% or less (LookAhead.tsx). */
 .hatch-band {
   background-color: #ffffff;
   background-image: repeating-linear-gradient(135deg, var(--c) 0 3.5px, transparent 3.5px 7px);

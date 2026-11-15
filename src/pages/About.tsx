@@ -32,7 +32,7 @@ const most = (key: string) => half(weight(key))
 const WEATHER = ['tMax', 'rhMin', 'precip7d', 'windMax', 'vpdMax', 'soil']
 
 /**
- * Each source in grandma words: what we take from it, and what it does. `points` is null when the source
+ * Each source in everyday words: what we take from it, and what it does. `points` is null when the source
  * adds nothing to the score and is only shown beside it.
  */
 const SOURCES: { name: string; url: string; take: string; does: string; points: string | null }[] = [
@@ -217,7 +217,7 @@ export default function About() {
         </ul>
       </section>
 
-      {/* How the fire risk is worked out, for anyone (the owner's ask: "explain like I'm a grandma") */}
+      {/* How the fire risk is worked out, in everyday words, for anyone */}
       <section className="mt-14" aria-labelledby="recipe">
         <H2 id="recipe">How we work out the fire risk</H2>
         <div className={`${prose} mt-4 space-y-4`}>
@@ -279,7 +279,7 @@ export default function About() {
           ))}
         </ul>
         <div className="max-w-[46rem] border-t border-line" />
-        <p className={`${prose} mt-4 text-[15px] text-mute`}>The background map is from Esri, and OpenStreetMap contributors on older screens.</p>
+        <p className={`${prose} mt-4 text-[15px] text-mute`}>The background map is from Esri.</p>
         <StatusTable />
       </section>
 

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { PlaceReport, RiskLevel } from '../../../shared/types.ts'
 import { guidanceLevel, lower, todayOf, dayWord } from './words.ts'
 
-// Suggestions, never orders: communities decide (voice guide). Adapted from src/actions.ts and the
+// Suggestions, never orders: communities decide (voice guide). Adapted from the first prototype's action list and the
 // sourced guidance in docs/research/preparedness.md. Sprinkler and structure-protection specifics are
 // left out on purpose: the research found no official page for them (preparedness.md §2, "Gap").
 

@@ -446,9 +446,3 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
   }
   return NO_PLACE
 }
-
-/** Classify and answer in one call. */
-export function builtInAnswer(question: string, ctx: Omit<AssistantContext, 'question'>): AssistantAnswer & { intent: Intent } {
-  const intent = classifyIntent(question)
-  return { ...answer(intent, { ...ctx, question }), intent }
-}

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { SUGGESTED, SUGGESTED_QUESTIONS, answer, classifyIntent, suggestedFor, type Intent } from './assistant.ts'
 import { levelFor } from './risk.ts'
 import { riskOutlook } from './outlook.ts'
-import type { PlaceReport, RiskLevel } from './types.ts'
+import type { PlaceReport } from './types.ts'
 import { placeCore } from '../server/place.ts'
 
 const base = async (): Promise<PlaceReport> => ({ ...(await placeCore('sim', 'whitesand', 3)).data, history: null, historyStatus: 'loading' })

@@ -1,23 +1,14 @@
-import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { lazy, Suspense, useEffect } from 'react'
 import { useApp } from './state.tsx'
 import Home from './pages/Home.tsx'
 import Community from './pages/Community.tsx'
 
-// Home and the community view are the app; they ship in the first download. Every other screen (and the
-// charting library the older ones need) is fetched the first time it is opened, which keeps the first load
-// small on a phone connection.
+// Home and the community view are the app; they ship in the first download. Every other screen is fetched
+// the first time it is opened, which keeps the first load small on a phone connection.
 const AskForHelp = lazy(() => import('./pages/AskForHelp.tsx'))
 const AssistantPage = lazy(() => import('./pages/AssistantPage.tsx'))
 const About = lazy(() => import('./pages/About.tsx'))
-const Overview = lazy(() => import('./pages/Overview.tsx'))
-const MapPage = lazy(() => import('./pages/MapPage.tsx'))
-const Air = lazy(() => import('./pages/Air.tsx'))
-const Risk = lazy(() => import('./pages/Risk.tsx'))
-const Communities = lazy(() => import('./pages/Communities.tsx'))
-const Trends = lazy(() => import('./pages/Trends.tsx'))
-const Preparedness = lazy(() => import('./pages/Preparedness.tsx'))
-const DataPage = lazy(() => import('./pages/DataPage.tsx'))
 
 /** The wordmark is the logo: no clip-art. */
 export function Logo() {
@@ -75,16 +66,6 @@ export default function App() {
           <Route path="/c/:id/help" element={<Page><AskForHelp /></Page>} />
           <Route path="/c/:id/ask" element={<AssistantPage />} />
           <Route path="/about" element={<Page><About /></Page>} />
-          {/* Older screens: still reachable, not in the navigation. */}
-          <Route path="/overview" element={<Page><Overview /></Page>} />
-          <Route path="/map" element={<Page><MapPage /></Page>} />
-          <Route path="/air" element={<Page><Air /></Page>} />
-          <Route path="/risk" element={<Page><Risk /></Page>} />
-          <Route path="/communities" element={<Page><Communities /></Page>} />
-          <Route path="/trends" element={<Page><Trends /></Page>} />
-          <Route path="/preparedness" element={<Page><Preparedness /></Page>} />
-          <Route path="/data" element={<Page><DataPage /></Page>} />
-          <Route path="/brief" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Page><p className="py-6 text-[17px]">This page does not exist. <NavLink className="text-action underline" to="/">Find your community</NavLink></p></Page>} />
         </Routes></Suspense>}
     </main>

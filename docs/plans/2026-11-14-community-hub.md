@@ -70,7 +70,7 @@ Second audience: the people they contact (provincial fire service, Indigenous Se
 - 15 November 2026 (branch data-fixes): the live status line with the official Fire Weather Index was checked at 1440 only; 390 and 768 were not, because Open-Meteo was refusing requests after a day of testing. The fire map popup's "Last update" line was checked on the live CWFIS feed.
 - The agreement with Canada's official Fire Weather Index (server/risk-calibration.test.ts) covers one November day. There is no summer check and no test against real fires.
 - Slides for the script are not made.
-- Older screens (/overview, /risk, /map, /air, /communities, /trends, /preparedness) still exist but are off the navigation and were not restyled.
+- Older screens (/overview, /risk, /map, /air, /communities, /trends, /preparedness, /data) were removed on 15 November 2026; they are kept in the tag `demo-stable-2026-11-14`.
 
 ## Facts and constraints
 

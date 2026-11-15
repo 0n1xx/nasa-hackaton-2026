@@ -1,9 +1,9 @@
 {
-  "name": "borealwatch",
+  "name": "before-the-smoke",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Wildfire, smoke and risk intelligence for Canada, centred on Indigenous community preparedness. NASA Space Apps Challenge prototype.",
+  "description": "Fire risk in plain words for First Nations communities in Canada, from NASA satellite and weather data. NASA Space Apps Challenge 2026 prototype.",
   "scripts": {
     "dev": "concurrently -n api,web -c green,cyan \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "tsx watch --env-file-if-exists=.env server/index.ts",
@@ -16,8 +16,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
     "@fontsource-variable/archivo": "^5.3.0",
-    "@fontsource-variable/space-grotesk": "^5.1.0",
-    "@fontsource/ibm-plex-mono": "^5.1.0",
     "@fontsource/ibm-plex-sans": "^5.1.0",
     "compression": "^1.8.2",
     "express": "^4.21.2",
