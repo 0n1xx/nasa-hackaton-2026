@@ -6,7 +6,9 @@ import type { Mode, StatusData } from '../shared/types.ts'
 import { REGIONS } from './data/regions.ts'
 import { HISTORY } from './data/history.ts'
 import * as svc from './services.ts'
+import { parseHorizon } from '../shared/horizon.ts'
 import { riskGrid } from './grid.ts'
+import { climateHistory } from './climate.ts'
 import { integrations, src, UpstreamError } from './util.ts'
 
 const app = express()
@@ -25,6 +27,8 @@ const dateParam = (v: unknown) => {
   if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v)) || Date.parse(v) > Date.now()) throw new svc.BadRequest('date must be YYYY-MM-DD and not in the future')
   return v
 }
+/** ?days= forecast horizon; an invalid value is a 400, not a 500. */
+const horizon = (req: Request) => { try { return parseHorizon(req.query.days) } catch (e) { throw new svc.BadRequest((e as Error).message) } }
 const route = (fn: (req: Request) => Promise<unknown> | unknown) => (req: Request, res: Response, next: NextFunction) => Promise.resolve().then(() => fn(req)).then((body) => res.json(body)).catch(next)
 
 app.get('/api/status', route((): StatusData => ({ defaultMode: DEFAULT_MODE, integrations: integrations(), serverTime: new Date().toISOString() })))
@@ -32,12 +36,13 @@ app.get('/api/regions', route(() => ({ data: REGIONS, sources: [] })))
 app.get('/api/history', route(() => ({ data: HISTORY, sources: [src('history', 'National statistics compiled from CIFFC / NRCan publications', 'historical', 'https://cwfis.cfs.nrcan.gc.ca/report', 'Bundled reference table; see notes for what is verified')] })))
 app.get('/api/fires/active', route((req) => svc.activeFires(mode(req))))
 app.get('/api/fires/hotspots', route((req) => svc.hotspots(mode(req), intParam(req.query.days, 1, 1, 5), dateParam(req.query.date))))
-app.get('/api/summary', route((req) => svc.regionSummaries(mode(req))))
-app.get('/api/risk/:id', route((req) => svc.regionRisk(mode(req), req.params.id)))
+app.get('/api/summary', route((req) => svc.regionSummaries(mode(req), horizon(req))))
+app.get('/api/risk/:id', route((req) => svc.regionRisk(mode(req), req.params.id, horizon(req))))
 app.get('/api/air-trends', route((req) => svc.airTrends(mode(req))))
-app.get('/api/air/:id', route((req) => svc.regionAir(mode(req), req.params.id, intParam(req.query.pastDays, 7, 1, 92))))
+app.get('/api/air/:id', route((req) => svc.regionAir(mode(req), req.params.id, intParam(req.query.pastDays, 7, 1, 92), horizon(req))))
 app.get('/api/communities', route((req) => svc.communities(mode(req))))
-app.get('/api/risk-grid', route((req) => riskGrid(mode(req))))
+app.get('/api/risk-grid', route((req) => riskGrid(mode(req), horizon(req))))
+app.get('/api/climate-history/:id', route((req) => climateHistory(mode(req), req.params.id)))
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Unknown API route' }))
 
 // In production (after `npm run build`) the same server also serves the UI.

@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import type { CommunityExposure, RegionAir, RegionRisk, SourceMeta } from '../../shared/types.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
+import { MAX_AIR_HORIZON } from '../../shared/horizon.ts'
 import { ACTIONS } from '../actions.ts'
 import { NASA_DATE, NASA_LABEL } from '../components/MapView.tsx'
 import { AqiPill, Async, Btn, ButtonLink, PageHead, Panel, RiskPill, Sources, Stat, chartAxis, chartGrid, fmt, tooltipStyle } from '../components/ui.tsx'
@@ -42,7 +43,7 @@ function Share({ value, label, color, className = '' }: { value: number; label: 
 }
 
 export default function Communities() {
-  const { region, regions, setRegionId } = useApp()
+  const { region, regions, setRegionId, horizon } = useApp()
   const communities = useApi<CommunityExposure[]>('communities')
   const tbRisk = useApi<RegionRisk>('risk/thunder-bay')
   const tbAir = useApi<RegionAir>('air/thunder-bay?pastDays=7')
@@ -157,7 +158,7 @@ export default function Communities() {
             <Async state={tbAir} height={70}>{(a) => <div className="grid grid-cols-2 gap-4 rounded-lg border border-line p-3.5 sm:grid-cols-4">
               <Stat label="US AQI" value={<AqiPill aqi={a.now.usAqi} />} /><Stat label="PM2.5 now" value={fmt(a.now.pm25, 1)} unit="µg/m³" />
               <Stat label="7-day peak" value={fmt(Math.max(...a.hourly.filter((h) => h.kind === 'model').map((h) => h.pm25 ?? 0)), 0)} unit="µg/m³" />
-              <Stat label="3-day outlook" value={fmt(Math.max(...a.hourly.filter((h) => h.kind === 'forecast').map((h) => h.pm25 ?? 0)), 0)} unit="µg/m³ peak" />
+              <Stat label={`${Math.min(horizon, MAX_AIR_HORIZON)}-day outlook`} value={fmt(Math.max(...a.hourly.filter((h) => h.kind === 'forecast').map((h) => h.pm25 ?? 0)), 0)} unit="µg/m³ peak" />
             </div>}</Async>
             <div className="rounded-lg border border-line p-3.5"><p className="label mb-2">Listed communities in the district</p>
               {tb.length ? <ul className="space-y-1.5 text-[13px]">{tb.map((c) => <li key={c.id} className="flex flex-wrap justify-between gap-x-3"><span className="min-w-0">{c.name}</span><span className="num text-mute">{c.nearestFireKm == null ? 'no fire reported' : `fire ${c.nearestFireKm} km`}, PM2.5 {fmt(c.pm25, 0)}</span></li>)}</ul>

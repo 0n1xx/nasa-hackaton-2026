@@ -1,9 +1,10 @@
 // Open-Meteo — free, no key. Weather forecast/analysis and CAMS-based air quality.
 // Docs: https://open-meteo.com/en/docs and https://open-meteo.com/en/docs/air-quality-api
 import type { AirNow, AirPoint, CurrentWeather, DayWeather } from '../../shared/types.ts'
+import { DEFAULT_HORIZON, MAX_AIR_HORIZON } from '../../shared/horizon.ts'
 import { cached, fetchUpstream, num, registerIntegration } from '../util.ts'
 
-registerIntegration({ id: 'open-meteo-weather', name: 'Open-Meteo Weather', needsKey: false, configured: true, purpose: 'Temperature, humidity, wind, rain, soil moisture, VPD; 7 days back and 3 days ahead' })
+registerIntegration({ id: 'open-meteo-weather', name: 'Open-Meteo Weather', needsKey: false, configured: true, purpose: 'Temperature, humidity, wind, rain, soil moisture, VPD; 7 days back and up to 14 days ahead' })
 registerIntegration({ id: 'open-meteo-air', name: 'Open-Meteo Air Quality (CAMS)', needsKey: false, configured: true, purpose: 'Modelled PM2.5, PM10, US AQI and aerosol optical depth' })
 
 export interface Pt { lat: number; lon: number }
@@ -18,10 +19,10 @@ const sum = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) : null)
 
 const HOURLY = 'temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation,vapour_pressure_deficit,soil_moisture_0_to_1cm,snow_depth'
 
-/** Weather for several points in one request. Hourly values are aggregated to local days here. */
-export function getWeather(pts: Pt[]): Promise<WeatherResult[]> {
-  const url = `https://api.open-meteo.com/v1/forecast?${coords(pts)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=${HOURLY}&past_days=7&forecast_days=4&timezone=auto&wind_speed_unit=kmh`
-  return cached(`wx:${coords(pts)}`, async () => {
+/** Weather for several points in one request: 7 days back, today and `days` ahead. Hourly values are aggregated to local days here. */
+export function getWeather(pts: Pt[], days = DEFAULT_HORIZON): Promise<WeatherResult[]> {
+  const url = `https://api.open-meteo.com/v1/forecast?${coords(pts)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=${HOURLY}&past_days=7&forecast_days=${days + 1}&timezone=auto&wind_speed_unit=kmh`
+  return cached(`wx:${coords(pts)}:${days}`, async () => {
     const json = asArray(await fetchUpstream('open-meteo-weather', url))
     if (json.length !== pts.length) throw new Error('Open-Meteo returned an unexpected number of locations')
     return json.map(parseWeather)
@@ -62,10 +63,11 @@ export function getAirNow(pts: Pt[]): Promise<AirNow[]> {
   })
 }
 
-/** Hourly PM series for one point: `pastDays` back (max 92) and 3 days ahead. */
-export function getAirSeries(pt: Pt, pastDays = 7): Promise<{ now: AirNow; hourly: AirPoint[] }> {
-  const url = `https://air-quality-api.open-meteo.com/v1/air-quality?${coords([pt])}&current=pm2_5,pm10,us_aqi,aerosol_optical_depth&hourly=pm2_5,pm10&past_days=${pastDays}&forecast_days=4&timezone=auto`
-  return cached(`air:${pt.lat},${pt.lon}:${pastDays}`, async () => {
+/** Hourly PM series for one point: `pastDays` back (max 92) and `days` ahead, capped at MAX_AIR_HORIZON (the API's limit). */
+export function getAirSeries(pt: Pt, pastDays = 7, days = DEFAULT_HORIZON): Promise<{ now: AirNow; hourly: AirPoint[] }> {
+  const ahead = Math.min(days, MAX_AIR_HORIZON)
+  const url = `https://air-quality-api.open-meteo.com/v1/air-quality?${coords([pt])}&current=pm2_5,pm10,us_aqi,aerosol_optical_depth&hourly=pm2_5,pm10&past_days=${pastDays}&forecast_days=${ahead + 1}&timezone=auto`
+  return cached(`air:${pt.lat},${pt.lon}:${pastDays}:${ahead}`, async () => {
     const j = await fetchUpstream('open-meteo-air', url)
     if (!Array.isArray(j?.hourly?.time)) throw new Error('Open-Meteo air quality: malformed response')
     const nowT = String(j.current?.time ?? '')

@@ -1,5 +1,6 @@
 import type { RegionRisk, RiskDay, RiskLevel } from '../../shared/types.ts'
 import { daysBuilding, type WarningSign } from '../../shared/signals.ts'
+import { InfoPopover } from './ui.tsx'
 
 // CONTRACT (used by Overview, Risk and Brief): keep these props stable.
 //   <SignList signs={...} />            full list: label, value, detail, the rule as visible small text
@@ -27,7 +28,7 @@ export function SignList({ signs, compact = false }: { signs: WarningSign[]; com
     return <ul className="divide-y divide-line border-y border-line text-[12.5px]">
       {sorted.map((s) => <li key={s.key} title={s.rule} className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 py-1.5">
         <Marker active={s.active} small />
-        <span className={`min-w-[9.5rem] ${s.active ? 'font-semibold text-fg' : 'text-mute'}`}>{s.label}</span>
+        <InfoPopover k={`sign.${s.key}`} className={`min-w-[9.5rem] ${s.active ? 'font-semibold text-fg' : 'text-mute'}`}>{s.label}</InfoPopover>
         <span className={`num ${s.active ? 'font-semibold text-fg' : 'text-dim'}`}>{s.value}</span>
         <span className={`ml-auto text-right ${s.active ? 'font-medium text-fg' : 'text-dim'}`}>
           {s.active ? (s.since ? `Active since ${shortDate(s.since)}` : 'Active') : 'Clear'}
@@ -41,7 +42,7 @@ export function SignList({ signs, compact = false }: { signs: WarningSign[]; com
     {active.length > 0 && <ul className="grid grid-cols-1 gap-x-10 gap-y-7 @xl:grid-cols-2 @4xl:grid-cols-3">
       {active.map((s) => <li key={s.key} className="min-w-0 border-t-2 border-ember pt-3">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-          <h3 className="text-[15px] font-semibold tracking-normal"><span className="sr-only">Active: </span>{s.label}</h3>
+          <h3 className="text-[15px] font-semibold tracking-normal"><span className="sr-only">Active: </span><InfoPopover k={`sign.${s.key}`}>{s.label}</InfoPopover></h3>
           {s.since && <span className="text-[12.5px] whitespace-nowrap text-mute">since {sinceLabel(s.since)}</span>}
         </div>
         <p className="num mt-1.5 text-[22px] leading-tight font-semibold text-fg">{s.value}</p>
@@ -54,7 +55,7 @@ export function SignList({ signs, compact = false }: { signs: WarningSign[]; com
       <ul className="grid grid-cols-1 gap-x-10 @xl:grid-cols-2 @4xl:grid-cols-3">
         {quiet.map((s) => <li key={s.key} title={`${s.detail} ${s.rule}`} className="flex min-w-0 items-baseline gap-2.5 border-t border-line py-2 text-[13px]">
           <Marker active={false} />
-          <span className="text-mute">{s.label}</span>
+          <InfoPopover k={`sign.${s.key}`} className="text-mute">{s.label}</InfoPopover>
           <span className="num ml-auto shrink-0 text-dim">{s.value}</span>
         </li>)}
       </ul>

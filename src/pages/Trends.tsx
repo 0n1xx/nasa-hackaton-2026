@@ -3,12 +3,15 @@ import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ResponsiveCont
 import type { HistoryData, RegionAir, RegionRisk } from '../../shared/types.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
+import { MAX_AIR_HORIZON } from '../../shared/horizon.ts'
+import HorizonSelector from '../components/HorizonSelector.tsx'
 import { Async, KindBadge, PageHead, Panel, Sources, Stat, chartAxis, chartGrid, fmt, tooltipStyle } from '../components/ui.tsx'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 export default function Trends() {
-  const { region, mode } = useApp()
+  const { region, mode, horizon } = useApp()
+  const airDays = Math.min(horizon, MAX_AIR_HORIZON)
   const history = useApi<HistoryData>('history')
   const risk = useApi<RegionRisk>(region ? `risk/${region.id}` : null)
   const air = useApi<RegionAir>(region ? `air/${region.id}?pastDays=92` : null)
@@ -64,7 +67,7 @@ export default function Trends() {
           </Panel>
         </div>
 
-        <Panel title={`Smoke over the last three months · ${region?.short}`} sub="Daily mean PM2.5 from the CAMS model. This is the longest air quality history the prototype holds; multi-year station records are not yet connected.">
+        <Panel info="pm25" title={`Smoke over the last three months · ${region?.short}`} right={<HorizonSelector compact />} sub={`Daily mean PM2.5 from the CAMS model; faded bars are the ${airDays}-day forecast${horizon > MAX_AIR_HORIZON ? ` (air quality forecasts go up to ${MAX_AIR_HORIZON} days)` : ''}. This is the longest air quality history the prototype holds; multi-year station records are not yet connected.`}>
           <Async state={air} height={220} empty={(d) => (d.daily.length ? null : 'No air quality history returned for this location.')}>{(d) => <><div className="h-[220px]"><ResponsiveContainer><BarChart data={d.daily} margin={{ left: -18, right: 8, top: 8 }}><CartesianGrid {...chartGrid} /><XAxis dataKey="date" {...chartAxis} minTickGap={40} tickFormatter={(t) => new Date(t + 'T12:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} /><YAxis {...chartAxis} />
             <Tooltip {...tooltipStyle} formatter={(v: number, _n, p) => [`${v} µg/m³`, p.payload.kind === 'forecast' ? 'Forecast daily mean' : 'Daily mean']} />
             <Bar dataKey="pm25" isAnimationActive={false}>{d.daily.map((x) => <Cell key={x.date} fill={x.pm25 > 55.4 ? '#e5484d' : x.pm25 > 35.4 ? '#f2884b' : x.pm25 > 9 ? '#e3c341' : '#3fb68b'} fillOpacity={x.kind === 'forecast' ? 0.4 : 0.9} />)}</Bar></BarChart></ResponsiveContainer></div>

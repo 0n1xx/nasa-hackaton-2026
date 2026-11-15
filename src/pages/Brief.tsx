@@ -101,7 +101,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
 const shortStamp = (d: Date) => d.toLocaleString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 
 export default function Brief() {
-  const { region, mode } = useApp()
+  const { region, mode, horizon } = useApp()
   const risk = useApi<RegionRisk>(region ? `risk/${region.id}` : null)
   const air = useApi<RegionAir>(region ? `air/${region.id}?pastDays=7` : null)
   const communities = useApi<CommunityExposure[]>('communities')
@@ -178,7 +178,7 @@ export default function Brief() {
               <dd className="mt-2 leading-none font-semibold" style={{ color: LEVEL_COLORS[r.today.level] }}><span className="num text-[34px] md:text-[44px]">{r.today.score}</span> <span className="text-[15px] md:text-[18px]">{r.today.level}</span></dd>
             </div>
             <div>
-              <dt className="text-[13px] text-mute">Next {sm.ahead.length ? sm.ahead.length * 24 : 72} h</dt>
+              <dt className="text-[13px] text-mute">Next {horizon} day{horizon === 1 ? '' : 's'}</dt>
               <dd className="mt-2 text-[28px] leading-none font-semibold md:text-[44px]" style={peak ? { color: LEVEL_COLORS[peak.level] } : undefined}>{peak ? peak.level : '—'}</dd>
             </div>
             <div>

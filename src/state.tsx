@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Mode, Region, StatusData } from '../shared/types.ts'
+import { DEFAULT_HORIZON, HORIZONS } from '../shared/horizon.ts'
 
 interface AppState {
   regions: Region[]
@@ -7,6 +8,9 @@ interface AppState {
   setRegionId: (id: string) => void
   mode: Mode
   setMode: (m: Mode) => void
+  /** Forecast days ahead of today that every forecast view shows. */
+  horizon: number
+  setHorizon: (n: number) => void
   status: StatusData | null
   bootError: string | null
 }
@@ -15,11 +19,16 @@ export const useApp = () => { const c = useContext(Ctx); if (!c) throw new Error
 
 const stored = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
 const store = (k: string, v: string) => { try { localStorage.setItem(k, v) } catch { /* private mode */ } }
+const validHorizon = (v: unknown): number | null => {
+  const n = Number(v)
+  return (HORIZONS as readonly number[]).includes(n) ? n : null
+}
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [regions, setRegions] = useState<Region[]>([])
   const [regionId, setRegionIdRaw] = useState(stored('bw.region') ?? 'thunder-bay')
   const [mode, setModeRaw] = useState<Mode | null>((stored('bw.mode') as Mode | null))
+  const [horizon, setHorizonRaw] = useState(() => validHorizon(stored('bw.horizon')) ?? DEFAULT_HORIZON)
   const [status, setStatus] = useState<StatusData | null>(null)
   const [bootError, setBootError] = useState<string | null>(null)
 
@@ -33,8 +42,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     regions, region: regions.find((r) => r.id === regionId) ?? regions[0] ?? null,
     setRegionId: (id) => { setRegionIdRaw(id); store('bw.region', id) },
     mode: mode ?? 'live', setMode: (m) => { setModeRaw(m); store('bw.mode', m) },
+    horizon, setHorizon: (n) => { const h = validHorizon(n); if (h == null) return; setHorizonRaw(h); store('bw.horizon', String(h)) },
     status, bootError,
-  }), [regions, regionId, mode, status, bootError])
+  }), [regions, regionId, mode, horizon, status, bootError])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

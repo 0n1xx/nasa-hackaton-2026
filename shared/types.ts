@@ -96,7 +96,13 @@ export interface RiskResult {
   factors: RiskFactor[]
 }
 
-export interface RiskDay { date: string; kind: 'historical' | 'forecast' | 'today'; score: number; level: RiskLevel }
+export interface RiskDay {
+  date: string; kind: 'historical' | 'forecast' | 'today'; score: number; level: RiskLevel
+  /** From computeRisk for that day: depends on data quality (forecast inputs give Medium and a wider band), not on lead time. */
+  confidence?: RiskResult['confidence']
+  /** ± points around score, heuristic (see RiskResult.uncertainty) */
+  uncertainty?: number
+}
 
 export interface RegionRisk {
   region: Region
@@ -107,6 +113,8 @@ export interface RegionRisk {
   hotspots100km: number
   /** NASA POWER monthly climatology for the point, when available */
   climate: ClimateNormals | null
+  /** Forecast days ahead of today included in timeline (the ?days= value; see shared/horizon.ts) */
+  horizon: number
 }
 
 export interface ClimateNormals { tempC: number[]; precipMmDay: number[]; rh: number[] } // 12 months, Jan..Dec
@@ -173,4 +181,35 @@ export interface RiskGrid {
   cellLat: number
   cellLon: number
   cells: { lat: number; lon: number; scores: number[] }[]
+  /** Forecast days ahead of today included in days (the ?days= value; see shared/horizon.ts) */
+  horizon: number
+}
+
+// --- Long-term NASA POWER daily history (GET /api/climate-history/:id) ---
+
+export interface ClimateMetricHistory {
+  /** unit of the daily values (window stats) */
+  unit: string
+  /** unit of the fire-season annual values (differs for precip: season total in mm) */
+  annualUnit: string
+  label: string
+  /** daily values inside the comparison window, pooled over all years */
+  window: { mean: number; sd: number; /** percentiles 0..100 in steps of 1 (101 values) */ q: number[]; n: number }
+  /** fire season (May 1–Sep 30) per year: mean of daily values (precip: season total) */
+  annual: { year: number; value: number }[]
+  trend: {
+    mannKendall: { tau: number; pValue: number; trend: 'rising' | 'falling' | 'none' }
+    /** Sen's slope of the annual values, per decade */
+    senPerDecade: number
+    /** Sen line value at the first annual point (line = senIntercept + senPerDecade / 10 × (year − firstYear)) */
+    senIntercept: number
+    /** OLS on the annual values; slope per year */
+    linear: { slope: number; intercept: number; r2: number; pValue: number }
+  }
+}
+
+export interface ClimateHistory {
+  period: { startYear: number; endYear: number; years: number; days: number }
+  window: { label: string; startMMDD: string; endMMDD: string; /** why this window was chosen */ note: string }
+  metrics: { tMax: ClimateMetricHistory; rh: ClimateMetricHistory; precip: ClimateMetricHistory; wind: ClimateMetricHistory; soil: ClimateMetricHistory }
 }

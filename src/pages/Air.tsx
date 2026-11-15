@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { AirTrend, RegionAir, RegionSummary } from '../../shared/types.ts'
 import { AQI_BANDS, aqiBand, aqiFromPm25 } from '../../shared/aqi.ts'
+import { MAX_AIR_HORIZON } from '../../shared/horizon.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
 import { Async, Btn, PageHead, Panel, Sources, Stat, chartAxis, chartGrid, fmt, fmtTime, tooltipStyle } from '../components/ui.tsx'
 
 export default function Air() {
-  const { region, setRegionId } = useApp()
+  const { region, setRegionId, horizon } = useApp()
+  const airDays = Math.min(horizon, MAX_AIR_HORIZON)
   const [span, setSpan] = useState(7)
   const air = useApi<RegionAir>(region ? `air/${region.id}?pastDays=${span}` : null)
   const summary = useApi<RegionSummary[]>('summary')
@@ -24,7 +26,7 @@ export default function Air() {
         const series = a.hourly.map((h) => ({ t: h.time, past: h.kind === 'model' ? h.pm25 : null, fc: h.kind === 'forecast' ? h.pm25 : null, pm10: h.pm10 }))
         if (nowIdx > 0) series[nowIdx - 1].fc = series[nowIdx - 1].past // join the two lines
         return <div className="grid grid-cols-1 gap-x-12 gap-y-10 xl:grid-cols-[340px_1fr]">
-          <Panel title="Right now" sub={`Model time ${fmtTime(a.now.time)}`}>
+          <Panel info="aqi" title="Right now" sub={`Model time ${fmtTime(a.now.time)}`}>
             <div className="rounded-lg p-4" style={{ background: `${band?.color ?? '#7f8c99'}18`, border: `1px solid ${band?.color ?? '#7f8c99'}55` }}>
               <p className="label">US AQI (EPA scale, 0–500)</p>
               <p className="num text-[52px] leading-none font-medium" style={{ color: band?.color }}>{a.now.usAqi ?? '—'}</p>
@@ -37,7 +39,7 @@ export default function Air() {
             <p className="mt-3 text-[11.5px] leading-relaxed text-dim">Canada’s official index is the AQHI (1 to 10+), which uses a different formula. It is not shown here, and the two scales must not be compared number for number.</p>
             <Sources sources={air.sources} />
           </Panel>
-          <Panel title="PM2.5, hour by hour" sub="Solid: model analysis of past hours. Dashed: forecast for the next three days." right={<div className="flex gap-1.5">{[3, 7, 30, 92].map((d) => <Btn key={d} active={span === d} onClick={() => setSpan(d)}>{d} d</Btn>)}</div>}>
+          <Panel info="pm25" title="PM2.5, hour by hour" sub={`Solid: model analysis of past hours. Dashed: forecast for the next ${airDays} day${airDays === 1 ? '' : 's'}.`} right={<div className="flex gap-1.5">{[3, 7, 30, 92].map((d) => <Btn key={d} active={span === d} onClick={() => setSpan(d)}>{d} d</Btn>)}</div>}>
             <div className="h-[330px]"><ResponsiveContainer><AreaChart data={series} margin={{ left: -14, right: 8, top: 8 }}>
               <defs><linearGradient id="pm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#9cc4e4" stopOpacity={0.45} /><stop offset="1" stopColor="#9cc4e4" stopOpacity={0} /></linearGradient></defs>
               <CartesianGrid {...chartGrid} /><XAxis dataKey="t" {...chartAxis} minTickGap={60} tickFormatter={(t) => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} /><YAxis {...chartAxis} unit="" />
@@ -47,6 +49,7 @@ export default function Air() {
               <Area type="monotone" dataKey="fc" stroke="#9cc4e4" strokeWidth={1.8} strokeDasharray="5 4" fill="none" connectNulls={false} isAnimationActive={false} />
             </AreaChart></ResponsiveContainer></div>
             <p className="mt-1 text-[11.5px] text-dim">Reference lines mark 24-hour PM2.5 breakpoints for US AQI 100 and 150. Hourly values against them are indicative.</p>
+            {horizon > MAX_AIR_HORIZON && <p className="mt-1 text-[11.5px] text-dim">Air quality forecasts go up to {MAX_AIR_HORIZON} days.</p>}
           </Panel>
         </div> }}</Async>
 

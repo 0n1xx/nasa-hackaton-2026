@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CircleMarker, MapContainer, TileLayer, Tooltip, WMSTileLayer, useMap } from 'react-leaflet'
 import { Link, useSearchParams } from 'react-router-dom'
-import type { ActiveFire, CommunityExposure, HistoryData, Hotspot, RegionSummary } from '../../shared/types.ts'
+import type { ActiveFire, CommunityExposure, HistoryData, Hotspot, RegionSummary, SourceMeta } from '../../shared/types.ts'
 import { aqiBand } from '../../shared/aqi.ts'
 import { LEVEL_COLORS } from '../../shared/risk.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
-import { AqiPill, Btn, KindBadge, RiskPill, Sources, fmt, fmtTime } from './ui.tsx'
+import { AqiPill, Btn, InfoPopover, KindBadge, RiskPill, Sources, fmt, fmtTime } from './ui.tsx'
+import { stageLabel } from '../explain.ts'
 
 const GIBS_WMS = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi'
 
@@ -17,9 +18,9 @@ export const NASA_LABEL = 'NASA imagery: 14 July 2026'
 const NASA_REGION = 'thunder-bay'
 const NASA_MONTH = 'July 2026' // communities whose public reports mention this month get a name label in the NASA view
 
-const STAGE: Record<string, { label: string; color: string }> = {
-  OC: { label: 'Out of control', color: LEVEL_COLORS.Critical }, BH: { label: 'Being held', color: LEVEL_COLORS.High },
-  UC: { label: 'Under control', color: LEVEL_COLORS.Moderate }, OTHER: { label: 'Other or monitored', color: '#8a968f' },
+const STAGE: Record<string, { label: string; color: string; k: string }> = {
+  OC: { label: 'Out of control', color: LEVEL_COLORS.Critical, k: 'fireStage.OC' }, BH: { label: 'Being held', color: LEVEL_COLORS.High, k: 'fireStage.BH' },
+  UC: { label: 'Under control', color: LEVEL_COLORS.Moderate, k: 'fireStage.UC' }, OTHER: { label: 'Other or monitored', color: '#8a968f', k: 'activeFire' },
 }
 const stageOf = (s: string) => STAGE[s] ?? STAGE.OTHER
 const C = { hot: '#ec8a4b', hotStrong: '#c9302c', historic: '#75827c', firstNation: '#13211b', metis: '#2f6690' }
@@ -193,7 +194,9 @@ export default function MapView({ height = '70vh', compact = false, initialDate 
         <p className="label mb-2">Selected location</p>
         {!sel ? <p className="text-[13px] text-mute">Select a marker on the map to see details here.</p> : <>
           {date && sel.t !== 'historic' && !(sel.t === 'hotspot' && past) && <p className="mb-2 text-[12px] leading-snug text-sun">Figures below are for today{mode === 'sim' ? ' and simulated' : ''}, not {date === NASA_DATE ? '14 July 2026' : date}.</p>}
-          <Detail sel={sel} />
+          <Detail sel={sel} src={sel.t === 'fire' ? fires.sources[0] : sel.t === 'hotspot' ? hotspots.sources[0]
+            : sel.t === 'community' ? communities.sources.find((x) => x.id === 'communities') ?? communities.sources[0]
+              : sel.t === 'region' ? summary.sources.find((x) => x.id.includes('air')) ?? summary.sources[0] : history.sources[0]} />
         </>}
       </div>
 
@@ -236,14 +239,14 @@ export default function MapView({ height = '70vh', compact = false, initialDate 
       <div className="panel">
         <p className="label mb-2">Legend</p>
         <ul className="space-y-1.5 text-[12.5px]">
-          {on.fires && !past && Object.values(STAGE).map((s) => <li key={s.label} className="flex items-center gap-2"><span className="h-3 w-3 shrink-0 rounded-full border-2" style={{ borderColor: s.color, background: `${s.color}4d` }} />Active fire: {s.label.toLowerCase()}</li>)}
-          {on.hotspots && <li className="flex items-center gap-2"><span className="flex shrink-0 items-center gap-0.5"><span className="h-2 w-2 rounded-full" style={{ background: C.hot }} /><span className="h-2.5 w-2.5 rounded-full" style={{ background: C.hotStrong }} /></span>Satellite detection; larger and redder means more radiative power</li>}
-          {on.air && <li className="flex items-center gap-2"><span className="h-4 w-4 shrink-0 rounded-full border border-mute bg-mute/20" />Regional PM2.5 ring, coloured by US AQI band</li>}
-          {on.communities && <li className="flex flex-wrap items-center gap-x-2 gap-y-1"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-ink-700" style={{ background: C.firstNation }} />First Nation</span><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-ink-700" style={{ background: C.metis }} />Métis Settlement</span></li>}
-          {on.historic && <li className="flex items-center gap-2"><span className="h-3 w-3 shrink-0 rounded-full border border-dashed" style={{ borderColor: C.historic }} />Historic large fire (approximate)</li>}
-          {on.gibsTrue && <li className="text-mute"><span className="font-medium text-fg">NASA true colour:</span> smoke appears as grey or brown haze, cloud as bright white.</li>}
-          {on.gibsFire && <li className="text-mute"><span className="font-medium text-fg">NASA thermal anomalies:</span> VIIRS fire detections at 375 m.</li>}
-          {on.gibsAod && <li className="text-mute"><span className="font-medium text-fg">NASA aerosol:</span> aerosol optical depth, a measure of how much smoke or haze is in the air column.</li>}
+          {on.fires && !past && Object.values(STAGE).map((s) => <li key={s.label}><InfoPopover k={s.k} className="px-0.5 py-0.5 hover:bg-fg/5"><span className="h-3 w-3 shrink-0 rounded-full border-2" style={{ borderColor: s.color, background: `${s.color}4d` }} />Active fire: {s.label.toLowerCase()}</InfoPopover></li>)}
+          {on.hotspots && <li><InfoPopover k="hotspot" className="px-0.5 py-0.5 hover:bg-fg/5"><span className="flex shrink-0 items-center gap-0.5"><span className="h-2 w-2 rounded-full" style={{ background: C.hot }} /><span className="h-2.5 w-2.5 rounded-full" style={{ background: C.hotStrong }} /></span>Satellite detection; larger and redder means more radiative power</InfoPopover></li>}
+          {on.air && <li><InfoPopover k="aqi" className="px-0.5 py-0.5 hover:bg-fg/5"><span className="h-4 w-4 shrink-0 rounded-full border border-mute bg-mute/20" />Regional PM2.5 ring, coloured by US AQI band</InfoPopover></li>}
+          {on.communities && <li className="flex flex-wrap items-center gap-x-2 gap-y-1"><InfoPopover k="community.firstNation" className="px-0.5 py-0.5 hover:bg-fg/5"><span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-ink-700" style={{ background: C.firstNation }} />First Nation</InfoPopover><InfoPopover k="community.metis" className="px-0.5 py-0.5 hover:bg-fg/5"><span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-ink-700" style={{ background: C.metis }} />Métis Settlement</InfoPopover></li>}
+          {on.historic && <li><InfoPopover k="historicFire" className="px-0.5 py-0.5 hover:bg-fg/5"><span className="h-3 w-3 shrink-0 rounded-full border border-dashed" style={{ borderColor: C.historic }} />Historic large fire (approximate)</InfoPopover></li>}
+          {on.gibsTrue && <li className="text-mute"><InfoPopover k="nasaTrueColour" className="px-0.5 py-0.5 hover:bg-fg/5"><span><span className="font-medium text-fg">NASA true colour:</span> smoke appears as grey or brown haze, cloud as bright white.</span></InfoPopover></li>}
+          {on.gibsFire && <li className="text-mute"><InfoPopover k="nasaThermal" className="px-0.5 py-0.5 hover:bg-fg/5"><span><span className="font-medium text-fg">NASA thermal anomalies:</span> VIIRS fire detections at 375 m.</span></InfoPopover></li>}
+          {on.gibsAod && <li className="text-mute"><InfoPopover k="nasaAerosol" className="px-0.5 py-0.5 hover:bg-fg/5"><span><span className="font-medium text-fg">NASA aerosol:</span> aerosol optical depth, a measure of how much smoke or haze is in the air column.</span></InfoPopover></li>}
           {!Object.values(on).some(Boolean) && <li className="text-mute">Turn on a layer to see its key.</li>}
         </ul>
         {(on.fires || on.communities) && <p className="mt-2.5 text-[12px] leading-relaxed text-dim">{on.fires ? 'Fire circle size grows with reported area. ' : ''}{on.communities ? 'Community markers show approximate, publicly known locations only.' : ''}</p>}
@@ -257,19 +260,25 @@ function Row({ k, children }: { k: string; children: React.ReactNode }) {
   return <div className="flex justify-between gap-3 border-b border-line/70 py-1.5 text-[13px] last:border-0"><dt className="text-mute">{k}</dt><dd className="num text-right">{children}</dd></div>
 }
 
-function Detail({ sel }: { sel: Selected }) {
+/** Source and last-updated time for the dataset behind the selected marker. */
+function SrcRows({ src }: { src?: SourceMeta }) {
+  if (!src) return null
+  return <><Row k="Source">{src.url ? <a className="underline decoration-line underline-offset-2 hover:decoration-mute" href={src.url} target="_blank" rel="noreferrer">{src.label}</a> : src.label}</Row><Row k="Updated">{fmtTime(src.fetchedAt)}</Row></>
+}
+
+function Detail({ sel, src }: { sel: Selected; src?: SourceMeta }) {
   const h3 = 'text-[15px] leading-snug font-semibold'
   if (sel.t === 'fire') { const f = sel.d; return <div><h3 className={h3}>{f.name}</h3><p className="mb-1.5 text-[12.5px] text-mute">Active fire reported by {f.agency || 'agency'}</p><dl>
-    <Row k="Status"><span style={{ color: stageOf(f.stage).color }}>{stageOf(f.stage).label}</span></Row><Row k="Reported size">{fmt(f.hectares)} ha</Row><Row k="Last report">{f.startDate?.slice(0, 10) ?? '—'}</Row><Row k="Position">{f.lat.toFixed(2)}, {f.lon.toFixed(2)}</Row></dl></div> }
+    <Row k="Stage"><span style={{ color: stageOf(f.stage).color }}>{stageLabel(f.stage)}</span></Row><Row k="Reported size">{fmt(f.hectares)} ha</Row><Row k="Reported">{f.startDate?.slice(0, 10) ?? '—'}</Row><Row k="Position">{f.lat.toFixed(3)}, {f.lon.toFixed(3)}</Row><SrcRows src={src} /></dl></div> }
   if (sel.t === 'hotspot') { const h = sel.d; return <div><h3 className={h3}>Satellite fire detection</h3><p className="mb-1.5 text-[12.5px] text-mute">A pixel hot enough to indicate fire. Not every detection is a wildfire.</p><dl>
-    <Row k="Radiative power">{h.frp == null ? 'not reported' : `${fmt(h.frp, 1)} MW`}</Row><Row k="Detected">{h.time ? fmtTime(h.time) : '—'}</Row><Row k="Sensor">{h.sensor}</Row><Row k="Position">{h.lat.toFixed(3)}, {h.lon.toFixed(3)}</Row></dl></div> }
-  if (sel.t === 'historic') { const f = sel.d; return <div><h3 className={h3}>{f.name} ({f.year})</h3><p className="my-1.5 text-[13px] text-mute">{f.note}</p><dl><Row k="Approx. area">{f.hectares ? `${fmt(f.hectares)} ha` : 'not included'}</Row></dl></div> }
+    <Row k="Radiative power">{h.frp == null ? 'not reported' : `${fmt(h.frp, 1)} MW`}</Row><Row k="Detected">{h.time ? fmtTime(h.time) : '—'}</Row><Row k="Sensor">{h.sensor}</Row><Row k="Position">{h.lat.toFixed(3)}, {h.lon.toFixed(3)}</Row><SrcRows src={src} /></dl></div> }
+  if (sel.t === 'historic') { const f = sel.d; return <div><h3 className={h3}>{f.name} ({f.year})</h3><p className="my-1.5 text-[13px] text-mute">{f.note}</p><dl><Row k="Approx. area">{f.hectares ? `${fmt(f.hectares)} ha` : 'not included'}</Row><Row k="Position">{f.lat.toFixed(3)}, {f.lon.toFixed(3)}</Row></dl></div> }
   if (sel.t === 'region') { const s = sel.d; return <div><h3 className={h3}>{s.region.name}</h3><dl className="mt-1.5">
-    <Row k="Risk index"><RiskPill level={s.risk.level} score={s.risk.score} /></Row><Row k="US AQI"><AqiPill aqi={s.air.usAqi} /></Row><Row k="PM2.5">{fmt(s.air.pm25, 1)} µg/m³</Row><Row k="Detections ≤100 km">{s.hotspots100km}</Row><Row k="Active fires ≤250 km">{s.activeFires250km}</Row></dl>
+    <Row k="Risk index"><RiskPill level={s.risk.level} score={s.risk.score} /></Row><Row k="US AQI"><AqiPill aqi={s.air.usAqi} /></Row><Row k="PM2.5">{fmt(s.air.pm25, 1)} µg/m³</Row><Row k="Detections ≤100 km">{s.hotspots100km}</Row><Row k="Active fires ≤250 km">{s.activeFires250km}</Row><Row k="Position">{s.region.lat.toFixed(3)}, {s.region.lon.toFixed(3)}</Row><SrcRows src={src} /></dl>
     <div className="mt-2 flex gap-3 text-[13px]"><Link className="text-sky underline underline-offset-2" to="/risk">Risk detail</Link><Link className="text-sky underline underline-offset-2" to="/air">Air detail</Link></div></div> }
   const c = sel.d
   return <div><h3 className={h3}>{c.name}</h3><p className="mb-1.5 text-[12.5px] text-mute">{c.kind}, {c.province}. Approximate location.</p><dl>
-    <Row k="Nearest active fire">{c.nearestFireKm == null ? 'none reported' : `${c.nearestFireKm} km`}</Row><Row k="Active fires ≤100 km">{c.fires100km}</Row><Row k="Detections ≤100 km">{c.hotspots100km}</Row><Row k="PM2.5 (modelled)">{fmt(c.pm25, 1)} µg/m³</Row><Row k="US AQI"><AqiPill aqi={c.usAqi} /></Row></dl>
+    <Row k="Nearest active fire">{c.nearestFireKm == null ? 'none reported' : `${c.nearestFireKm} km`}</Row><Row k="Active fires ≤100 km">{c.fires100km}</Row><Row k="Detections ≤100 km">{c.hotspots100km}</Row><Row k="PM2.5 (modelled)">{fmt(c.pm25, 1)} µg/m³</Row><Row k="US AQI"><AqiPill aqi={c.usAqi} /></Row><Row k="Position">{c.lat.toFixed(3)}, {c.lon.toFixed(3)}</Row><SrcRows src={src} /></dl>
     {c.reported.length > 0 && <p className="mt-2 text-[12.5px] text-mute">Publicly reported: {c.reported.join('; ')}.</p>}
     <p className="mt-2 text-[12px] leading-relaxed text-dim">Distances are geographic proximity only. They are not an assessment of danger, which depends on wind, terrain and the community’s own knowledge.</p></div>
 }

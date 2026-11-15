@@ -8,7 +8,7 @@ import { useApp } from '../state.tsx'
 import MapView from '../components/MapView.tsx'
 import RiskStrip from '../components/RiskStrip.tsx'
 import { SignList, heroCopy, longDate } from '../components/Signals.tsx'
-import { AqiPill, Async, ButtonLink, KindBadge, Panel, RiskPill, Sources, fmt } from '../components/ui.tsx'
+import { AqiPill, Async, ButtonLink, InfoDot, KindBadge, Panel, RiskPill, Sources, fmt } from '../components/ui.tsx'
 
 const uniqueSources = (s: SourceMeta[]) => s.filter((x, i) => s.findIndex((y) => y.id === x.id) === i)
 
@@ -16,7 +16,8 @@ const uniqueSources = (s: SourceMeta[]) => s.filter((x, i) => s.findIndex((y) =>
 const EVAC_SOURCE = { text: 'Canadian Wildland Fire Evacuation Database, 1980–2021. Analysis by Dr. Amy Cardinal Christianson, Métis fire research scientist, as reported by Global News and the Associated Press (2023).', url: 'https://globalnews.ca/news/9918749/indigenous-vulnerable-wildfires-evacuations' }
 
 export default function Overview() {
-  const { region, setRegionId, mode, setMode } = useApp()
+  const { region, setRegionId, mode, setMode, horizon } = useApp()
+  const nextDays = `${horizon} day${horizon === 1 ? '' : 's'}`
   const risk = useApi<RegionRisk>(region ? `risk/${region.id}` : null)
   const air = useApi<RegionAir>(region ? `air/${region.id}?pastDays=7` : null)
   const summary = useApi<RegionSummary[]>('summary')
@@ -31,7 +32,7 @@ export default function Overview() {
   const developments: { text: string; to: string }[] = []
   const biggest = [...(fires.data ?? [])].filter((f) => f.stage === 'OC').sort((a, b) => b.hectares - a.hectares)[0]
   if (biggest) developments.push({ text: `Largest out-of-control fire: ${biggest.name} (${biggest.agency}), ${fmt(biggest.hectares)} ha reported.`, to: '/map' })
-  if (rising?.length) developments.push({ text: `Risk index forecast to rise 5 points or more within 72 hours in ${rising.map((s) => s.region.short).join(', ')}.`, to: '/risk' })
+  if (rising?.length) developments.push({ text: `Risk index forecast to rise 5 points or more within ${nextDays} in ${rising.map((s) => s.region.short).join(', ')}.`, to: '/risk' })
   const worstAir = [...(summary.data ?? [])].sort((a, b) => (b.air.usAqi ?? 0) - (a.air.usAqi ?? 0))[0]
   if (worstAir && (worstAir.air.usAqi ?? 0) > 100) developments.push({ text: `Poorest air: ${worstAir.region.short}, US AQI ${worstAir.air.usAqi} (modelled).`, to: '/air' })
 
@@ -65,7 +66,7 @@ export default function Overview() {
             </div>
             <div className="min-w-0">
               <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <h2 className="text-[14.5px] font-semibold tracking-normal">Risk index by day</h2>
+                <h2 className="flex items-center gap-1.5 text-[14.5px] font-semibold tracking-normal">Risk index by day<InfoDot k="riskIndex" /></h2>
                 <p className="text-[12.5px] text-mute">A relative index from 0 to 100, not a probability</p>
               </div>
               <RiskStrip timeline={r.timeline} />
@@ -98,7 +99,7 @@ export default function Overview() {
                 <th scope="col" className="w-12 pr-3 pb-2 pl-2 font-normal">Rank</th>
                 <th scope="col" className="pr-4 pb-2 font-normal">Region</th>
                 <th scope="col" className="pr-4 pb-2 font-normal">Risk today</th>
-                <th scope="col" className="pr-4 pb-2 font-normal whitespace-nowrap">Next 72 h</th>
+                <th scope="col" className="pr-4 pb-2 font-normal whitespace-nowrap">Next {nextDays}</th>
                 <th scope="col" className="pr-4 pb-2 font-normal whitespace-nowrap">US AQI</th>
                 <th scope="col" className="pr-2 pb-2 text-right font-normal whitespace-nowrap">Fire detections<span className="block text-[11.5px] text-dim">within 100 km</span></th>
               </tr></thead>
@@ -113,7 +114,7 @@ export default function Overview() {
                     <div aria-hidden className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-ink-700 sm:block"><div className="h-full rounded-full" style={{ width: `${s.risk.score}%`, background: LEVEL_COLORS[s.risk.level] }} /></div>
                     <RiskPill level={s.risk.level} score={s.risk.score} />
                   </div></td>
-                  <td className={`num py-3 pr-4 whitespace-nowrap ${t >= 5 ? 'font-semibold text-ember-deep' : t <= -5 ? 'text-moss' : 'text-mute'}`} title="Forecast change in the risk index over the next 72 hours">{t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0'}</td>
+                  <td className={`num py-3 pr-4 whitespace-nowrap ${t >= 5 ? 'font-semibold text-ember-deep' : t <= -5 ? 'text-moss' : 'text-mute'}`} title={`Forecast change in the risk index over the next ${nextDays}`}>{t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0'}</td>
                   <td className="py-3 pr-4"><AqiPill aqi={s.air.usAqi} /></td>
                   <td className="num py-3 pr-2 text-right">{s.hotspots100km}</td>
                 </tr>
@@ -129,7 +130,7 @@ export default function Overview() {
           {[
             { k: 'Active wildfires', v: fires.data?.length, h: fires.data ? `${oc} out of control` : fires.error ? 'Fire reports unavailable' : 'Loading', to: '/map' },
             { k: 'Listed communities near fire or smoke', v: near?.length, h: communities.data ? `of ${communities.data.length}, with a fire within 100 km or US AQI over 100` : communities.error ? 'Community data unavailable' : 'Loading', to: '/communities' },
-            { k: 'Regions where risk is rising', v: rising?.length, h: summary.data ? `of ${summary.data.length}, forecast up 5 points or more in 72 hours` : summary.error ? 'Regional data unavailable' : 'Loading', to: '/risk' },
+            { k: 'Regions where risk is rising', v: rising?.length, h: summary.data ? `of ${summary.data.length}, forecast up 5 points or more in ${nextDays}` : summary.error ? 'Regional data unavailable' : 'Loading', to: '/risk' },
           ].map((x) => <div key={x.k} className="grid grid-cols-[4.25rem_minmax(0,1fr)] items-baseline gap-x-4 py-3.5">
             <dt className="col-start-2 row-start-1"><Link to={x.to} className="font-medium underline decoration-line underline-offset-[3px] hover:decoration-fg">{x.k}</Link><span className="mt-0.5 block text-[12.5px] text-mute">{x.h}</span></dt>
             <dd className="num font-display condensed col-start-1 row-start-1 text-[38px] leading-none font-semibold">{x.v ?? '—'}</dd>

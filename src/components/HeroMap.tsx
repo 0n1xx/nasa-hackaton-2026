@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Circle, CircleMarker, MapContainer, Pane, Rectangle, TileLayer, Tooltip, WMSTileLayer, ZoomControl, useMap } from 'react-leaflet'
+import { Circle, CircleMarker, MapContainer, Pane, Popup, Rectangle, TileLayer, Tooltip, WMSTileLayer, ZoomControl, useMap } from 'react-leaflet'
 import { useSearchParams } from 'react-router-dom'
 import { Pause, Play } from 'lucide-react'
-import type { ActiveFire, CommunityExposure, RegionSummary, RiskGrid, RiskLevel } from '../../shared/types.ts'
+import type { ReactNode } from 'react'
+import type { ActiveFire, CommunityExposure, RegionSummary, RiskGrid, RiskLevel, SourceMeta } from '../../shared/types.ts'
 import { LEVEL_COLORS, levelFor } from '../../shared/risk.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
+import { EXPLAIN, stageLabel } from '../explain.ts'
+import { InfoPopover, fmt, fmtTime } from './ui.tsx'
+import HorizonSelector from './HorizonSelector.tsx'
 
 const GIBS_WMS = 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi'
 const NASA_DATE = '2026-07-14'
@@ -22,6 +26,8 @@ const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas'
 const CSS = `
 .leaflet-tooltip.region-label{background:transparent;border:0;box-shadow:none;padding:0;font-weight:700;font-size:13px;color:${INK};font-variant-numeric:tabular-nums;text-shadow:0 0 3px rgba(255,255,255,.9)}
 .leaflet-tooltip.region-label::before,.leaflet-tooltip.community-label::before{display:none}
+.hero-popup .leaflet-popup-content-wrapper{border-radius:12px;box-shadow:0 10px 24px rgba(19,33,27,.18)}
+.hero-popup .leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.4;color:${INK}}
 .leaflet-tooltip.community-label{background:#fff;border:0;border-radius:4px;box-shadow:0 1px 3px rgba(19,33,27,.3);padding:2px 6px;font-size:12px;font-weight:600;color:${INK}}
 `
 
@@ -37,12 +43,28 @@ const localDate = (iso: string) => {
 const shortDay = (d: GridDay) => d.kind === 'today' ? 'Today' : localDate(d.date).toLocaleDateString('en-US', { weekday: 'short' })
 const dayLine = (d: GridDay) => d.kind === 'today' ? 'Today'
   : `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · ${d.kind === 'forecast' ? 'predicted' : 'past'}`
+/** Compact pill text when the window is long (up to 19 days): weekday initial and day of month, so repeated weekdays stay distinct. */
+const pillDay = (d: GridDay, compact: boolean) => d.kind === 'today' ? 'Today'
+  : compact ? `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'narrow' })} ${localDate(d.date).getDate()}` : shortDay(d)
 const validScore = (v: number | null | undefined): v is number => v != null && !Number.isNaN(v)
 
 /** "Namaygoosisagagun (Collins) First Nation" becomes "Collins", matching news naming. */
 const shortName = (name: string) => {
   const m = name.match(/\(([^),]+)\)/)
   return (m ? m[1] : name).replace(/ First Nations?\b/, '').trim()
+}
+
+/** The body of every map popup: a title, one plain line, a few values, then source and update time. */
+function Card({ title, line, rows, source, note }: { title: string; line: string; rows: [string, ReactNode][]; source?: SourceMeta; note?: string }) {
+  return <div className="w-[236px]">
+    <p className="text-[14px] font-semibold">{title}</p>
+    <p className="mt-0.5 text-[12.5px] text-[#52615a]">{line}</p>
+    <dl className="mt-2 space-y-0.5">
+      {rows.map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-[#52615a]">{k}</dt><dd className="num text-right font-medium">{v}</dd></div>)}
+    </dl>
+    {note && <p className="mt-2 text-[12px] text-[#52615a]">{note}</p>}
+    {source && <p className="mt-2 border-t border-[#e8ebe7] pt-1.5 text-[12px] text-[#52615a]">Source: {source.label}<br />Updated: <span className="num">{fmtTime(source.fetchedAt)}</span></p>}
+  </div>
 }
 
 /** Flies to a point so it lands 200px right of centre on wide screens, clear of the left panel. */
@@ -57,7 +79,7 @@ function FlyTo({ lat, lon, zoom }: { lat: number; lon: number; zoom: number }) {
 }
 
 export default function HeroMap() {
-  const { region, regions, setRegionId } = useApp()
+  const { region, regions, setRegionId, mode } = useApp()
   const [query] = useSearchParams()
   const [nasa, setNasa] = useState(() => query.get('nasa') === '1')
 
@@ -74,6 +96,9 @@ export default function HeroMap() {
   const [playing, setPlaying] = useState(false)
   const day = Math.min(dayPick ?? todayIdx, lastIdx)
   const autoplayed = useRef(false)
+  const [zone, setZone] = useState<{ i: number; lat: number; lon: number } | null>(null)
+  const strip = useRef<HTMLDivElement>(null)
+  const sim = mode === 'sim'
 
   // Play the week once when the grid first arrives, so the map visibly comes alive on stage.
   useEffect(() => {
@@ -96,7 +121,14 @@ export default function HeroMap() {
     return () => window.clearInterval(id)
   }, [playing, lastIdx])
 
-  useEffect(() => { if (nasa) setPlaying(false) }, [nasa])
+  useEffect(() => { if (nasa) { setPlaying(false); setZone(null) } }, [nasa])
+
+  // Keep the selected day visible when the strip scrolls (long horizons, or playback).
+  useEffect(() => {
+    const box = strip.current
+    const el = box?.querySelector<HTMLElement>('[aria-pressed="true"]')
+    if (el && box && box.scrollWidth > box.clientWidth) box.scrollTo({ left: el.offsetLeft - box.clientWidth / 2 + el.clientWidth / 2, behavior: reducedMotion() ? 'auto' : 'smooth' })
+  }, [day])
 
   const togglePlay = () => {
     if (playing) { setPlaying(false); return }
@@ -159,10 +191,23 @@ export default function HeroMap() {
         {!nasa && grid && grid.cells.map((c, i) => {
           const v = c.scores[day]
           const ok = validScore(v)
-          return <Rectangle key={i} bounds={cellBounds[i]} interactive={false}
+          return <Rectangle key={i} bounds={cellBounds[i]}
+            eventHandlers={{ click: (e) => { if (ok) setZone({ i, lat: e.latlng.lat, lon: e.latlng.lng }) } }}
             pathOptions={{ className: 'risk-cell', stroke: false, weight: 0, fillColor: ok ? LEVEL_COLORS[levelFor(v)] : '#ffffff', fillOpacity: ok ? 0.38 : 0 }} />
         })}
       </Pane>
+
+      {!nasa && grid && zone && grid.cells[zone.i] && (() => {
+        const cell = grid.cells[zone.i]
+        const v = cell.scores[day]
+        const d = grid.days[day]
+        return <Popup key={zone.i} position={[zone.lat, zone.lon]} className="hero-popup" eventHandlers={{ remove: () => setZone(null) }}>
+          <Card title={validScore(v) ? `Risk ${Math.round(v)} · ${levelFor(v)}` : 'No score'} line={EXPLAIN.riskZone.what}
+            rows={[['Day', d.kind === 'today' ? 'Today' : `${localDate(d.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · ${d.kind === 'forecast' ? 'Predicted' : 'Past'}`],
+              ['Cell centre', `${cell.lat.toFixed(2)}, ${cell.lon.toFixed(2)}`]]}
+            note={`${EXPLAIN.riskIndex.read}${sim ? ' Simulated inputs.' : ''}`} source={gridApi.sources[0]} />
+        </Popup>
+      })()}
 
       <Pane name="hero-regions" style={{ zIndex: 350 }}>
         {!nasa && grid && (summary.data ?? []).map((s) => {
@@ -189,6 +234,12 @@ export default function HeroMap() {
       {!nasa && (fires.data ?? []).map((f) => <CircleMarker key={f.id} center={[f.lat, f.lon]} radius={4}
         pathOptions={{ className: 'fire-pulse', color: '#e5482b', weight: 1, opacity: 0.9, fillColor: '#e5482b', fillOpacity: 0.9 }}>
         <Tooltip>{f.name}</Tooltip>
+        <Popup className="hero-popup">
+          <Card title={sim ? 'Simulated fire' : 'Active fire'} line={sim ? EXPLAIN['kind.simulated'].what : EXPLAIN.activeFire.what}
+            rows={[['Name', f.name], ['Agency', f.agency || '—'], ['Stage', stageLabel(f.stage)], ['Size', `${fmt(f.hectares)} ha`],
+              ['Reported', f.startDate?.slice(0, 10) ?? '—'], ['Location', `${f.lat.toFixed(3)}, ${f.lon.toFixed(3)}`]]}
+            source={fires.sources[0]} />
+        </Popup>
       </CircleMarker>)}
 
       <Pane name="hero-communities" style={{ zIndex: 450 }}>
@@ -199,6 +250,14 @@ export default function HeroMap() {
             {lab
               ? <Tooltip permanent direction={/Collins|Namaygoosisagagun/.test(c.name) ? "left" : "right"} offset={/Collins|Namaygoosisagagun/.test(c.name) ? [-6, 0] : [6, 0]} className="community-label">{shortName(c.name)}</Tooltip>
               : <Tooltip>{c.name}</Tooltip>}
+            <Popup className="hero-popup">
+              <Card title={c.name} line={EXPLAIN[c.kind === 'Métis Settlement' ? 'community.metis' : 'community.firstNation'].what}
+                rows={[['Type', c.kind], ['Province', c.province],
+                  ['Nearest active fire', c.nearestFireKm == null ? 'none reported' : `${c.nearestFireKm} km`],
+                  ...(c.nearestFireName && c.nearestFireKm != null ? [['Fire', c.nearestFireName] as [string, ReactNode]] : [])]}
+                note={`Approximate public location. ${EXPLAIN.community.read}`}
+                source={communities.sources.find((x) => x.id === 'communities') ?? communities.sources[0]} />
+            </Popup>
           </CircleMarker>
         })}
       </Pane>
@@ -212,29 +271,46 @@ export default function HeroMap() {
     </div>
 
     {!nasa && grid && <div className="absolute bottom-6 left-1/2 z-[1000] flex max-w-[calc(100vw-32px)] -translate-x-1/2 flex-col items-center gap-2 md:left-[calc(50%+188px)] md:max-w-[calc(100vw-424px)]">
+      <HorizonSelector compact />
       <p aria-live="polite" className="rounded-full bg-white/90 px-3 py-0.5 text-[13px] font-semibold whitespace-nowrap text-[#13211b] shadow-sm">{dayLine(grid.days[day])}</p>
       <div className="flex max-w-full items-center gap-2 rounded-2xl bg-white p-1.5 shadow-lg">
         <button type="button" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play the week'}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#13211b] text-white transition-colors hover:bg-[#2a3a32] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#13211b]">
           {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" className="ml-0.5" />}
         </button>
-        <div role="group" aria-label="Day" className="flex min-w-0 items-center gap-1 overflow-x-auto">
+        <div ref={strip} role="group" aria-label="Day" className="flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:thin]">
           {grid.days.map((d, i) => {
             const fc = d.kind === 'forecast'
             const firstFc = fc && i > 0 && grid.days[i - 1].kind !== 'forecast'
-            return <button key={`${d.date}-${i}`} type="button" aria-pressed={i === day} title={dayLine(d)}
-              onClick={() => { setPlaying(false); setDayPick(i) }} className={pill(i === day, fc, firstFc)}>
-              {shortDay(d)}
-            </button>
+            const many = grid.days.length > 9
+            return <span key={`${d.date}-${i}`} className="flex shrink-0 items-center gap-1">
+              {firstFc && <span className="ml-1.5 shrink-0 text-[11px] font-semibold tracking-wide text-[#c9302c] uppercase">Predicted</span>}
+              <button type="button" aria-pressed={i === day} title={dayLine(d)}
+                onClick={() => { setPlaying(false); setDayPick(i) }} className={`${pill(i === day, fc, false)} ${many ? 'px-2' : ''}`}>
+                {pillDay(d, many)}
+              </button>
+            </span>
           })}
         </div>
       </div>
     </div>}
 
-    {!nasa && <div aria-label="Risk legend" className="absolute bottom-[116px] left-4 z-[1000] flex flex-col gap-1 rounded-xl bg-white/95 px-3 py-2 text-[12px] text-[#13211b] shadow-md md:left-[392px] lg:bottom-6">
-      {LEVELS.map((l) => <span key={l} className="flex items-center gap-2">
-        <span aria-hidden className="h-3 w-3 rounded-sm" style={{ background: LEVEL_COLORS[l], opacity: 0.75 }} />{l}
-      </span>)}
-    </div>}
+    <div aria-label="Map legend" className="absolute bottom-[116px] left-4 z-[1000] flex flex-col items-start gap-0.5 rounded-xl bg-white/95 px-2 py-1.5 text-[12px] text-[#13211b] shadow-md md:left-[392px] lg:bottom-6">
+      {!nasa && LEVELS.map((l) => <InfoPopover key={l} k={`level.${l}`} className="px-1 py-0.5 hover:bg-[#13211b]/5">
+        <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm" style={{ background: LEVEL_COLORS[l], opacity: 0.75 }} />{l}
+      </InfoPopover>)}
+      {!nasa && <InfoPopover k={sim ? 'simulatedScenario' : 'activeFire'} className="px-1 py-0.5 hover:bg-[#13211b]/5">
+        <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-full bg-[#e5482b]" />{sim ? 'Simulated fire' : 'Active fire'}
+      </InfoPopover>}
+      {nasa && <InfoPopover k="nasaTrueColour" className="px-1 py-0.5 hover:bg-[#13211b]/5">
+        <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm bg-[linear-gradient(135deg,#3d6b3a,#a9b3a0_55%,#f4f4f1)]" />True colour
+      </InfoPopover>}
+      {nasa && <InfoPopover k="nasaThermal" className="px-1 py-0.5 hover:bg-[#13211b]/5">
+        <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-[2px] bg-[#ff3b1f]" />Thermal anomalies
+      </InfoPopover>}
+      <InfoPopover k="community" className="px-1 py-0.5 hover:bg-[#13211b]/5">
+        <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full border-[1.5px] border-white bg-[#13211b] shadow-[0_0_0_1px_#13211b]" />Community
+      </InfoPopover>
+    </div>
   </>
 }

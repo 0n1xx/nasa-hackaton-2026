@@ -7,6 +7,7 @@ import { useApp } from '../state.tsx'
 import { ACTIONS, DISCLAIMER, FOCUS, dayLabel, summarize } from '../actions.ts'
 import { SignList } from '../components/Signals.tsx'
 import RiskStrip from '../components/RiskStrip.tsx'
+import HorizonSelector from '../components/HorizonSelector.tsx'
 import { Async, ButtonLink, KIND, KindBadge, PageHead, Panel, RiskPill, Sources, fmt } from '../components/ui.tsx'
 
 function Dial({ score, color, band, level }: { score: number; color: string; band: number; level: string }) {
@@ -29,15 +30,16 @@ function Dial({ score, color, band, level }: { score: number; color: string; ban
 const severity = (s: number | null) => (s == null ? 'var(--color-dim)' : s > 0.66 ? LEVEL_COLORS.Critical : s > 0.33 ? LEVEL_COLORS.High : LEVEL_COLORS.Low)
 
 export default function Risk() {
-  const { region, setRegionId, mode } = useApp()
+  const { region, setRegionId, mode, horizon } = useApp()
   const risk = useApi<RegionRisk>(region ? `risk/${region.id}` : null)
   const air = useApi<RegionAir>(region ? `air/${region.id}?pastDays=7` : null)
   const summary = useApi<RegionSummary[]>('summary')
 
   return <>
     <PageHead kicker="Early warning" title={`Are fire conditions lining up in ${region?.short ?? 'this region'}?`}>
-      The conditions that let wildfires start and spread often line up days ahead: heat building, humidity falling, no soaking rain, strong wind, fire already on the landscape, thickening smoke. This page tracks them for the selected region, with a risk index for today and the next 72 hours, so crews and equipment can be in place before ignition. It cannot say where or when a fire will start.
+      The conditions that let wildfires start and spread often line up days ahead: heat building, humidity falling, no soaking rain, strong wind, fire already on the landscape, thickening smoke. This page tracks them for the selected region, with a risk index for today and the next {horizon} day{horizon === 1 ? '' : 's'}, so crews and equipment can be in place before ignition. It cannot say where or when a fire will start.
     </PageHead>
+    <div className="-mt-6 mb-6 flex flex-wrap items-center gap-3"><span className="text-[13px] font-medium text-mute">Forecast</span><HorizonSelector /></div>
     <Async state={risk} height={520}>{(r) => {
       const c = LEVEL_COLORS[r.today.level], month = mode === 'sim' ? 6 : new Date().getMonth()
       const today = r.days.filter((d) => d.kind === 'historical').at(-1)
@@ -55,7 +57,7 @@ export default function Risk() {
       return <div className="space-y-10">
         {/* 1. Level today, and what is driving it */}
         <div className="grid grid-cols-1 gap-x-12 gap-y-10 xl:grid-cols-[340px_1fr]">
-          <Panel title="Risk index today">
+          <Panel info="riskIndex" title="Risk index today">
             <Dial score={r.today.score} color={c} band={r.today.uncertainty} level={r.today.level} />
             <dl className="mt-4 space-y-2 text-[12.5px]">
               <div className="flex justify-between gap-3"><dt className="text-mute">Confidence</dt><dd className={`num ${r.today.confidence === 'Low' ? 'text-sun' : ''}`}>{r.today.confidence}</dd></div>
@@ -66,7 +68,7 @@ export default function Risk() {
             <p className="mt-3 text-[12.5px] leading-relaxed text-mute">A relative index from a rule-based prototype. It is not a probability of ignition and has not been validated against fire records.</p>
           </Panel>
 
-          <Panel title="What is driving it" sub="Each bar is the number of points a condition adds to today’s index. Hover a row for the scoring rule.">
+          <Panel info="riskIndex" title="What is driving it" sub="Each bar is the number of points a condition adds to today’s index. Hover a row for the scoring rule.">
             <ul className="space-y-2.5">{r.today.factors.map((f) => { const maxPts = f.weight * 100
               return <li key={f.key} title={f.explain} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-[12.5px] md:grid-cols-[230px_1fr_76px_64px]">
                 <span className="truncate">{f.label}</span>
@@ -81,12 +83,12 @@ export default function Risk() {
 
         {/* 2. The outlook, and the warning signs that have tripped */}
         <div className="grid grid-cols-1 gap-x-12 gap-y-10 xl:grid-cols-2">
-          <Panel title="Past week and 72-hour outlook" sub="Past days use weather model analyses; outlook days use the forecast. Satellite detections are held at today’s count.">
+          <Panel title={`Past days and ${horizon}-day forecast`} sub="Past days use weather model analyses; forecast days use the forecast. Satellite detections are held at today’s count.">
             {s.forecast && <p className="mb-2 text-[15px] font-medium">{s.forecast.charAt(0).toUpperCase() + s.forecast.slice(1)}.</p>}
             <RiskStrip timeline={r.timeline} />
           </Panel>
 
-          <Panel title="Warning signs" sub="Plain-language checks on the same data: which conditions are lining up, and since when.">
+          <Panel info="sign.outlook" title="Warning signs" sub="Plain-language checks on the same data: which conditions are lining up, and since when.">
             {signs ? <>
               <p className="mb-3 text-[15px] font-medium">{s.signs}{s.building && <span className="font-normal text-mute"> {s.building}</span>}</p>
               <SignList signs={signs} />
@@ -125,7 +127,7 @@ export default function Risk() {
         {/* 5. Other regions, and how to read the data */}
         <div className="grid grid-cols-1 gap-x-12 gap-y-10 xl:grid-cols-2">
           <Panel title="All regions" sub="Select a row to see another region’s early warning.">
-            <Async state={summary} height={200}>{(rows) => <ul className="divide-y divide-line/60">{[...rows].sort((a, b) => b.risk.score - a.risk.score).map((x) => <li key={x.region.id}><button type="button" onClick={() => setRegionId(x.region.id)} aria-current={x.region.id === r.region.id || undefined} className={`flex w-full items-center justify-between gap-3 px-1.5 py-1.5 text-left text-[13px] hover:bg-ink-800 ${x.region.id === r.region.id ? 'font-semibold' : 'text-mute'}`}><span>{x.region.name}</span><RiskPill level={x.risk.level} score={x.risk.score} /></button></li>)}</ul>}</Async>
+            <Async state={summary} height={200}>{(rows) => <ul className="divide-y divide-line/60">{[...rows].sort((a, b) => b.risk.score - a.risk.score).map((x) => <li key={x.region.id}><button type="button" onClick={() => setRegionId(x.region.id)} aria-current={x.region.id === r.region.id || undefined} className={`flex w-full items-center justify-between gap-3 px-1.5 py-1.5 text-left text-[13px] hover:bg-ink-800 ${x.region.id === r.region.id ? 'font-semibold' : 'text-mute'}`}><span>{x.region.name}</span><RiskPill level={x.risk.level} score={x.risk.score} explain={false} /></button></li>)}</ul>}</Async>
           </Panel>
           <Panel title="How to read the data types on this site">
             <ul className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">{(['observed', 'historical', 'forecast', 'model', 'simulated'] as const).map((k) => <li key={k} className="border-t border-line pt-2.5"><KindBadge kind={k} /><p className="mt-1.5 text-[12px] leading-relaxed text-mute">{KIND[k].desc}.</p></li>)}</ul>

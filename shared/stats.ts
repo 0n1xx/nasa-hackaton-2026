@@ -169,3 +169,51 @@ export function mannKendall(y: number[]): MannKendall {
 export function zScore(value: number, mean: number, sd: number): number {
   return sd > 0 ? (value - mean) / sd : 0
 }
+
+/**
+ * Sen's slope (Theil–Sen estimator): the median of all pairwise slopes (y_j − y_i) / (j − i), i < j,
+ * in units per step. Non-finite values are skipped (their index still counts as a step). Robust to outliers.
+ */
+export function senSlope(y: number[]): number {
+  const slopes: number[] = []
+  for (let i = 0; i < y.length - 1; i++) {
+    if (!Number.isFinite(y[i])) continue
+    for (let j = i + 1; j < y.length; j++) if (Number.isFinite(y[j])) slopes.push((y[j] - y[i]) / (j - i))
+  }
+  if (!slopes.length) return 0
+  slopes.sort((a, b) => a - b)
+  const m = slopes.length >> 1
+  return slopes.length % 2 ? slopes[m] : (slopes[m - 1] + slopes[m]) / 2
+}
+
+/** Sample quantiles with linear interpolation (R type 7). qs are fractions 0–1. Non-finite values are ignored; empty input gives NaN. */
+export function quantiles(values: number[], qs: number[]): number[] {
+  const s = values.filter(Number.isFinite).sort((a, b) => a - b)
+  if (!s.length) return qs.map(() => NaN)
+  return qs.map((q) => {
+    const h = (s.length - 1) * Math.min(1, Math.max(0, q))
+    const lo = Math.floor(h)
+    return lo + 1 < s.length ? s[lo] + (h - lo) * (s[lo + 1] - s[lo]) : s[lo]
+  })
+}
+
+/**
+ * Percentile rank (0–100) of value within an ascending array, interpolating between neighbours
+ * (the inverse of quantiles(), so a 101-point percentile table maps back to its percentile).
+ * Ties take the middle of the tied run. Below the minimum gives 0, above the maximum gives 100.
+ */
+export function percentileRank(value: number, sorted: number[]): number {
+  const n = sorted.length
+  if (!n || !Number.isFinite(value)) return NaN
+  if (n === 1) return value < sorted[0] ? 0 : value > sorted[0] ? 100 : 50
+  if (value < sorted[0]) return 0
+  if (value > sorted[n - 1]) return 100
+  let lo = 0
+  while (lo < n && sorted[lo] < value) lo++
+  let hi = lo
+  while (hi < n && sorted[hi] === value) hi++
+  let pos: number
+  if (hi > lo) pos = (lo + hi - 1) / 2 // exact match(es)
+  else pos = lo - 1 + (value - sorted[lo - 1]) / (sorted[lo] - sorted[lo - 1])
+  return (pos / (n - 1)) * 100
+}

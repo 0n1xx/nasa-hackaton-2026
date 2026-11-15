@@ -46,3 +46,27 @@ test('zScore', () => {
   assert.equal(zScore(12, 10, 2), 1)
   assert.equal(zScore(5, 5, 0), 0)
 })
+
+import { percentileRank, quantiles, senSlope } from './stats.ts'
+
+test('senSlope: exact line, robust to one outlier, handles NaN', () => {
+  assert.equal(senSlope([1, 3, 5, 7, 9]), 2)
+  assert.equal(senSlope([1, 3, 5, 100, 9, 11]), 2)
+  assert.equal(senSlope([0, NaN, 2, 3]), 1)
+  assert.equal(senSlope([4]), 0)
+})
+
+test('quantiles: type-7 interpolation', () => {
+  assert.deepEqual(quantiles([3, 1, 2, 4, 5], [0, 0.25, 0.5, 1]), [1, 2, 3, 5])
+  assert.deepEqual(quantiles([1, 2], [0.5]), [1.5])
+  assert.ok(Number.isNaN(quantiles([], [0.5])[0]))
+})
+
+test('percentileRank: inverse of a percentile table, clamps, ties', () => {
+  const q = quantiles(Array.from({ length: 1000 }, (_, i) => i), Array.from({ length: 101 }, (_, i) => i / 100))
+  assert.ok(Math.abs(percentileRank(q[96], q) - 96) < 1e-9)
+  assert.ok(Math.abs(percentileRank((q[40] + q[41]) / 2, q) - 40.5) < 1e-9)
+  assert.equal(percentileRank(-5, q), 0)
+  assert.equal(percentileRank(5000, q), 100)
+  assert.equal(percentileRank(2, [1, 2, 2, 3]), 50)
+})

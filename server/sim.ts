@@ -9,6 +9,7 @@ import type { ActiveFire, AirNow, AirPoint, ClimateNormals, Hotspot } from '../s
 import type { Pt, WeatherResult } from './sources/openMeteo.ts'
 import { km } from './util.ts'
 import { aqiFromPm25 } from '../shared/aqi.ts'
+import { DEFAULT_HORIZON, MAX_AIR_HORIZON } from '../shared/horizon.ts'
 
 function rng(seed: number) {
   return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
@@ -62,22 +63,27 @@ function smoke(lat: number, lon: number): number {
 /** Heat/dryness anomaly: strongest over NW Ontario, weaker elsewhere. */
 const anomaly = (lat: number, lon: number) => Math.exp(-(((lat - 50.5) / 5) ** 2 + ((lon + 90.5) / 9) ** 2))
 
-export function simWeather(pts: Pt[]): WeatherResult[] {
+/** 7 past days, today and `horizon` days ahead. The first 11 days (-7 … +3) are identical for any horizon. */
+export function simWeather(pts: Pt[], horizon = DEFAULT_HORIZON): WeatherResult[] {
   return pts.map((p) => {
     const r = rng(hash(p.lat, p.lon)), a = anomaly(p.lat, p.lon)
-    const days = Array.from({ length: 11 }, (_, i) => {
-      const off = i - 7 // -7 … +3
+    // Days beyond +3 draw from their own generator so the original 11-day sequence never shifts.
+    const rx = rng(hash(p.lat, p.lon) + 9173)
+    const days = Array.from({ length: 8 + horizon }, (_, i) => {
+      const off = i - 7 // -7 … +horizon
+      // Past +3 the build has plateaued (build = 1): the same formulas continue, varied only by rx.
+      const g = off > 3 ? rx : r
       // Heat and dryness build through the week from a cool, damp start, so the
       // scenario shows warning signs lining up days before the peak.
       const build = 0.1 + 0.9 * Math.min(1, i / 7)
-      const tMax = 19 + 13 * a * build + (r() - 0.5) * 3 - Math.max(0, p.lat - 55) * 0.5
-      const rhMin = Math.max(14, 62 - 40 * a * build + (r() - 0.5) * 10)
-      const wet = i <= 1 ? r() < 0.55 + 0.4 * a : r() < 0.14 - 0.12 * a
+      const tMax = 19 + 13 * a * build + (g() - 0.5) * 3 - Math.max(0, p.lat - 55) * 0.5
+      const rhMin = Math.max(14, 62 - 40 * a * build + (g() - 0.5) * 10)
+      const wet = i <= 1 ? g() < 0.55 + 0.4 * a : g() < 0.14 - 0.12 * a
       return {
         date: localDay(Date.now() + off * 86400000), kind: off > 0 ? 'forecast' as const : 'historical' as const,
-        tMax: +tMax.toFixed(1), rhMin: Math.round(rhMin), windMax: +(12 + r() * 16 + 10 * a * (off >= -1 ? 1 : 0.4)).toFixed(1), windDir: Math.round(200 + r() * 90),
-        precip: wet ? +((i <= 1 ? 8 : 1) + r() * 9).toFixed(1) : 0, vpdMax: +(0.6108 * Math.exp((17.27 * tMax) / (tMax + 237.3)) * (1 - rhMin / 100)).toFixed(2),
-        soil: +(0.3 - 0.17 * a * build + (r() - 0.5) * 0.03).toFixed(3), snow: 0,
+        tMax: +tMax.toFixed(1), rhMin: Math.round(rhMin), windMax: +(12 + g() * 16 + 10 * a * (off >= -1 ? 1 : 0.4)).toFixed(1), windDir: Math.round(200 + g() * 90),
+        precip: wet ? +((i <= 1 ? 8 : 1) + g() * 9).toFixed(1) : 0, vpdMax: +(0.6108 * Math.exp((17.27 * tMax) / (tMax + 237.3)) * (1 - rhMin / 100)).toFixed(2),
+        soil: +(0.3 - 0.17 * a * build + (g() - 0.5) * 0.03).toFixed(3), snow: 0,
       }
     })
     const t = days[7]
@@ -91,10 +97,10 @@ export function simAirNow(pts: Pt[]): AirNow[] {
   return pts.map((p) => { const pm25 = pmAt(p.lat, p.lon); return { time: new Date().toISOString().slice(0, 16), pm25, pm10: +(pm25 * 1.25 + 4).toFixed(1), usAqi: aqiFromPm25(pm25), aod: +(0.08 + pm25 / 160).toFixed(2) } })
 }
 
-export function simAirSeries(p: Pt, pastDays: number): { now: AirNow; hourly: AirPoint[] } {
+export function simAirSeries(p: Pt, pastDays: number, days = DEFAULT_HORIZON): { now: AirNow; hourly: AirPoint[] } {
   const r = rng(hash(p.lat, p.lon) + 5), hourly: AirPoint[] = []
-  const now = Date.now(), H = 3600000
-  for (let h = -pastDays * 24; h <= 72; h++) {
+  const now = Date.now(), H = 3600000, end = Math.min(days, MAX_AIR_HORIZON) * 24
+  for (let h = -pastDays * 24; h <= end; h++) {
     const ramp = Math.min(1, Math.max(0.08, 1 + h / (24 * 6)))            // smoke builds over the last 6 days
     const pulse = 0.75 + 0.35 * Math.sin((h / 24) * 2 * Math.PI + 1) + (r() - 0.5) * 0.3 // overnight pooling
     const pm25 = Math.max(2, pmAt(p.lat, p.lon, ramp * pulse))

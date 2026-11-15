@@ -7,6 +7,8 @@ import { warningSigns, type SignKey, type WarningSign } from '../../shared/signa
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
 import TrendSheet from './TrendSheet.tsx'
+import HorizonSelector from './HorizonSelector.tsx'
+import { InfoDot, InfoPopover } from './ui.tsx'
 
 const RANK: Record<RiskLevel, number> = { Low: 0, Moderate: 1, High: 2, Critical: 3 }
 const EMBER = '#d4551f'
@@ -60,10 +62,10 @@ function shortName(name: string): string {
   return (paren ? paren[1] : name).replace(/\s+First Nations?$/i, '').trim()
 }
 
-function SectionHead({ title, count }: { title: string; count: string }) {
+function SectionHead({ title, count, info }: { title: string; count: string; info?: string }) {
   return (
     <div className="mb-3 flex items-baseline justify-between text-[13px] font-semibold text-[var(--color-mute)]">
-      <h3>{title}</h3>
+      <h3 className="flex items-center gap-1.5">{title}{info && <InfoDot k={info} />}</h3>
       <span className="tabular-nums">{count}</span>
     </div>
   )
@@ -81,52 +83,79 @@ function Skeleton() {
   )
 }
 
-function DayStrip({ timeline, onOpen }: { timeline: RiskDay[]; onOpen: () => void }) {
+function DayStrip({ timeline, horizon, onOpen }: { timeline: RiskDay[]; horizon: number; onOpen: () => void }) {
+  const n = timeline.length
+  const dense = n > 10
+  const todayIdx = Math.max(0, timeline.findIndex((t) => t.kind === 'today'))
+  const nFcst = timeline.filter((t) => t.kind === 'forecast').length
+  const label = `${horizon}-day forecast`
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`See risk trend. ${timeline.map((t) => `${weekday(t.date, 'long')} ${t.level}`).join(', ')}`}
-      className="group -mx-2 mt-5 block w-[calc(100%+1rem)] cursor-pointer rounded-lg px-2 pb-2 pt-2 text-left transition-colors hover:bg-black/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-fg)]"
-    >
-    <div className="flex justify-end">
-      <span className="flex items-center gap-1 text-[13px] font-semibold text-[#c24a17] group-hover:underline">
-        <LineChart size={15} strokeWidth={2.25} aria-hidden />
-        See trend
-      </span>
-    </div>
-    <div className="mt-1 flex items-end gap-1.5" aria-hidden>
-      {timeline.map((t) => {
-        const color = LEVEL_COLORS[t.level]
-        const isToday = t.kind === 'today'
-        const isPast = t.kind === 'historical'
-        return (
-          <div key={t.date} className="flex min-w-0 flex-1 flex-col items-center" title={`${weekday(t.date, 'short')}: ${t.score}, ${t.level}`}>
-            <div className="flex h-[52px] w-full items-end justify-center">
-              <div
-                className="rounded-[3px]"
-                style={{
-                  width: isToday ? 16 : 10,
-                  height: Math.max(6, Math.round((t.score / 100) * 52)),
-                  background: t.kind === 'forecast' ? `color-mix(in srgb, ${color} 55%, white)` : color,
-                  borderTop: t.kind === 'forecast' ? `2px solid ${color}` : undefined,
-                  opacity: isPast ? 0.55 : 1,
-                }}
-              />
-            </div>
-            <span className={`mt-1.5 text-[11px] leading-none ${isToday ? 'font-semibold text-[var(--color-fg)]' : 'text-[var(--color-mute)]'}`}>
-              {isToday ? 'Today' : weekday(t.date, 'short')}
-            </span>
+    <div className="mt-3">
+      {/* Horizon and trend, side by side: same row the "See trend" link used to have alone */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5"><HorizonSelector compact /><InfoDot k="horizon" /></div>
+        <button
+          type="button"
+          onClick={onOpen}
+          className="flex items-center gap-1 rounded text-[13px] font-semibold text-[#c24a17] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-fg)]"
+        >
+          <LineChart size={15} strokeWidth={2.25} aria-hidden />
+          See trend
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`${label}. See risk trend. ${timeline.map((t) => `${weekday(t.date, 'long')} ${t.level}`).join(', ')}`}
+        className="group -mx-2 mt-1 block w-[calc(100%+1rem)] cursor-pointer rounded-lg px-2 pb-1.5 pt-1.5 text-left transition-colors hover:bg-black/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-fg)]"
+      >
+        {/* Bracket over the forecast bars, so the strip says how far ahead it looks */}
+        <div className={`flex ${dense ? 'gap-[3px]' : 'gap-1.5'}`} aria-hidden>
+          <div style={{ flex: n - nFcst }} />
+          <div className="relative h-[15px] border-t-2 border-edge" style={{ flex: Math.max(nFcst, 1) }}>
+            <span className="absolute right-0 top-[3px] whitespace-nowrap text-[11px] font-semibold leading-none text-[var(--color-mute)]">{label}</span>
           </div>
-        )
-      })}
+        </div>
+        <div className={`mt-1 flex items-end ${dense ? 'gap-[3px]' : 'gap-1.5'}`} aria-hidden>
+          {timeline.map((t, i) => {
+            const color = LEVEL_COLORS[t.level]
+            const isToday = t.kind === 'today'
+            const isPast = t.kind === 'historical'
+            const showLabel = !dense || isToday || (i - todayIdx) % 2 === 0
+            return (
+              <div key={t.date} className="flex min-w-0 flex-1 flex-col items-center" title={`${weekday(t.date, 'short')}: ${t.score}, ${t.level}`}>
+                <div className="flex h-[40px] w-full items-end justify-center">
+                  <div
+                    className={dense ? 'rounded-[2px]' : 'rounded-[3px]'}
+                    style={{
+                      width: dense ? (isToday ? 10 : 6) : isToday ? 16 : 10,
+                      height: Math.max(5, Math.round((t.score / 100) * 40)),
+                      background: t.kind === 'forecast' ? `color-mix(in srgb, ${color} 55%, white)` : color,
+                      borderTop: t.kind === 'forecast' ? `2px solid ${color}` : undefined,
+                      opacity: isPast ? 0.55 : 1,
+                    }}
+                  />
+                </div>
+                <span className={`mt-1.5 whitespace-nowrap text-[11px] leading-none ${isToday ? 'font-semibold text-[var(--color-fg)]' : 'text-[var(--color-mute)]'}`}>
+                  {showLabel ? (isToday ? 'Today' : weekday(t.date, 'short')) : ' '}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </button>
+      {/* Legend for the bars, outside the strip button so the popovers never nest inside it */}
+      <div className="mt-0.5 flex items-center gap-3 text-[11px] text-[var(--color-mute)]">
+        <InfoPopover k="pastDay" className="gap-1">Past</InfoPopover>
+        <InfoPopover k="todayDay" className="gap-1">Today</InfoPopover>
+        <InfoPopover k="predictedDay" className="gap-1">Predicted</InfoPopover>
+      </div>
     </div>
-    </button>
   )
 }
 
 export default function RiskPanel() {
-  const { region, regions, setRegionId, mode } = useApp()
+  const { region, regions, setRegionId, mode, horizon } = useApp()
   const id = region?.id ?? null
   const risk = useApi<RegionRisk>(id ? `risk/${id}` : null)
   const air = useApi<RegionAir>(id ? `air/${id}?pastDays=7` : null)
@@ -169,11 +198,11 @@ export default function RiskPanel() {
             {regions.map((g) => <option key={g.id} value={g.id}>{g.short}</option>)}
           </select>
         </div>
-        {mode === 'sim' && <p className="mt-0.5 text-[12px]" style={{ color: 'var(--color-sun)' }}>Simulated scenario</p>}
+        {mode === 'sim' && <p className="mt-0.5 text-[12px]" style={{ color: 'var(--color-sun)' }}><InfoPopover k="simulatedScenario">Simulated scenario</InfoPopover></p>}
       </div>
 
       {risk.error ? (
-        <div className="mt-5 text-[14px]">
+        <div className="mt-4 text-[14px]">
           <p>Couldn't load data</p>
           <button type="button" onClick={risk.reload} className="mt-1 font-semibold text-[#c24a17] hover:underline">Try again</button>
         </div>
@@ -183,26 +212,30 @@ export default function RiskPanel() {
         <div className="fade-in">
           {/* 2. Hero */}
           <div className="mt-5 flex items-baseline gap-3">
-            <span className="font-display condensed text-[84px] font-bold leading-none tabular-nums tracking-tight" style={{ color: LEVEL_COLORS[r.today.level] }}>
-              {r.today.score}
-            </span>
-            <span className="text-[22px] font-semibold">{r.today.level}</span>
+            <InfoPopover k="riskIndex" className="font-display condensed text-[76px] font-bold leading-none tabular-nums tracking-tight">
+              <span style={{ color: LEVEL_COLORS[r.today.level] }}>{r.today.score}</span>
+            </InfoPopover>
+            <InfoPopover k={`level.${r.today.level}`} className="text-[22px] font-semibold">{r.today.level}</InfoPopover>
           </div>
           {out && (
-            <p className="mt-2 flex items-center gap-1.5 text-[15px]">
-              {out.rising && <TrendingUp size={17} strokeWidth={2.25} style={{ color: LEVEL_COLORS[out.rising] }} aria-hidden />}
-              <span className={out.rising ? 'font-medium' : 'text-[var(--color-mute)]'}>{out.text}</span>
+            <p className="mt-2 text-[15px]">
+              <InfoPopover k="predictedDay" className="gap-1.5">
+                {out.rising && <TrendingUp size={17} strokeWidth={2.25} style={{ color: LEVEL_COLORS[out.rising] }} aria-hidden />}
+                <span className={out.rising ? 'font-medium' : 'text-[var(--color-mute)]'}>{out.text}</span>
+              </InfoPopover>
             </p>
           )}
           {out?.prepBy && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-[14px] font-medium" style={{ color: '#c24a17' }}>
-              <Truck size={17} strokeWidth={2.25} aria-hidden className="shrink-0" />
-              Pre-position crews by {out.prepBy}
+            <p className="mt-1.5 text-[14px] font-medium" style={{ color: '#c24a17' }}>
+              <InfoPopover k="crewsAction" className="gap-1.5">
+                <Truck size={17} strokeWidth={2.25} aria-hidden className="shrink-0" />
+                Pre-position crews by {out.prepBy}
+              </InfoPopover>
             </p>
           )}
 
           {/* 3. Day strip: opens the trend sheet */}
-          <DayStrip timeline={r.timeline} onOpen={() => setTrendOpen(true)} />
+          <DayStrip timeline={r.timeline} horizon={horizon} onOpen={() => setTrendOpen(true)} />
           <TrendSheet open={trendOpen} onClose={closeTrend} />
 
           {/* 4. Warning signs */}
@@ -213,9 +246,11 @@ export default function RiskPanel() {
                 {rows.map((s) => {
                   const Icon = SIGN_ICONS[s.key]
                   return (
-                    <li key={s.key} className="flex items-center gap-3 text-[14px]">
-                      <Icon size={18} strokeWidth={2} style={{ color: EMBER }} aria-hidden className="shrink-0" />
-                      <span>{s.text}</span>
+                    <li key={s.key} className="text-[14px]">
+                      <InfoPopover k={`sign.${s.key}`} className="gap-3">
+                        <Icon size={18} strokeWidth={2} style={{ color: EMBER }} aria-hidden className="shrink-0" />
+                        <span>{s.text}</span>
+                      </InfoPopover>
                     </li>
                   )
                 })}
@@ -228,7 +263,7 @@ export default function RiskPanel() {
           {/* 5. Communities */}
           {nearby.length > 0 && (
             <section className="mt-5">
-              <SectionHead title={allFirstNations ? 'First Nations nearby' : 'Communities nearby'} count={String(nearby.length)} />
+              <SectionHead title={allFirstNations ? 'First Nations nearby' : 'Communities nearby'} count={String(nearby.length)} info="community" />
               <ul className="space-y-2.5">
                 {nearby.slice(0, 3).map((c) => (
                   <li key={c.id} className="flex items-baseline justify-between gap-4 text-[14px]">
@@ -246,7 +281,7 @@ export default function RiskPanel() {
       )}
 
       {/* 6. Primary action */}
-      <div className="mt-auto pt-5">
+      <div className="mt-auto pt-3">
         <Link
           to="/brief"
           className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#c24a17] text-[15px] font-semibold text-white transition-colors hover:bg-[#a33d12]"

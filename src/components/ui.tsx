@@ -1,10 +1,12 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Info } from 'lucide-react'
 import type { DataKind, RiskLevel, SourceMeta } from '../../shared/types.ts'
 import { LEVEL_COLORS } from '../../shared/risk.ts'
 import { aqiBand } from '../../shared/aqi.ts'
 import type { ApiState } from '../api.ts'
 import { useApp } from '../state.tsx'
+import { EXPLAIN } from '../explain.ts'
 
 // Colours follow the tokens in styles.css: moss (observed), sky (forecast), sun (simulated), mute (the rest).
 export const KIND: Record<DataKind, { label: string; color: string; desc: string }> = {
@@ -16,11 +18,12 @@ export const KIND: Record<DataKind, { label: string; color: string; desc: string
   reference: { label: 'Reference', color: '#52615a', desc: 'Static reference information' },
 }
 
-export function KindBadge({ kind }: { kind: DataKind }) {
+export function KindBadge({ kind, explain = true }: { kind: DataKind; explain?: boolean }) {
   const k = KIND[kind]
-  return <span title={k.desc} className="inline-flex items-center gap-1.5 text-[12px] font-medium whitespace-nowrap" style={{ color: k.color }}>
+  const badge = <span title={explain ? undefined : k.desc} className="inline-flex items-center gap-1.5 text-[12px] font-medium whitespace-nowrap" style={{ color: k.color }}>
     <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: k.color }} />{k.label}
   </span>
+  return explain ? <InfoPopover k={`kind.${kind}`}>{badge}</InfoPopover> : badge
 }
 
 export const fmtTime = (iso: string) => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? iso : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }
@@ -31,18 +34,20 @@ export function Sources({ sources }: { sources: SourceMeta[] }) {
   if (!sources.length) return null
   return <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-dim">
     {sources.map((s) => <li key={s.id} title={s.note} className="flex items-center gap-1.5">
-      <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: KIND[s.kind].color }} />
-      {!s.label.startsWith(KIND[s.kind].label) && <span style={{ color: KIND[s.kind].color }}>{KIND[s.kind].label}</span>}
+      <InfoPopover k={`kind.${s.kind}`} className="gap-1.5">
+        <span role="img" aria-label={KIND[s.kind].label} className="h-1.5 w-1.5 rounded-full" style={{ background: KIND[s.kind].color }} />
+        {!s.label.startsWith(KIND[s.kind].label) && <span style={{ color: KIND[s.kind].color }}>{KIND[s.kind].label}</span>}
+      </InfoPopover>
       {s.url ? <a className="text-mute underline decoration-line underline-offset-2 hover:text-fg hover:decoration-mute" href={s.url} target="_blank" rel="noreferrer">{s.label}</a> : <span className="text-mute">{s.label}</span>}
       <span className="num">{fmtTime(s.fetchedAt)}</span>
     </li>)}
   </ul>
 }
 
-export function Panel({ title, sub, right, children, className = '' }: { title?: string; sub?: string; right?: ReactNode; children: ReactNode; className?: string }) {
+export function Panel({ title, info, sub, right, children, className = '' }: { title?: string; info?: string; sub?: string; right?: ReactNode; children: ReactNode; className?: string }) {
   return <section className={`panel fade-in ${className}`}>
     {(title || right) && <header className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-      <div className="min-w-0">{title && <h2 className="font-display condensed text-[24px] leading-tight font-semibold">{title}</h2>}{sub && <p className="mt-1 max-w-[62ch] text-[13px] leading-relaxed text-mute">{sub}</p>}</div>
+      <div className="min-w-0">{title && <h2 className={`font-display condensed text-[24px] leading-tight font-semibold ${info ? "flex items-center gap-2" : ""}`}>{title}{info && <InfoDot k={info} />}</h2>}{sub && <p className="mt-1 max-w-[62ch] text-[13px] leading-relaxed text-mute">{sub}</p>}</div>
       {right}
     </header>}
     {children}
@@ -85,21 +90,23 @@ export function Stat({ label, value, unit, hint, color }: { label: string; value
 }
 
 /** Level swatch plus ink text: the level colours are too light to carry text on white. */
-export function RiskPill({ level, score }: { level: RiskLevel; score?: number }) {
-  return <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap">
+export function RiskPill({ level, score, explain = true }: { level: RiskLevel; score?: number; explain?: boolean }) {
+  const pill = <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap">
     <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: LEVEL_COLORS[level] }} />
     {score != null && <span className="font-semibold text-fg">{score}</span>}
     <span className="text-mute">{level}</span>
   </span>
+  return explain ? <InfoPopover k={`level.${level}`}>{pill}</InfoPopover> : pill
 }
 
-export function AqiPill({ aqi }: { aqi: number | null }) {
+export function AqiPill({ aqi, explain = true }: { aqi: number | null; explain?: boolean }) {
   const b = aqiBand(aqi)
   if (!b) return <span className="num text-dim">—</span>
-  return <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap" title={`US AQI ${aqi}: ${b.label}`}>
+  const pill = <span className="num inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap" title={explain ? undefined : `US AQI ${aqi}: ${b.label}`}>
     <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: b.color }} />
     <span className="font-semibold text-fg">{aqi}</span><span className="text-mute">{b.label}</span>
   </span>
+  return explain ? <InfoPopover k="aqi">{pill}</InfoPopover> : pill
 }
 
 export function PageHead({ kicker, title, children }: { kicker: string; title: string; children?: ReactNode }) {
@@ -113,3 +120,43 @@ export function PageHead({ kicker, title, children }: { kicker: string; title: s
 export const chartAxis = { stroke: '#75827c', fontSize: 11, tickLine: false, axisLine: { stroke: '#d9ded9' } } as const
 export const chartGrid = { stroke: '#e8ebe7', strokeDasharray: '3 3', vertical: false } as const
 export const tooltipStyle = { contentStyle: { background: '#ffffff', border: '1px solid #d9ded9', borderRadius: 8, fontSize: 12, boxShadow: '0 2px 8px rgb(19 33 27 / 0.08)' }, labelStyle: { color: '#52615a' }, itemStyle: { color: '#13211b' }, cursor: { fill: 'rgb(19 33 27 / 0.04)' } } as const
+
+/** Any marker, swatch or heading that explains itself: click or tap toggles a small card from EXPLAIN. Esc or an outside click closes it. */
+export function InfoPopover({ k, children, className = '' }: { k: keyof typeof EXPLAIN | string; children: ReactNode; className?: string }) {
+  const e = EXPLAIN[k]
+  const [open, setOpen] = useState(false)
+  const [place, setPlace] = useState<{ right: boolean; up: boolean }>({ right: false, up: false })
+  const wrap = useRef<HTMLSpanElement>(null)
+  const id = useId()
+
+  useEffect(() => {
+    if (!open) return
+    const r = wrap.current?.getBoundingClientRect()
+    if (r) setPlace({ right: r.left + 296 > window.innerWidth, up: r.bottom + 190 > window.innerHeight && r.top > 200 })
+    const away = (ev: PointerEvent) => { if (!wrap.current?.contains(ev.target as Node)) setOpen(false) }
+    const esc = (ev: KeyboardEvent) => { if (ev.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc) }
+  }, [open])
+
+  if (!e) return <span className={className}>{children}</span>
+  return <span ref={wrap} className="relative inline-flex">
+    <button type="button" aria-expanded={open} aria-controls={id} onClick={(ev) => { ev.stopPropagation(); setOpen((o) => !o) }}
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#13211b] ${className}`}>
+      {children}
+    </button>
+    {open && <span id={id} role="dialog" aria-label={e.title}
+      className={`absolute z-[1100] block w-[280px] max-w-[calc(100vw-32px)] rounded-xl border border-line bg-white p-3 text-left text-[13px] leading-snug font-normal text-fg normal-case shadow-lg ${place.up ? 'bottom-full mb-2' : 'top-full mt-2'} ${place.right ? 'right-0' : 'left-0'}`}>
+      <span className="block font-semibold">{e.title}</span>
+      <span className="mt-1.5 block"><span className="text-mute">What: </span>{e.what}</span>
+      <span className="mt-1 block"><span className="text-mute">Source: </span>{e.source}</span>
+      <span className="mt-1 block"><span className="text-mute">How to read: </span>{e.read}</span>
+    </span>}
+  </span>
+}
+
+/** A small info icon for headings, explained from EXPLAIN. */
+export function InfoDot({ k }: { k: keyof typeof EXPLAIN | string }) {
+  return <InfoPopover k={k} className="text-mute hover:text-fg"><Info size={14} aria-label={`About ${EXPLAIN[k]?.title ?? k}`} /></InfoPopover>
+}

@@ -1,6 +1,7 @@
 // Combines data sources into the views the UI needs. No HTTP details here.
 import type { ActiveFire, CommunityExposure, DayWeather, Envelope, Hotspot, Mode, RegionAir, RegionRisk, RegionSummary, RiskDay, SourceMeta, ClimateNormals, AirTrend } from '../shared/types.ts'
 import { computeRisk, type RiskInputs } from '../shared/risk.ts'
+import { DEFAULT_HORIZON } from '../shared/horizon.ts'
 import { REGIONS, regionById } from './data/regions.ts'
 import { COMMUNITIES } from './data/communities.ts'
 import { getActiveFires, getHotspots24h } from './sources/cwfis.ts'
@@ -30,7 +31,7 @@ export async function hotspots(mode: Mode, days: number, date?: string): Promise
   return { data: await getHotspots24h(), sources: [src('cwfis-hotspots', 'CWFIS satellite hotspots, last 24 h', 'observed', 'https://cwfis.cfs.nrcan.gc.ca/datamart', 'No FIRMS key set, so only the last 24 hours are available')] }
 }
 
-const weather = (mode: Mode, pts: { lat: number; lon: number }[]) => (mode === 'sim' ? Promise.resolve(simWeather(pts)) : getWeather(pts))
+const weather = (mode: Mode, pts: { lat: number; lon: number }[], days: number) => (mode === 'sim' ? Promise.resolve(simWeather(pts, days)) : getWeather(pts, days))
 const airNow = (mode: Mode, pts: { lat: number; lon: number }[]) => (mode === 'sim' ? Promise.resolve(simAirNow(pts)) : getAirNow(pts))
 const wxSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-weather', 'weather') : src('open-meteo-weather', 'Open-Meteo weather (model analysis + forecast)', 'model', 'https://open-meteo.com/', 'Gridded numerical weather models, not station measurements')
 const airSrc = (mode: Mode) => mode === 'sim' ? simSrc('sim-air', 'air quality') : src('open-meteo-air', 'Open-Meteo air quality (CAMS global model)', 'model', 'https://open-meteo.com/en/docs/air-quality-api', 'Modelled at roughly 40 km resolution; not ground monitors. AQI shown is the US EPA scale')
@@ -38,12 +39,14 @@ const riskSrc = () => src('risk-model', 'Before the Smoke risk index v0.1', 'mod
 
 const within = (pts: { lat: number; lon: number }[], lat: number, lon: number, radius: number) => pts.reduce((n, p) => n + (km(lat, lon, p.lat, p.lon) <= radius ? 1 : 0), 0)
 
-/** Risk for each day we can score (needs at least 3 days of rain history before it). */
-export function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode) {
+/** Risk for each day we can score (needs at least 3 days of rain history before it), up to `days` ahead of today. */
+export function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode, days = DEFAULT_HORIZON) {
   const today = wx.days.filter((d) => d.kind === 'historical').at(-1)?.date
   const out: { day: DayWeather; inputs: RiskInputs }[] = []
+  let ahead = 0
   wx.days.forEach((day, i) => {
     if (i < 3) return
+    if (day.kind === 'forecast' && ++ahead > days) return
     const prior = wx.days.slice(Math.max(0, i - 7), i).map((d) => d.precip).filter((v): v is number => v != null)
     const precip7d = prior.length ? (prior.reduce((a, b) => a + b, 0) * 7) / prior.length : null
     out.push({ day, inputs: { tMax: day.tMax, rhMin: day.rhMin, windMax: day.windMax, precip7d: precip7d == null ? null : +precip7d.toFixed(1), soil: day.soil, vpdMax: day.vpdMax, hotspots100km, historyIndex, snow: day.snow, quality: mode === 'sim' ? 'simulated' : day.kind === 'forecast' ? 'forecast' : 'observed' } })
@@ -59,39 +62,40 @@ async function softFires(mode: Mode): Promise<{ list: ActiveFire[] | null; sourc
   try { const f = await activeFires(mode); return { list: f.data, sources: f.sources } } catch { return { list: null, sources: [] } }
 }
 
-export async function regionSummaries(mode: Mode): Promise<Envelope<RegionSummary[]>> {
-  const [wx, air, hs, fires] = await Promise.all([weather(mode, REGIONS), airNow(mode, REGIONS), softHotspots(mode), softFires(mode)])
+export async function regionSummaries(mode: Mode, days = DEFAULT_HORIZON): Promise<Envelope<RegionSummary[]>> {
+  const [wx, air, hs, fires] = await Promise.all([weather(mode, REGIONS, days), airNow(mode, REGIONS), softHotspots(mode), softFires(mode)])
   const data = REGIONS.map((region, i): RegionSummary => {
     const n = hs.list ? within(hs.list, region.lat, region.lon, 100) : null
-    const { today, out } = riskDays(wx[i], n, region.historyIndex, mode)
+    const { today, out } = riskDays(wx[i], n, region.historyIndex, mode, days)
     const idx = out.findIndex((o) => o.day.date === today)
     const now = computeRisk(out[idx]?.inputs ?? out.at(-1)!.inputs)
-    const ahead = out[Math.min(out.length - 1, idx + 3)]
+    const ahead = out[Math.min(out.length - 1, idx + days)]
     return { region, risk: { score: now.score, level: now.level, confidence: now.confidence, trend: ahead ? computeRisk(ahead.inputs).score - now.score : 0 }, air: air[i], hotspots100km: n ?? 0, activeFires250km: fires.list ? within(fires.list, region.lat, region.lon, 250) : 0 }
   })
   return { data, sources: [wxSrc(mode), airSrc(mode), ...hs.sources, ...fires.sources, riskSrc()] }
 }
 
-export async function regionRisk(mode: Mode, id: string): Promise<Envelope<RegionRisk>> {
+export async function regionRisk(mode: Mode, id: string, days = DEFAULT_HORIZON): Promise<Envelope<RegionRisk>> {
   const region = regionById(id)
   if (!region) throw new NotFound(`Unknown region "${id}"`)
   const [[wx], hs, climate] = await Promise.all([
-    weather(mode, [region]), softHotspots(mode),
+    weather(mode, [region], days), softHotspots(mode),
     (mode === 'sim' ? Promise.resolve(simClimate(region.lat)) : getClimate(region.lat, region.lon)).catch((): ClimateNormals | null => null),
   ])
   const n = hs.list ? within(hs.list, region.lat, region.lon, 100) : null
-  const { today, out } = riskDays(wx, n, region.historyIndex, mode)
+  const { today, out } = riskDays(wx, n, region.historyIndex, mode, days)
   const todayEntry = out.find((o) => o.day.date === today) ?? out.at(-1)!
-  const timeline: RiskDay[] = out.map((o) => { const r = computeRisk(o.inputs); return { date: o.day.date, kind: o.day.date === today ? 'today' : o.day.kind, score: r.score, level: r.level } })
+  const timeline: RiskDay[] = out.map((o) => { const r = computeRisk(o.inputs); return { date: o.day.date, kind: o.day.date === today ? 'today' : o.day.kind, score: r.score, level: r.level, confidence: r.confidence, uncertainty: r.uncertainty } })
   const sources = [wxSrc(mode), ...hs.sources, riskSrc()]
   if (climate) sources.push(mode === 'sim' ? simSrc('sim-climate', 'climate normals') : src('nasa-power', 'NASA POWER climatology', 'historical', 'https://power.larc.nasa.gov/', 'Long-term monthly means from NASA reanalysis'))
-  return { data: { region, current: wx.current, today: computeRisk(todayEntry.inputs), timeline, days: wx.days, hotspots100km: n ?? 0, climate }, sources }
+  return { data: { region, current: wx.current, today: computeRisk(todayEntry.inputs), timeline, days: wx.days, hotspots100km: n ?? 0, climate, horizon: days }, sources }
 }
 
-export async function regionAir(mode: Mode, id: string, pastDays: number): Promise<Envelope<RegionAir>> {
+/** Air series for a region; the forecast part stops at min(days, MAX_AIR_HORIZON) because the air-quality model ends there. */
+export async function regionAir(mode: Mode, id: string, pastDays: number, days = DEFAULT_HORIZON): Promise<Envelope<RegionAir>> {
   const region = regionById(id)
   if (!region) throw new NotFound(`Unknown region "${id}"`)
-  const { now, hourly } = mode === 'sim' ? simAirSeries(region, pastDays) : await getAirSeries(region, pastDays)
+  const { now, hourly } = mode === 'sim' ? simAirSeries(region, pastDays, days) : await getAirSeries(region, pastDays, days)
   const byDay = new Map<string, { sum: number; n: number; fc: boolean }>()
   for (const h of hourly) {
     if (h.pm25 == null) continue
