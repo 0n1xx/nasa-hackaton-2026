@@ -57,7 +57,7 @@ Three speakers. About 540 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 **1:30** Before the Smoke puts those pieces in one place: NASA satellite fire detections and imagery, weather, air quality, and years of fire history.
 
-**1:41** When the signs line up, it flags that area as high risk. Days ahead.
+**1:41** From that, our model predicts fire risk for every part of the map, three days ahead. Green, yellow, orange, red.
 
 **1:47** That warning goes to the people who move crews, pumps and planes: governments, fire agencies and community leaders. So resources get there before a fire starts, or while it's still small.
 
@@ -65,7 +65,7 @@ Three speakers. About 540 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 **[PAUSE 1 second.]**
 
-**2:08** To be clear, it doesn't predict where a fire will start. It shows when conditions are lining up, and why. Let us show you.
+**2:08** To be clear, it predicts the risk, not the exact spot a fire starts. And it shows you why. Let us show you.
 
 **[Turn to Speaker 3, who is already at the laptop with a hand on the trackpad. Speaker 1 switches the screen to the browser.]**
 
@@ -73,43 +73,51 @@ Three speakers. About 540 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 ## SPEAKER 3: the live demo (2:20–3:50)
 
-**[BEFORE GOING ON STAGE: site open at the home screen (the map). Header toggle on **Simulated**. Region in the panel: **Thunder Bay**. Browser full screen (F11), zoom 100%.]**
+**[BEFORE GOING ON STAGE: site open at the home screen (the map), header toggle on **Simulated**, panel region **Thunder Bay**. Browser full screen (F11), zoom 100%. RELOAD the page just before you start: the map replays the week by itself.]**
 
-### Step 1: the panel (2:20–2:50)
+### Step 1: watch it build (2:20–2:40)
 
-**2:20** This is Before the Smoke. It's November, so fire season is over. What you're seeing is a simulated summer scenario, and the site says so right here.
+**[As you start talking, reload the page. The coloured zones play through the week on their own. If they've finished, press the round **Play** button at the bottom of the map.]**
+
+**2:20** This is Before the Smoke, running on a simulated summer scenario, since fire season is over. Watch the map.
+
+**2:27** A week ago, this region was green and yellow. Day by day it turns orange. And here, the model's prediction for the next three days: red.
+
+> *If the zones don't appear:* skip to the panel. Say, "The model scores every part of the map, every day."
+
+### Step 2: what it predicts, and what to do (2:40–2:58)
 
 **[Point at the big number in the panel.]**
 
-**2:30** Thunder Bay District. Sixty-seven. High today. And tomorrow, Critical.
+**2:40** Thunder Bay District. Sixty-seven, High today. Predicted Critical tomorrow. So it tells you what to do: pre-position crews today.
 
-**2:37** Why? Five warning signs are on. Ten degrees hotter this week. Humidity down to twenty-nine percent. Six days without rain. Wind coming. And satellites already see fire nearby.
+**2:50** Why? Ten degrees hotter this week. Humidity down to twenty-nine percent. Six days without rain. And satellites already see fire nearby.
 
-> *If the panel shows "Couldn't load data":* click **Simulated** in the top right. Still failing: play the screen recording and keep talking.
+### Step 3: the statistics (2:58–3:15)
 
-### Step 2: the map (2:50–3:00)
+**[CLICK **See trend** in the panel.]**
 
-**[Sweep a hand across the coloured circles on the map.]**
+**3:00** And this isn't a guess. Here's the time series. A Mann–Kendall trend test says the rise is real: p equals point zero zero two. And it's seven degrees hotter than NASA's climate normal.
 
-**2:50** Every circle is a region, coloured by risk. The redder it is, the sooner crews and equipment should be there.
+**[Press Esc to close.]**
 
-### Step 3: the real NASA imagery (3:00–3:25)
+> *If the chart is slow:* say the line while it loads, then press Esc.
 
-**[CLICK **NASA satellite · 14 July 2026** at the bottom of the map. Wait about two seconds for the imagery.]**
+### Step 4: the real NASA imagery (3:15–3:35)
 
-**3:03** Now this part is real. NASA satellite imagery from the fourteenth of July, the week of the evacuations. The red is fire seen from space. That haze is the smoke.
+**[CLICK **NASA satellite · 14 July 2026** on the map. Wait about two seconds for the imagery.]**
 
-**3:15** And these labels are the First Nations that had to leave. Whitesand. Collins. Gull Bay.
+**3:17** Now this part is real. NASA satellite imagery from the fourteenth of July, the week of the evacuations. The red is fire seen from space. The haze is smoke. And these are the First Nations that had to leave.
 
-> *If the imagery doesn't draw within five seconds:* say, "NASA's imagery for that day shows smoke across this whole region. It's in our recording." Click **Today** and move on.
+> *If the imagery doesn't draw within five seconds:* say, "NASA's imagery for that day shows smoke across this whole region." Click **Today** and move on.
 
-### Step 4: the situation brief (3:25–3:50)
+### Step 5: the brief (3:35–3:50)
 
-**[CLICK **Today**, then the orange **Send situation brief** button at the bottom of the panel.]**
+**[CLICK the orange **Send situation brief** button at the bottom of the panel.]**
 
-**3:28** And this is the point. One click turns all of it into a situation brief for fire agencies and community leaders: the risk, the warning signs, the communities, and what to move in before the fire starts.
+**3:37** One click, and that prediction becomes a brief for fire agencies and community leaders: what to move in, before the fire starts.
 
-**[Let the brief sit on screen for two seconds. Then switch to SLIDE 4 and step away from the laptop. The movement tells the room the demo is over.]**
+**[Let the brief sit for two seconds. Switch to SLIDE 4 and step away from the laptop.]**
 
 > *If the button isn't there:* say, "And it turns all of this into a one-page brief for fire agencies and community leaders," and step away.
 
@@ -117,7 +125,7 @@ Three speakers. About 540 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 Speaker 3 stays calm and says this instead, then hands straight to Speaker 2:
 
-> Our laptop has other plans, so picture it. Thunder Bay District. Ten degrees hotter in a week. Dry air. Six days without soaking rain. Satellites already see heat nearby. Our site flags it High today and Critical tomorrow, and turns that into a one-page brief for fire agencies and community leaders. Days before, not after.
+> Our laptop has other plans, so picture it. Thunder Bay District. Ten degrees hotter in a week. Dry air. Six days without soaking rain. Satellites already see heat nearby. Our model predicts Critical tomorrow, says pre-position crews now, and turns that into a one-page brief for fire agencies and community leaders. Days before, not after.
 
 You will finish about a minute early. Use the time to slow down. Do not add new material.
 

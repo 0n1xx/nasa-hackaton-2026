@@ -1,10 +1,12 @@
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, CloudOff, Droplets, Flame, Send, Thermometer, TrendingUp, Wind, type LucideIcon } from 'lucide-react'
+import { ChevronDown, CloudOff, Droplets, Flame, LineChart, Send, Thermometer, TrendingUp, Truck, Wind, type LucideIcon } from 'lucide-react'
 import type { CommunityExposure, RegionAir, RegionRisk, RiskDay, RiskLevel } from '../../shared/types.ts'
 import { LEVEL_COLORS } from '../../shared/risk.ts'
 import { warningSigns, type SignKey, type WarningSign } from '../../shared/signals.ts'
 import { useApi } from '../api.ts'
 import { useApp } from '../state.tsx'
+import TrendSheet from './TrendSheet.tsx'
 
 const RANK: Record<RiskLevel, number> = { Low: 0, Moderate: 1, High: 2, Critical: 3 }
 const EMBER = '#d4551f'
@@ -14,18 +16,27 @@ const weekday = (iso: string, style: 'short' | 'long') =>
 const dayDiff = (a: string, b: string) => Math.round((Date.parse(`${b}T12:00:00`) - Date.parse(`${a}T12:00:00`)) / 86400000)
 const num = (s: string) => Number.parseFloat((s.match(/[\d.]+/) ?? ['0'])[0])
 
-/** "Critical tomorrow", "Easing by Tuesday", "Steady for 3 days" */
-function outlook(timeline: RiskDay[], level: RiskLevel): { text: string; rising: RiskLevel | null } {
+const prevDay = (iso: string) => {
+  const d = new Date(`${iso}T12:00:00`)
+  d.setDate(d.getDate() - 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** "Predicted Critical tomorrow", "Easing by Tuesday", "Steady for 3 days". prepBy: day to pre-position crews by. */
+function outlook(timeline: RiskDay[], level: RiskLevel): { text: string; rising: RiskLevel | null; prepBy: string | null } {
   const today = timeline.find((t) => t.kind === 'today') ?? timeline.filter((t) => t.kind !== 'forecast').at(-1)
   const ahead = timeline.filter((t) => t.kind === 'forecast')
   const up = ahead.find((t) => RANK[t.level] > RANK[level])
   if (up) {
     const when = today && dayDiff(today.date, up.date) === 1 ? 'tomorrow' : weekday(up.date, 'long')
-    return { text: `${up.level} ${when}`, rising: up.level }
+    const before = prevDay(up.date)
+    const lead = today ? dayDiff(today.date, before) : null
+    const prepBy = lead == null || lead <= 0 ? 'today' : lead === 1 ? 'tomorrow' : weekday(before, 'long')
+    return { text: `Predicted ${up.level} ${when}`, rising: up.level, prepBy }
   }
   const down = ahead.find((t) => RANK[t.level] < RANK[level])
-  if (down) return { text: `Easing by ${weekday(down.date, 'long')}`, rising: null }
-  return { text: `Steady for ${ahead.length} day${ahead.length === 1 ? '' : 's'}`, rising: null }
+  if (down) return { text: `Easing by ${weekday(down.date, 'long')}`, rising: null, prepBy: null }
+  return { text: `Steady for ${ahead.length} day${ahead.length === 1 ? '' : 's'}`, rising: null, prepBy: null }
 }
 
 const SIGN_ICONS: Record<Exclude<SignKey, 'outlook'>, LucideIcon> = {
@@ -70,9 +81,21 @@ function Skeleton() {
   )
 }
 
-function DayStrip({ timeline }: { timeline: RiskDay[] }) {
+function DayStrip({ timeline, onOpen }: { timeline: RiskDay[]; onOpen: () => void }) {
   return (
-    <div className="mt-7 flex items-end gap-1.5" role="img" aria-label={timeline.map((t) => `${weekday(t.date, 'long')} ${t.level}`).join(', ')}>
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`See risk trend. ${timeline.map((t) => `${weekday(t.date, 'long')} ${t.level}`).join(', ')}`}
+      className="group -mx-2 mt-5 block w-[calc(100%+1rem)] cursor-pointer rounded-lg px-2 pb-2 pt-2 text-left transition-colors hover:bg-black/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-fg)]"
+    >
+    <div className="flex justify-end">
+      <span className="flex items-center gap-1 text-[13px] font-semibold text-[#c24a17] group-hover:underline">
+        <LineChart size={15} strokeWidth={2.25} aria-hidden />
+        See trend
+      </span>
+    </div>
+    <div className="mt-1 flex items-end gap-1.5" aria-hidden>
       {timeline.map((t) => {
         const color = LEVEL_COLORS[t.level]
         const isToday = t.kind === 'today'
@@ -98,6 +121,7 @@ function DayStrip({ timeline }: { timeline: RiskDay[] }) {
         )
       })}
     </div>
+    </button>
   )
 }
 
@@ -107,6 +131,9 @@ export default function RiskPanel() {
   const risk = useApi<RegionRisk>(id ? `risk/${id}` : null)
   const air = useApi<RegionAir>(id ? `air/${id}?pastDays=7` : null)
   const comms = useApi<CommunityExposure[]>(id ? 'communities' : null)
+
+  const [trendOpen, setTrendOpen] = useState(false)
+  const closeTrend = useCallback(() => setTrendOpen(false), [])
 
   const r = risk.data
   const signs = r ? warningSigns(r, air.data) : []
@@ -146,7 +173,7 @@ export default function RiskPanel() {
       </div>
 
       {risk.error ? (
-        <div className="mt-8 text-[14px]">
+        <div className="mt-5 text-[14px]">
           <p>Couldn't load data</p>
           <button type="button" onClick={risk.reload} className="mt-1 font-semibold text-[#c24a17] hover:underline">Try again</button>
         </div>
@@ -156,7 +183,7 @@ export default function RiskPanel() {
         <div className="fade-in">
           {/* 2. Hero */}
           <div className="mt-5 flex items-baseline gap-3">
-            <span className="font-display condensed text-[96px] font-bold leading-none tabular-nums tracking-tight" style={{ color: LEVEL_COLORS[r.today.level] }}>
+            <span className="font-display condensed text-[84px] font-bold leading-none tabular-nums tracking-tight" style={{ color: LEVEL_COLORS[r.today.level] }}>
               {r.today.score}
             </span>
             <span className="text-[22px] font-semibold">{r.today.level}</span>
@@ -167,12 +194,19 @@ export default function RiskPanel() {
               <span className={out.rising ? 'font-medium' : 'text-[var(--color-mute)]'}>{out.text}</span>
             </p>
           )}
+          {out?.prepBy && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-[14px] font-medium" style={{ color: '#c24a17' }}>
+              <Truck size={17} strokeWidth={2.25} aria-hidden className="shrink-0" />
+              Pre-position crews by {out.prepBy}
+            </p>
+          )}
 
-          {/* 3. Day strip */}
-          <DayStrip timeline={r.timeline} />
+          {/* 3. Day strip: opens the trend sheet */}
+          <DayStrip timeline={r.timeline} onOpen={() => setTrendOpen(true)} />
+          <TrendSheet open={trendOpen} onClose={closeTrend} />
 
           {/* 4. Warning signs */}
-          <section className="mt-7">
+          <section className="mt-5">
             <SectionHead title="Warning signs" count={`${activeCount} of ${listed.length}`} />
             {rows.length ? (
               <ul className="space-y-2.5">
@@ -193,10 +227,10 @@ export default function RiskPanel() {
 
           {/* 5. Communities */}
           {nearby.length > 0 && (
-            <section className="mt-7">
+            <section className="mt-5">
               <SectionHead title={allFirstNations ? 'First Nations nearby' : 'Communities nearby'} count={String(nearby.length)} />
               <ul className="space-y-2.5">
-                {nearby.slice(0, 4).map((c) => (
+                {nearby.slice(0, 3).map((c) => (
                   <li key={c.id} className="flex items-baseline justify-between gap-4 text-[14px]">
                     <span className="min-w-0 truncate" title={c.name}>{shortName(c.name)}</span>
                     <span className="shrink-0 tabular-nums text-[var(--color-mute)]">
@@ -205,14 +239,14 @@ export default function RiskPanel() {
                   </li>
                 ))}
               </ul>
-              {nearby.length > 4 && <p className="mt-2.5 text-[13px] text-[var(--color-mute)]">+{nearby.length - 4} more</p>}
+              {nearby.length > 3 && <p className="mt-2.5 text-[13px] text-[var(--color-mute)]">+{nearby.length - 3} more</p>}
             </section>
           )}
         </div>
       )}
 
       {/* 6. Primary action */}
-      <div className="mt-auto pt-8">
+      <div className="mt-auto pt-5">
         <Link
           to="/brief"
           className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#c24a17] text-[15px] font-semibold text-white transition-colors hover:bg-[#a33d12]"

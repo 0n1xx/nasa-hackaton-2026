@@ -121,3 +121,12 @@
 .leaflet-control-attribution a { color: var(--color-mute) !important; }
 .leaflet-tooltip { background: var(--color-ink-950); color: var(--color-fg); border: 1px solid var(--color-line); box-shadow: 0 1px 4px rgb(19 33 27 / 0.08); font-size: 12px; }
 .leaflet-tooltip::before { display: none; }
+
+/* Hero map: risk zones morph between days; active fires pulse. */
+.risk-cell { transition: fill .45s ease, fill-opacity .45s ease; }
+.fire-pulse { animation: firepulse 1.8s ease-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes firepulse { 0% { stroke-opacity: .9; stroke-width: 1; } 100% { stroke-opacity: 0; stroke-width: 10; } }
+@media (prefers-reduced-motion: reduce) {
+  .risk-cell { transition: none; }
+  .fire-pulse { animation: none; }
+}

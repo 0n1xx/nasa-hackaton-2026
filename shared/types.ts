@@ -164,3 +164,13 @@ export interface IntegrationStatus {
 export interface StatusData { defaultMode: Mode; integrations: IntegrationStatus[]; serverTime: string }
 
 export interface AirTrend { regionId: string; short: string; last24: number | null; prev24: number | null; change: number | null }
+
+/** Risk index computed on a regular lat/lon grid, one score per day. Served by GET /api/risk-grid. */
+export interface RiskGrid {
+  /** Days in order: past days ('historical'), 'today', then 'forecast'. scores[] in each cell align with this. */
+  days: { date: string; kind: 'historical' | 'today' | 'forecast' }[]
+  /** Cell size in degrees; lat/lon of a cell are its centre. */
+  cellLat: number
+  cellLon: number
+  cells: { lat: number; lon: number; scores: number[] }[]
+}

@@ -39,7 +39,7 @@ const riskSrc = () => src('risk-model', 'Before the Smoke risk index v0.1', 'mod
 const within = (pts: { lat: number; lon: number }[], lat: number, lon: number, radius: number) => pts.reduce((n, p) => n + (km(lat, lon, p.lat, p.lon) <= radius ? 1 : 0), 0)
 
 /** Risk for each day we can score (needs at least 3 days of rain history before it). */
-function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode) {
+export function riskDays(wx: WeatherResult, hotspots100km: number | null, historyIndex: number, mode: Mode) {
   const today = wx.days.filter((d) => d.kind === 'historical').at(-1)?.date
   const out: { day: DayWeather; inputs: RiskInputs }[] = []
   wx.days.forEach((day, i) => {

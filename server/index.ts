@@ -6,6 +6,7 @@ import type { Mode, StatusData } from '../shared/types.ts'
 import { REGIONS } from './data/regions.ts'
 import { HISTORY } from './data/history.ts'
 import * as svc from './services.ts'
+import { riskGrid } from './grid.ts'
 import { integrations, src, UpstreamError } from './util.ts'
 
 const app = express()
@@ -36,6 +37,7 @@ app.get('/api/risk/:id', route((req) => svc.regionRisk(mode(req), req.params.id)
 app.get('/api/air-trends', route((req) => svc.airTrends(mode(req))))
 app.get('/api/air/:id', route((req) => svc.regionAir(mode(req), req.params.id, intParam(req.query.pastDays, 7, 1, 92))))
 app.get('/api/communities', route((req) => svc.communities(mode(req))))
+app.get('/api/risk-grid', route((req) => riskGrid(mode(req))))
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Unknown API route' }))
 
 // In production (after `npm run build`) the same server also serves the UI.

@@ -60,22 +60,23 @@ If the slides and the site are on the same laptop, practise the switch (Alt+Tab,
 
 ## The live demo, click by click
 
-Everything happens on one screen: a full-screen map with one panel on the left. Before you go on stage, the site is on the home screen, the header toggle shows **Simulated**, and the panel shows **Thunder Bay**.
+Everything happens on one screen: a full-screen map with one panel on the left. Before you go on stage: home screen, header toggle **Simulated**, panel region **Thunder Bay**. Reload the page as Speaker 3 starts: the map replays the week by itself.
 
 | # | Time | Click | What should appear | If it fails |
 | --- | --- | --- | --- | --- |
-| 1 | 2:20 | Nothing. Point at the panel. | Big **67**, High, "Critical tomorrow", the warning signs with icons | "Couldn't load data": click **Simulated**. Still failing: play the recording. |
-| 2 | 2:50 | Nothing. Sweep a hand over the map. | Regions as coloured circles with their scores | Say the line anyway. |
-| 3 | 3:00 | **NASA satellite · 14 July 2026** (bottom of the map) | Real NASA imagery: smoke plumes, red fire detections, First Nations labelled | Imagery slow: say the fallback line, click **Today**. |
-| 4 | 3:25 | **Today**, then **Send situation brief** (bottom of the panel) | A one-page brief: risk, signs, communities, what to move in | Say the line and step away. |
-
-The other pages (Early warning, Communities, Air quality, Trends, Data) still exist but are not linked from the home screen. Mention them only if a judge asks; **About the data** in the header covers sources and method.
+| 1 | 2:20 | Reload (or the round **Play** button at the bottom of the map) | Risk zones play day by day from Tuesday to the predicted days; the red grows around Northwestern Ontario | Skip to the panel. |
+| 2 | 2:40 | Nothing. Point at the panel. | **67** High, "Predicted Critical tomorrow", "Pre-position crews by today", the warning signs | Click **Simulated**, or play the recording. |
+| 3 | 2:58 | **See trend** (above the small bar chart in the panel), then Esc | Time series with trend line and 95% band; cards: Mann–Kendall "Rising, p = 0.002", "+3.3 pts/day", "+7.2 °C above normal" | Say the line while it loads, then Esc. |
+| 4 | 3:15 | **NASA satellite · 14 July 2026** (top right of the map) | Real NASA imagery: smoke plumes, red fire detections, First Nations labelled | Say the fallback line, click **Today**. |
+| 5 | 3:35 | **Send situation brief** (bottom of the panel) | One-page brief for agencies and community leadership | Say the line and step away. |
 
 The figures come from the simulated scenario. If the numbers on screen differ on the day, say what the screen says, not what the script says.
 
+**If a judge asks about the statistics:** the Mann–Kendall test checks whether a series keeps going up (or down) more consistently than chance would give; it makes no assumption about the shape of the curve. The linear trend is an ordinary least-squares fit with a t-test on the slope; the band is its 95% confidence interval. Both run on only eight daily values, so they show the direction is real, not how accurate the forecast is. The forecast days themselves come from the weather model's three-day forecast pushed through the same risk formula.
+
 ## Before you go on stage
 
-1. **Run the site on the presenting laptop and the venue network beforehand.** Pull `main`, run `npm install`, then `npm run dev` and open <http://localhost:5173>. Click **NASA satellite · 14 July 2026** once, so the NASA imagery is already cached in the browser.
+1. **Run the site on the presenting laptop and the venue network beforehand.** Pull `main`, run `npm install`, then `npm run dev` and open <http://localhost:5173>. Click **NASA satellite · 14 July 2026** (top right of the map) once, so the NASA imagery is already cached in the browser.
 2. **Use the Simulated scenario.** It is November. Live mode will correctly show few or no fires and low risk, which is true and unconvincing on stage. Always say out loud that it is simulated. Never present the scenario as real data. The NASA imagery for 14 July 2026 is real.
 3. **Set the starting state.** Home screen (the map), header toggle **Simulated**, panel region **Thunder Bay**, map on **Today**.
 4. **Browser:** full screen (F11). Zoom 100%, so the whole panel, including the button at its bottom, fits on screen. Notifications off, other tabs closed, laptop plugged in.
