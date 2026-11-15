@@ -93,7 +93,8 @@ Community locations come from Indigenous Services Canada's open data (Open Gover
 | Unit tests (risk, signs, statistics, horizon, outlook, letter, assistant, ranking, province, scenario dates, stale fire reports, Fire Weather Index lookup) | `npm test` passes |
 | Weather-only risk score against Canada's official Fire Weather Index, real data from 15 November 2026 (80 communities) | `server/risk-calibration.test.ts` passes: 66 of 71 official-low places Low. One day, not a test against real fires |
 | Live calls to Open-Meteo, CWFIS (fires, hotspots, fire weather stations), NASA POWER (daily and climatology) and NASA GIBS | Called successfully on 14–15 November 2026 |
-| NASA FIRMS (needs a key), the Claude assistant path (needs a key) | Not tested |
+| NASA FIRMS (VIIRS NOAA-20, with a key in `.env`) | Called successfully on 15 November 2026: 150 detections over Canada in the last day. If FIRMS fails or rejects the key, today's heat falls back to CWFIS |
+| The Claude assistant path (needs a key) | Not tested |
 | Live-mode ranked list | Works; the first load for 641 communities takes several seconds, then it is cached for an hour (one refresh costs roughly 1,000 to 1,300 of Open-Meteo’s 10,000 free daily calls) |
 
 ## Known gaps

@@ -30,11 +30,24 @@ export async function activeFires(mode: Mode): Promise<Envelope<ActiveFire[]>> {
 
 export async function hotspots(mode: Mode, days: number, date?: string): Promise<Envelope<Hotspot[]>> {
   if (mode === 'sim') return { data: simHotspots(days), sources: [simSrc('sim-hotspots', 'satellite detections')] }
+  let firmsFailed = false
   if (firmsConfigured()) {
-    return { data: await getFirmsHotspots(days, date), sources: [src('firms', firmsSourceLabel(), 'observed', 'https://firms.modaps.eosdis.nasa.gov/', date ? `Detections from ${date}, ${days} day(s)` : `Last ${days} day(s)`)] }
+    try {
+      return { data: await getFirmsHotspots(days, date), sources: [src('firms', firmsSourceLabel(), 'observed', 'https://firms.modaps.eosdis.nasa.gov/', date ? `Detections from ${date}, ${days} day(s)` : `Last ${days} day(s)`)] }
+    } catch (e) {
+      // A rejected key or FIRMS's transaction limit must not take satellite heat off the map or out of the
+      // score: for today, fall back to Canada's 24-hour hotspots (the same satellites). Past dates need FIRMS.
+      if (date) throw e
+      // The raw message stays in the server log (key removed); visitors only see a fixed sentence.
+      const key = (process.env.FIRMS_MAP_KEY ?? '').trim().replace(/^['"]|['"]$/g, '')
+      const msg = String((e as Error)?.message ?? 'request failed')
+      console.warn(`[firms] falling back to CWFIS hotspots: ${key ? msg.split(key).join('<key>') : msg}`)
+      firmsFailed = true
+    }
   }
   if (date) throw new BadRequest('Vector fire detections for a past date need a NASA FIRMS key (FIRMS_MAP_KEY). The NASA GIBS satellite layers on the map still work for any date.')
-  return { data: await getHotspots24h(), sources: [src('cwfis-hotspots', 'CWFIS satellite hotspots, last 24 h', 'observed', 'https://cwfis.cfs.nrcan.gc.ca/datamart', 'No FIRMS key set, so only the last 24 hours are available')] }
+  const note = firmsFailed ? 'NASA FIRMS is unavailable right now, so these are Canada’s last 24 hours from the same satellites' : 'No FIRMS key set, so only the last 24 hours are available'
+  return { data: await getHotspots24h(), sources: [src('cwfis-hotspots', 'CWFIS satellite hotspots, last 24 h', 'observed', 'https://cwfis.cfs.nrcan.gc.ca/datamart', note)] }
 }
 
 /** Weather for many points; live requests go to Open-Meteo in chunks of 40 points (one URL each). */
