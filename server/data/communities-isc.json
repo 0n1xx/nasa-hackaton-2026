@@ -1,0 +1,5113 @@
+{
+ "source": "Indigenous Services Canada, First Nation Location (open data)",
+ "sourceUrl": "https://open.canada.ca/data/en/dataset/b6567c5c-8339-4055-99fa-63f92114d9e4",
+ "licence": "Contains information licensed under the Open Government Licence – Canada.",
+ "pointMeaning": "Band administrative office, or a point inside the most populated reserve when the office is outside it. Rounded to 0.01 degrees.",
+ "retrieved": "2026-11-14",
+ "communities": [
+  {
+   "id": "isc-604",
+   "bandNumber": 604,
+   "name": "?Akisq'nuk First Nation",
+   "lat": 50.46,
+   "lon": -115.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-602",
+   "bandNumber": 602,
+   "name": "?aqam",
+   "lat": 49.58,
+   "lon": -115.75,
+   "province": "BC"
+  },
+  {
+   "id": "isc-709",
+   "bandNumber": 709,
+   "name": "?Esdilagh First Nation",
+   "lat": 52.56,
+   "lon": -122.5,
+   "province": "BC"
+  },
+  {
+   "id": "isc-172",
+   "bandNumber": 172,
+   "name": "Aamjiwnaang",
+   "lat": 42.94,
+   "lon": -82.42,
+   "province": "ON"
+  },
+  {
+   "id": "isc-1",
+   "bandNumber": 1,
+   "name": "Abegweit",
+   "lat": 46.36,
+   "lon": -62.9,
+   "province": "PE"
+  },
+  {
+   "id": "isc-758",
+   "bandNumber": 758,
+   "name": "Acho Dene Koe First Nation",
+   "lat": 60.24,
+   "lon": -123.47,
+   "province": "NT"
+  },
+  {
+   "id": "isc-684",
+   "bandNumber": 684,
+   "name": "Adams Lake",
+   "lat": 50.83,
+   "lon": -119.7,
+   "province": "BC"
+  },
+  {
+   "id": "isc-659",
+   "bandNumber": 659,
+   "name": "Ahousaht",
+   "lat": 49.28,
+   "lon": -126.06,
+   "province": "BC"
+  },
+  {
+   "id": "isc-406",
+   "bandNumber": 406,
+   "name": "Ahtahkakoop",
+   "lat": 53.37,
+   "lon": -106.93,
+   "province": "SK"
+  },
+  {
+   "id": "isc-490",
+   "bandNumber": 490,
+   "name": "Aishihik",
+   "lat": 61.6,
+   "lon": -137.51,
+   "province": "YT"
+  },
+  {
+   "id": "isc-558",
+   "bandNumber": 558,
+   "name": "Aitchelitz",
+   "lat": 49.15,
+   "lon": -121.99,
+   "province": "BC"
+  },
+  {
+   "id": "isc-755",
+   "bandNumber": 755,
+   "name": "Aklavik",
+   "lat": 68.22,
+   "lon": -135.02,
+   "province": "YT"
+  },
+  {
+   "id": "isc-142",
+   "bandNumber": 142,
+   "name": "Albany",
+   "lat": 52.22,
+   "lon": -81.68,
+   "province": "ON"
+  },
+  {
+   "id": "isc-160",
+   "bandNumber": 160,
+   "name": "Alderville First Nation",
+   "lat": 44.18,
+   "lon": -78.06,
+   "province": "ON"
+  },
+  {
+   "id": "isc-438",
+   "bandNumber": 438,
+   "name": "Alexander",
+   "lat": 53.8,
+   "lon": -113.92,
+   "province": "AB"
+  },
+  {
+   "id": "isc-437",
+   "bandNumber": 437,
+   "name": "Alexis Nakota Sioux Nation",
+   "lat": 53.73,
+   "lon": -114.49,
+   "province": "AB"
+  },
+  {
+   "id": "isc-74",
+   "bandNumber": 74,
+   "name": "Algonquins of Barriere Lake",
+   "lat": 47.25,
+   "lon": -76.71,
+   "province": "QC"
+  },
+  {
+   "id": "isc-163",
+   "bandNumber": 163,
+   "name": "Algonquins of Pikwakanagan First Nation",
+   "lat": 45.58,
+   "lon": -77.25,
+   "province": "ON"
+  },
+  {
+   "id": "isc-152",
+   "bandNumber": 152,
+   "name": "Animakee Wa Zhing #37",
+   "lat": 49.39,
+   "lon": -93.97,
+   "province": "ON"
+  },
+  {
+   "id": "isc-194",
+   "bandNumber": 194,
+   "name": "Animbiigoo Zaagi'igan Anishinaabek",
+   "lat": 49.6,
+   "lon": -87.96,
+   "province": "ON"
+  },
+  {
+   "id": "isc-153",
+   "bandNumber": 153,
+   "name": "Anishinabe of Wauzhushk Onigum",
+   "lat": 49.71,
+   "lon": -94.45,
+   "province": "ON"
+  },
+  {
+   "id": "isc-125",
+   "bandNumber": 125,
+   "name": "Anishnaabeg of Naongashiing",
+   "lat": 49.12,
+   "lon": -94.31,
+   "province": "ON"
+  },
+  {
+   "id": "isc-233",
+   "bandNumber": 233,
+   "name": "Apitipi Anicinapek Nation",
+   "lat": 48.55,
+   "lon": -79.97,
+   "province": "ON"
+  },
+  {
+   "id": "isc-242",
+   "bandNumber": 242,
+   "name": "Aroland",
+   "lat": 50.23,
+   "lon": -86.96,
+   "province": "ON"
+  },
+  {
+   "id": "isc-685",
+   "bandNumber": 685,
+   "name": "Ashcroft",
+   "lat": 50.72,
+   "lon": -121.32,
+   "province": "BC"
+  },
+  {
+   "id": "isc-463",
+   "bandNumber": 463,
+   "name": "Athabasca Chipewyan First Nation",
+   "lat": 58.55,
+   "lon": -111.03,
+   "province": "AB"
+  },
+  {
+   "id": "isc-224",
+   "bandNumber": 224,
+   "name": "Atikameksheng Anishnawbek",
+   "lat": 46.4,
+   "lon": -81.18,
+   "province": "ON"
+  },
+  {
+   "id": "isc-79",
+   "bandNumber": 79,
+   "name": "Atikamekw d'Opitciwan",
+   "lat": 48.66,
+   "lon": -74.94,
+   "province": "QC"
+  },
+  {
+   "id": "isc-143",
+   "bandNumber": 143,
+   "name": "Attawapiskat",
+   "lat": 52.93,
+   "lon": -82.43,
+   "province": "ON"
+  },
+  {
+   "id": "isc-180",
+   "bandNumber": 180,
+   "name": "Aundeck-Omni-Kaning",
+   "lat": 45.96,
+   "lon": -82,
+   "province": "ON"
+  },
+  {
+   "id": "isc-85",
+   "bandNumber": 85,
+   "name": "Bande des Innus de Pessamit",
+   "lat": 48.94,
+   "lon": -68.64,
+   "province": "QC"
+  },
+  {
+   "id": "isc-308",
+   "bandNumber": 308,
+   "name": "Barren Lands",
+   "lat": 57.89,
+   "lon": -101.66,
+   "province": "MB"
+  },
+  {
+   "id": "isc-198",
+   "bandNumber": 198,
+   "name": "Batchewana First Nation",
+   "lat": 46.53,
+   "lon": -84.26,
+   "province": "ON"
+  },
+  {
+   "id": "isc-244",
+   "bandNumber": 244,
+   "name": "Bay of Quinte Mohawk",
+   "lat": 43.07,
+   "lon": -80.13,
+   "province": "ON"
+  },
+  {
+   "id": "isc-21",
+   "bandNumber": 21,
+   "name": "Bear River",
+   "lat": 44.56,
+   "lon": -65.63,
+   "province": "NS"
+  },
+  {
+   "id": "isc-369",
+   "bandNumber": 369,
+   "name": "Beardy's and Okemasis",
+   "lat": 52.84,
+   "lon": -106.31,
+   "province": "SK"
+  },
+  {
+   "id": "isc-248",
+   "bandNumber": 248,
+   "name": "Bearfoot Onondaga",
+   "lat": 43.02,
+   "lon": -80.05,
+   "province": "ON"
+  },
+  {
+   "id": "isc-207",
+   "bandNumber": 207,
+   "name": "Bearskin Lake",
+   "lat": 53.92,
+   "lon": -90.97,
+   "province": "ON"
+  },
+  {
+   "id": "isc-473",
+   "bandNumber": 473,
+   "name": "Bearspaw",
+   "lat": 51.17,
+   "lon": -114.85,
+   "province": "AB"
+  },
+  {
+   "id": "isc-141",
+   "bandNumber": 141,
+   "name": "Beausoleil",
+   "lat": 44.82,
+   "lon": -80.18,
+   "province": "ON"
+  },
+  {
+   "id": "isc-445",
+   "bandNumber": 445,
+   "name": "Beaver First Nation",
+   "lat": 58.46,
+   "lon": -116.27,
+   "province": "AB"
+  },
+  {
+   "id": "isc-460",
+   "bandNumber": 460,
+   "name": "Beaver Lake Cree Nation",
+   "lat": 54.68,
+   "lon": -111.91,
+   "province": "AB"
+  },
+  {
+   "id": "isc-640",
+   "bandNumber": 640,
+   "name": "Beecher Bay",
+   "lat": 48.34,
+   "lon": -123.61,
+   "province": "BC"
+  },
+  {
+   "id": "isc-771",
+   "bandNumber": 771,
+   "name": "Behdzi Ahda\" First Nation",
+   "lat": 67.04,
+   "lon": -126.09,
+   "province": "YT"
+  },
+  {
+   "id": "isc-266",
+   "bandNumber": 266,
+   "name": "Berens River",
+   "lat": 52.34,
+   "lon": -96.97,
+   "province": "MB"
+  },
+  {
+   "id": "isc-399",
+   "bandNumber": 399,
+   "name": "Big Island Lake Cree Nation",
+   "lat": 54.41,
+   "lon": -109.63,
+   "province": "SK"
+  },
+  {
+   "id": "isc-404",
+   "bandNumber": 404,
+   "name": "Big River",
+   "lat": 53.57,
+   "lon": -107.11,
+   "province": "SK"
+  },
+  {
+   "id": "isc-458",
+   "bandNumber": 458,
+   "name": "Bigstone Cree Nation",
+   "lat": 55.95,
+   "lon": -113.78,
+   "province": "AB"
+  },
+  {
+   "id": "isc-192",
+   "bandNumber": 192,
+   "name": "Biigtigong Nishnaabeg",
+   "lat": 48.63,
+   "lon": -86.27,
+   "province": "ON"
+  },
+  {
+   "id": "isc-197",
+   "bandNumber": 197,
+   "name": "Biinjitiwaabik Zaaging Anishinaabek",
+   "lat": 49.44,
+   "lon": -88.13,
+   "province": "ON"
+  },
+  {
+   "id": "isc-11",
+   "bandNumber": 11,
+   "name": "Bilijk",
+   "lat": 45.95,
+   "lon": -66.85,
+   "province": "NB"
+  },
+  {
+   "id": "isc-730",
+   "bandNumber": 730,
+   "name": "Binche Whut'en",
+   "lat": 54.57,
+   "lon": -124.49,
+   "province": "BC"
+  },
+  {
+   "id": "isc-196",
+   "bandNumber": 196,
+   "name": "Bingwi Neyaashi Anishinaabek",
+   "lat": 49.46,
+   "lon": -88.13,
+   "province": "ON"
+  },
+  {
+   "id": "isc-403",
+   "bandNumber": 403,
+   "name": "Birch Narrows First Nation",
+   "lat": 56.47,
+   "lon": -108.69,
+   "province": "SK"
+  },
+  {
+   "id": "isc-284",
+   "bandNumber": 284,
+   "name": "Birdtail Sioux",
+   "lat": 50.27,
+   "lon": -101.15,
+   "province": "MB"
+  },
+  {
+   "id": "isc-359",
+   "bandNumber": 359,
+   "name": "Black Lake",
+   "lat": 59.13,
+   "lon": -105.6,
+   "province": "SK"
+  },
+  {
+   "id": "isc-260",
+   "bandNumber": 260,
+   "name": "Black River First Nation",
+   "lat": 50.83,
+   "lon": -96.31,
+   "province": "MB"
+  },
+  {
+   "id": "isc-435",
+   "bandNumber": 435,
+   "name": "Blood",
+   "lat": 49.46,
+   "lon": -113.3,
+   "province": "AB"
+  },
+  {
+   "id": "isc-267",
+   "bandNumber": 267,
+   "name": "Bloodvein",
+   "lat": 51.78,
+   "lon": -96.7,
+   "province": "MB"
+  },
+  {
+   "id": "isc-547",
+   "bandNumber": 547,
+   "name": "Blueberry River First Nations",
+   "lat": 56.7,
+   "lon": -121.11,
+   "province": "BC"
+  },
+  {
+   "id": "isc-686",
+   "bandNumber": 686,
+   "name": "Bonaparte First Nation",
+   "lat": 50.84,
+   "lon": -121.39,
+   "province": "BC"
+  },
+  {
+   "id": "isc-700",
+   "bandNumber": 700,
+   "name": "Boothroyd",
+   "lat": 49.96,
+   "lon": -121.48,
+   "province": "BC"
+  },
+  {
+   "id": "isc-701",
+   "bandNumber": 701,
+   "name": "Boston Bar First Nation",
+   "lat": 49.88,
+   "lon": -121.45,
+   "province": "BC"
+  },
+  {
+   "id": "isc-590",
+   "bandNumber": 590,
+   "name": "Bridge River",
+   "lat": 50.77,
+   "lon": -121.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-261",
+   "bandNumber": 261,
+   "name": "Brokenhead Ojibway Nation",
+   "lat": 50.37,
+   "lon": -96.62,
+   "province": "MB"
+  },
+  {
+   "id": "isc-228",
+   "bandNumber": 228,
+   "name": "Brunswick House",
+   "lat": 47.84,
+   "lon": -83.34,
+   "province": "ON"
+  },
+  {
+   "id": "isc-4",
+   "bandNumber": 4,
+   "name": "Buctouche MicMac",
+   "lat": 46.45,
+   "lon": -64.76,
+   "province": "NB"
+  },
+  {
+   "id": "isc-265",
+   "bandNumber": 265,
+   "name": "Buffalo Point First Nation",
+   "lat": 49.01,
+   "lon": -95.24,
+   "province": "MB"
+  },
+  {
+   "id": "isc-398",
+   "bandNumber": 398,
+   "name": "Buffalo River Dene Nation",
+   "lat": 55.93,
+   "lon": -108.94,
+   "province": "SK"
+  },
+  {
+   "id": "isc-301",
+   "bandNumber": 301,
+   "name": "Bunibonibee Cree Nation",
+   "lat": 54.95,
+   "lon": -95.26,
+   "province": "MB"
+  },
+  {
+   "id": "isc-165",
+   "bandNumber": 165,
+   "name": "Caldwell",
+   "lat": 42.05,
+   "lon": -82.6,
+   "province": "ON"
+  },
+  {
+   "id": "isc-622",
+   "bandNumber": 622,
+   "name": "Campbell River",
+   "lat": 50.03,
+   "lon": -125.25,
+   "province": "BC"
+  },
+  {
+   "id": "isc-394",
+   "bandNumber": 394,
+   "name": "Canoe Lake Cree Nation",
+   "lat": 55.16,
+   "lon": -108.16,
+   "province": "SK"
+  },
+  {
+   "id": "isc-289",
+   "bandNumber": 289,
+   "name": "Canupawakpa Dakota First Nation",
+   "lat": 49.62,
+   "lon": -100.95,
+   "province": "MB"
+  },
+  {
+   "id": "isc-491",
+   "bandNumber": 491,
+   "name": "Carcross/Tagish First Nation",
+   "lat": 60.17,
+   "lon": -134.7,
+   "province": "YT"
+  },
+  {
+   "id": "isc-378",
+   "bandNumber": 378,
+   "name": "Carry The Kettle",
+   "lat": 50.35,
+   "lon": -103.47,
+   "province": "SK"
+  },
+  {
+   "id": "isc-216",
+   "bandNumber": 216,
+   "name": "Cat Lake",
+   "lat": 51.72,
+   "lon": -91.81,
+   "province": "ON"
+  },
+  {
+   "id": "isc-591",
+   "bandNumber": 591,
+   "name": "Cayoose Creek",
+   "lat": 50.67,
+   "lon": -121.93,
+   "province": "BC"
+  },
+  {
+   "id": "isc-493",
+   "bandNumber": 493,
+   "name": "Champagne",
+   "lat": 60.79,
+   "lon": -136.48,
+   "province": "YT"
+  },
+  {
+   "id": "isc-507",
+   "bandNumber": 507,
+   "name": "Champagne and Aishihik First Nations",
+   "lat": 60.76,
+   "lon": -137.5,
+   "province": "YT"
+  },
+  {
+   "id": "isc-221",
+   "bandNumber": 221,
+   "name": "Chapleau Cree First Nation",
+   "lat": 47.81,
+   "lon": -83.45,
+   "province": "ON"
+  },
+  {
+   "id": "isc-229",
+   "bandNumber": 229,
+   "name": "Chapleau Ojibway",
+   "lat": 47.82,
+   "lon": -83.39,
+   "province": "ON"
+  },
+  {
+   "id": "isc-583",
+   "bandNumber": 583,
+   "name": "Chawathil",
+   "lat": 49.37,
+   "lon": -121.55,
+   "province": "BC"
+  },
+  {
+   "id": "isc-584",
+   "bandNumber": 584,
+   "name": "Cheam First Nation",
+   "lat": 49.19,
+   "lon": -121.78,
+   "province": "BC"
+  },
+  {
+   "id": "isc-309",
+   "bandNumber": 309,
+   "name": "Chemawawin Cree Nation",
+   "lat": 53.1,
+   "lon": -99.81,
+   "province": "MB"
+  },
+  {
+   "id": "isc-620",
+   "bandNumber": 620,
+   "name": "Cheslatta Carrier Nation",
+   "lat": 54,
+   "lon": -125.71,
+   "province": "BC"
+  },
+  {
+   "id": "isc-433",
+   "bandNumber": 433,
+   "name": "Chiniki",
+   "lat": 51.17,
+   "lon": -114.85,
+   "province": "AB"
+  },
+  {
+   "id": "isc-470",
+   "bandNumber": 470,
+   "name": "Chipewyan Prairie First Nation",
+   "lat": 55.93,
+   "lon": -110.72,
+   "province": "AB"
+  },
+  {
+   "id": "isc-138",
+   "bandNumber": 138,
+   "name": "Chippewas of Georgina Island",
+   "lat": 44.37,
+   "lon": -79.31,
+   "province": "ON"
+  },
+  {
+   "id": "isc-171",
+   "bandNumber": 171,
+   "name": "Chippewas of Kettle and Stony Point",
+   "lat": 43.18,
+   "lon": -82,
+   "province": "ON"
+  },
+  {
+   "id": "isc-122",
+   "bandNumber": 122,
+   "name": "Chippewas of Nawash First Nation",
+   "lat": 44.9,
+   "lon": -81.03,
+   "province": "ON"
+  },
+  {
+   "id": "isc-139",
+   "bandNumber": 139,
+   "name": "Chippewas of Rama First Nation",
+   "lat": 44.65,
+   "lon": -79.35,
+   "province": "ON"
+  },
+  {
+   "id": "isc-166",
+   "bandNumber": 166,
+   "name": "Chippewas of the Thames First Nation",
+   "lat": 42.82,
+   "lon": -81.47,
+   "province": "ON"
+  },
+  {
+   "id": "isc-401",
+   "bandNumber": 401,
+   "name": "Clearwater River Dene",
+   "lat": 56.53,
+   "lon": -109.5,
+   "province": "SK"
+  },
+  {
+   "id": "isc-464",
+   "bandNumber": 464,
+   "name": "Cold Lake First Nations",
+   "lat": 54.34,
+   "lon": -110.24,
+   "province": "AB"
+  },
+  {
+   "id": "isc-693",
+   "bandNumber": 693,
+   "name": "Coldwater",
+   "lat": 50.03,
+   "lon": -120.86,
+   "province": "BC"
+  },
+  {
+   "id": "isc-62",
+   "bandNumber": 62,
+   "name": "Communauté anicinape de Kitcisakik",
+   "lat": 47.62,
+   "lon": -77.31,
+   "province": "QC"
+  },
+  {
+   "id": "isc-55",
+   "bandNumber": 55,
+   "name": "Conseil de la Première Nation Abitibiwinni",
+   "lat": 48.6,
+   "lon": -78.12,
+   "province": "QC"
+  },
+  {
+   "id": "isc-77",
+   "bandNumber": 77,
+   "name": "Conseil des Atikamekw de Wemotaci",
+   "lat": 47.9,
+   "lon": -73.79,
+   "province": "QC"
+  },
+  {
+   "id": "isc-182",
+   "bandNumber": 182,
+   "name": "Constance Lake",
+   "lat": 49.81,
+   "lon": -84.14,
+   "province": "ON"
+  },
+  {
+   "id": "isc-694",
+   "bandNumber": 694,
+   "name": "Cook's Ferry",
+   "lat": 50.42,
+   "lon": -121.32,
+   "province": "BC"
+  },
+  {
+   "id": "isc-366",
+   "bandNumber": 366,
+   "name": "Cote First Nation 366",
+   "lat": 51.64,
+   "lon": -101.9,
+   "province": "SK"
+  },
+  {
+   "id": "isc-126",
+   "bandNumber": 126,
+   "name": "Couchiching First Nation",
+   "lat": 48.63,
+   "lon": -93.36,
+   "province": "ON"
+  },
+  {
+   "id": "isc-361",
+   "bandNumber": 361,
+   "name": "Cowessess",
+   "lat": 50.52,
+   "lon": -102.66,
+   "province": "SK"
+  },
+  {
+   "id": "isc-642",
+   "bandNumber": 642,
+   "name": "Cowichan",
+   "lat": 48.78,
+   "lon": -123.71,
+   "province": "BC"
+  },
+  {
+   "id": "isc-58",
+   "bandNumber": 58,
+   "name": "Cree Nation of Chisasibi",
+   "lat": 53.79,
+   "lon": -78.9,
+   "province": "QC"
+  },
+  {
+   "id": "isc-75",
+   "bandNumber": 75,
+   "name": "Cree Nation of Mistissini",
+   "lat": 50.42,
+   "lon": -73.86,
+   "province": "QC"
+  },
+  {
+   "id": "isc-59",
+   "bandNumber": 59,
+   "name": "Cree Nation of Nemaska",
+   "lat": 51.69,
+   "lon": -76.26,
+   "province": "QC"
+  },
+  {
+   "id": "isc-60",
+   "bandNumber": 60,
+   "name": "Cree Nation of Wemindji",
+   "lat": 53,
+   "lon": -78.81,
+   "province": "QC"
+  },
+  {
+   "id": "isc-276",
+   "bandNumber": 276,
+   "name": "Cross Lake Band of Indians",
+   "lat": 54.62,
+   "lon": -97.79,
+   "province": "MB"
+  },
+  {
+   "id": "isc-350",
+   "bandNumber": 350,
+   "name": "Cumberland House Cree Nation",
+   "lat": 53.94,
+   "lon": -102.28,
+   "province": "SK"
+  },
+  {
+   "id": "isc-161",
+   "bandNumber": 161,
+   "name": "Curve Lake",
+   "lat": 44.46,
+   "lon": -78.38,
+   "province": "ON"
+  },
+  {
+   "id": "isc-635",
+   "bandNumber": 635,
+   "name": "Da'naxda'xw First Nation",
+   "lat": 50.6,
+   "lon": -126.6,
+   "province": "BC"
+  },
+  {
+   "id": "isc-288",
+   "bandNumber": 288,
+   "name": "Dakota Plains",
+   "lat": 49.82,
+   "lon": -98.52,
+   "province": "MB"
+  },
+  {
+   "id": "isc-295",
+   "bandNumber": 295,
+   "name": "Dakota Tipi",
+   "lat": 49.95,
+   "lon": -98.34,
+   "province": "MB"
+  },
+  {
+   "id": "isc-316",
+   "bandNumber": 316,
+   "name": "Dauphin River",
+   "lat": 51.96,
+   "lon": -98.07,
+   "province": "MB"
+  },
+  {
+   "id": "isc-389",
+   "bandNumber": 389,
+   "name": "Day Star",
+   "lat": 51.51,
+   "lon": -104.22,
+   "province": "SK"
+  },
+  {
+   "id": "isc-504",
+   "bandNumber": 504,
+   "name": "Dease River",
+   "lat": 59.29,
+   "lon": -129.29,
+   "province": "BC"
+  },
+  {
+   "id": "isc-774",
+   "bandNumber": 774,
+   "name": "Dechi Laot'i First Nations",
+   "lat": 64.19,
+   "lon": -114.19,
+   "province": "NT"
+  },
+  {
+   "id": "isc-237",
+   "bandNumber": 237,
+   "name": "Deer Lake",
+   "lat": 52.63,
+   "lon": -94.07,
+   "province": "ON"
+  },
+  {
+   "id": "isc-760",
+   "bandNumber": 760,
+   "name": "Deh Gáh Got'ie Dene First Nation",
+   "lat": 61.36,
+   "lon": -117.66,
+   "province": "NT"
+  },
+  {
+   "id": "isc-253",
+   "bandNumber": 253,
+   "name": "Delaware",
+   "lat": 43.06,
+   "lon": -80.14,
+   "province": "ON"
+  },
+  {
+   "id": "isc-754",
+   "bandNumber": 754,
+   "name": "Deline First Nation",
+   "lat": 65.19,
+   "lon": -123.43,
+   "province": "NT"
+  },
+  {
+   "id": "isc-448",
+   "bandNumber": 448,
+   "name": "Dene Tha'",
+   "lat": 58.7,
+   "lon": -118.69,
+   "province": "AB"
+  },
+  {
+   "id": "isc-762",
+   "bandNumber": 762,
+   "name": "Deninu K'ue First Nation",
+   "lat": 61.17,
+   "lon": -113.67,
+   "province": "NT"
+  },
+  {
+   "id": "isc-662",
+   "bandNumber": 662,
+   "name": "Ditidaht",
+   "lat": 48.81,
+   "lon": -124.67,
+   "province": "BC"
+  },
+  {
+   "id": "isc-765",
+   "bandNumber": 765,
+   "name": "Dog Rib Rae",
+   "lat": 62.83,
+   "lon": -116.05,
+   "province": "NT"
+  },
+  {
+   "id": "isc-548",
+   "bandNumber": 548,
+   "name": "Doig River First Nation",
+   "lat": 56.58,
+   "lon": -120.5,
+   "province": "BC"
+  },
+  {
+   "id": "isc-218",
+   "bandNumber": 218,
+   "name": "Dokis",
+   "lat": 46.13,
+   "lon": -80.03,
+   "province": "ON"
+  },
+  {
+   "id": "isc-561",
+   "bandNumber": 561,
+   "name": "Douglas",
+   "lat": 49.76,
+   "lon": -122.2,
+   "province": "BC"
+  },
+  {
+   "id": "isc-450",
+   "bandNumber": 450,
+   "name": "Driftpile Cree Nation",
+   "lat": 55.34,
+   "lon": -115.78,
+   "province": "AB"
+  },
+  {
+   "id": "isc-451",
+   "bandNumber": 451,
+   "name": "Duncan's First Nation",
+   "lat": 56.1,
+   "lon": -117.87,
+   "province": "AB"
+  },
+  {
+   "id": "isc-636",
+   "bandNumber": 636,
+   "name": "Dzawada'enuxw First Nation",
+   "lat": 50.98,
+   "lon": -126.18,
+   "province": "BC"
+  },
+  {
+   "id": "isc-183",
+   "bandNumber": 183,
+   "name": "Eabametoong First Nation",
+   "lat": 51.56,
+   "lon": -87.91,
+   "province": "ON"
+  },
+  {
+   "id": "isc-148",
+   "bandNumber": 148,
+   "name": "Eagle Lake",
+   "lat": 49.74,
+   "lon": -93.06,
+   "province": "ON"
+  },
+  {
+   "id": "isc-57",
+   "bandNumber": 57,
+   "name": "Eastmain",
+   "lat": 52.24,
+   "lon": -78.5,
+   "province": "QC"
+  },
+  {
+   "id": "isc-280",
+   "bandNumber": 280,
+   "name": "Ebb and Flow",
+   "lat": 51.02,
+   "lon": -99.04,
+   "province": "MB"
+  },
+  {
+   "id": "isc-8",
+   "bandNumber": 8,
+   "name": "Eel River Bar First Nation",
+   "lat": 48.04,
+   "lon": -66.37,
+   "province": "NB"
+  },
+  {
+   "id": "isc-634",
+   "bandNumber": 634,
+   "name": "Ehattesaht",
+   "lat": 49.99,
+   "lon": -126.86,
+   "province": "BC"
+  },
+  {
+   "id": "isc-3",
+   "bandNumber": 3,
+   "name": "Elsipogtog First Nation",
+   "lat": 46.59,
+   "lon": -64.99,
+   "province": "NB"
+  },
+  {
+   "id": "isc-400",
+   "bandNumber": 400,
+   "name": "English River First Nation",
+   "lat": 55.92,
+   "lon": -107.72,
+   "province": "SK"
+  },
+  {
+   "id": "isc-440",
+   "bandNumber": 440,
+   "name": "Enoch Cree Nation #440",
+   "lat": 53.5,
+   "lon": -113.76,
+   "province": "AB"
+  },
+  {
+   "id": "isc-443",
+   "bandNumber": 443,
+   "name": "Ermineskin Tribe",
+   "lat": 52.84,
+   "lon": -113.45,
+   "province": "AB"
+  },
+  {
+   "id": "isc-5",
+   "bandNumber": 5,
+   "name": "Esgenoopetitj First Nation",
+   "lat": 47.21,
+   "lon": -65.12,
+   "province": "NB"
+  },
+  {
+   "id": "isc-711",
+   "bandNumber": 711,
+   "name": "Esk'etemc",
+   "lat": 51.79,
+   "lon": -122.24,
+   "province": "BC"
+  },
+  {
+   "id": "isc-23",
+   "bandNumber": 23,
+   "name": "Eskasoni",
+   "lat": 45.93,
+   "lon": -60.65,
+   "province": "NS"
+  },
+  {
+   "id": "isc-644",
+   "bandNumber": 644,
+   "name": "Esquimalt",
+   "lat": 48.44,
+   "lon": -123.43,
+   "province": "BC"
+  },
+  {
+   "id": "isc-495",
+   "bandNumber": 495,
+   "name": "First Nation of Nacho Nyak Dun",
+   "lat": 63.59,
+   "lon": -135.9,
+   "province": "YT"
+  },
+  {
+   "id": "isc-264",
+   "bandNumber": 264,
+   "name": "Fisher River",
+   "lat": 51.44,
+   "lon": -97.39,
+   "province": "MB"
+  },
+  {
+   "id": "isc-390",
+   "bandNumber": 390,
+   "name": "Fishing Lake First Nation",
+   "lat": 51.86,
+   "lon": -103.63,
+   "province": "SK"
+  },
+  {
+   "id": "isc-395",
+   "bandNumber": 395,
+   "name": "Flying Dust First Nation",
+   "lat": 54.14,
+   "lon": -108.4,
+   "province": "SK"
+  },
+  {
+   "id": "isc-227",
+   "bandNumber": 227,
+   "name": "Flying Post",
+   "lat": 48.55,
+   "lon": -82.07,
+   "province": "ON"
+  },
+  {
+   "id": "isc-351",
+   "bandNumber": 351,
+   "name": "Fond du Lac",
+   "lat": 59.32,
+   "lon": -107.2,
+   "province": "SK"
+  },
+  {
+   "id": "isc-262",
+   "bandNumber": 262,
+   "name": "Fort Alexander",
+   "lat": 50.61,
+   "lon": -96.31,
+   "province": "MB"
+  },
+  {
+   "id": "isc-9",
+   "bandNumber": 9,
+   "name": "Fort Folly",
+   "lat": 45.89,
+   "lon": -64.5,
+   "province": "NB"
+  },
+  {
+   "id": "isc-752",
+   "bandNumber": 752,
+   "name": "Fort Good Hope",
+   "lat": 66.26,
+   "lon": -128.62,
+   "province": "YT"
+  },
+  {
+   "id": "isc-467",
+   "bandNumber": 467,
+   "name": "Fort McKay First Nation",
+   "lat": 57.18,
+   "lon": -111.63,
+   "province": "AB"
+  },
+  {
+   "id": "isc-468",
+   "bandNumber": 468,
+   "name": "Fort McMurray #468 First Nation",
+   "lat": 56.41,
+   "lon": -111.16,
+   "province": "AB"
+  },
+  {
+   "id": "isc-543",
+   "bandNumber": 543,
+   "name": "Fort Nelson First Nation",
+   "lat": 58.77,
+   "lon": -122.66,
+   "province": "BC"
+  },
+  {
+   "id": "isc-215",
+   "bandNumber": 215,
+   "name": "Fort Severn",
+   "lat": 55.99,
+   "lon": -87.64,
+   "province": "ON"
+  },
+  {
+   "id": "isc-187",
+   "bandNumber": 187,
+   "name": "Fort William",
+   "lat": 48.35,
+   "lon": -89.26,
+   "province": "ON"
+  },
+  {
+   "id": "isc-305",
+   "bandNumber": 305,
+   "name": "Fox Lake",
+   "lat": 56.5,
+   "lon": -94.2,
+   "province": "MB"
+  },
+  {
+   "id": "isc-465",
+   "bandNumber": 465,
+   "name": "Frog Lake",
+   "lat": 53.87,
+   "lon": -110.4,
+   "province": "AB"
+  },
+  {
+   "id": "isc-127",
+   "bandNumber": 127,
+   "name": "Gakijiwanong Anishinaabe Nation",
+   "lat": 48.37,
+   "lon": -92.16,
+   "province": "ON"
+  },
+  {
+   "id": "isc-294",
+   "bandNumber": 294,
+   "name": "Gambler First Nation",
+   "lat": 50.59,
+   "lon": -101.38,
+   "province": "MB"
+  },
+  {
+   "id": "isc-773",
+   "bandNumber": 773,
+   "name": "Gameti First Nation",
+   "lat": 64.11,
+   "lon": -117.35,
+   "province": "NT"
+  },
+  {
+   "id": "isc-297",
+   "bandNumber": 297,
+   "name": "Garden Hill First Nations",
+   "lat": 53.87,
+   "lon": -94.65,
+   "province": "MB"
+  },
+  {
+   "id": "isc-199",
+   "bandNumber": 199,
+   "name": "Garden River First Nation",
+   "lat": 46.54,
+   "lon": -84.15,
+   "province": "ON"
+  },
+  {
+   "id": "isc-391",
+   "bandNumber": 391,
+   "name": "George Gordon First Nation",
+   "lat": 51.3,
+   "lon": -104.3,
+   "province": "SK"
+  },
+  {
+   "id": "isc-185",
+   "bandNumber": 185,
+   "name": "Ginoogaming First Nation",
+   "lat": 49.76,
+   "lon": -86.54,
+   "province": "ON"
+  },
+  {
+   "id": "isc-531",
+   "bandNumber": 531,
+   "name": "Gitanmaax",
+   "lat": 55.26,
+   "lon": -127.68,
+   "province": "BC"
+  },
+  {
+   "id": "isc-537",
+   "bandNumber": 537,
+   "name": "Gitanyow",
+   "lat": 55.27,
+   "lon": -128.07,
+   "province": "BC"
+  },
+  {
+   "id": "isc-675",
+   "bandNumber": 675,
+   "name": "Gitga'at First Nation",
+   "lat": 53.43,
+   "lon": -129.25,
+   "province": "BC"
+  },
+  {
+   "id": "isc-535",
+   "bandNumber": 535,
+   "name": "Gitsegukla",
+   "lat": 55.09,
+   "lon": -127.83,
+   "province": "BC"
+  },
+  {
+   "id": "isc-536",
+   "bandNumber": 536,
+   "name": "Gitwangak",
+   "lat": 55.1,
+   "lon": -128.06,
+   "province": "BC"
+  },
+  {
+   "id": "isc-672",
+   "bandNumber": 672,
+   "name": "Gitxaala Nation",
+   "lat": 53.8,
+   "lon": -130.43,
+   "province": "BC"
+  },
+  {
+   "id": "isc-30",
+   "bandNumber": 30,
+   "name": "Glooscap First Nation",
+   "lat": 45.04,
+   "lon": -64.24,
+   "province": "NB"
+  },
+  {
+   "id": "isc-296",
+   "bandNumber": 296,
+   "name": "God's Lake First Nation",
+   "lat": 54.55,
+   "lon": -94.5,
+   "province": "MB"
+  },
+  {
+   "id": "isc-475",
+   "bandNumber": 475,
+   "name": "Goodstoney",
+   "lat": 51.17,
+   "lon": -114.85,
+   "province": "AB"
+  },
+  {
+   "id": "isc-149",
+   "bandNumber": 149,
+   "name": "Grassy Narrows First Nation",
+   "lat": 50.15,
+   "lon": -93.99,
+   "province": "ON"
+  },
+  {
+   "id": "isc-188",
+   "bandNumber": 188,
+   "name": "Gull Bay",
+   "lat": 49.8,
+   "lon": -89.11,
+   "province": "ON"
+  },
+  {
+   "id": "isc-724",
+   "bandNumber": 724,
+   "name": "Gwa'Sala-Nakwaxda'xw",
+   "lat": 50.73,
+   "lon": -127.5,
+   "province": "BC"
+  },
+  {
+   "id": "isc-627",
+   "bandNumber": 627,
+   "name": "Gwawaenuk Tribe",
+   "lat": 50.92,
+   "lon": -126.82,
+   "province": "BC"
+  },
+  {
+   "id": "isc-753",
+   "bandNumber": 753,
+   "name": "Gwichya Gwich'in",
+   "lat": 67.44,
+   "lon": -133.74,
+   "province": "YT"
+  },
+  {
+   "id": "isc-534",
+   "bandNumber": 534,
+   "name": "Hagwilget Village Council",
+   "lat": 55.25,
+   "lon": -127.6,
+   "province": "BC"
+  },
+  {
+   "id": "isc-676",
+   "bandNumber": 676,
+   "name": "Haisla Nation",
+   "lat": 53.98,
+   "lon": -128.65,
+   "province": "BC"
+  },
+  {
+   "id": "isc-645",
+   "bandNumber": 645,
+   "name": "Halalt",
+   "lat": 48.87,
+   "lon": -123.7,
+   "province": "BC"
+  },
+  {
+   "id": "isc-546",
+   "bandNumber": 546,
+   "name": "Halfway River First Nation",
+   "lat": 56.51,
+   "lon": -121.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-352",
+   "bandNumber": 352,
+   "name": "Hatchet Lake",
+   "lat": 58.11,
+   "lon": -103.16,
+   "province": "SK"
+  },
+  {
+   "id": "isc-469",
+   "bandNumber": 469,
+   "name": "Heart Lake",
+   "lat": 55.03,
+   "lon": -111.54,
+   "province": "AB"
+  },
+  {
+   "id": "isc-538",
+   "bandNumber": 538,
+   "name": "Heiltsuk",
+   "lat": 52.16,
+   "lon": -128.14,
+   "province": "BC"
+  },
+  {
+   "id": "isc-231",
+   "bandNumber": 231,
+   "name": "Henvey Inlet First Nation",
+   "lat": 45.98,
+   "lon": -80.56,
+   "province": "ON"
+  },
+  {
+   "id": "isc-661",
+   "bandNumber": 661,
+   "name": "Hesquiaht",
+   "lat": 49.37,
+   "lon": -126.27,
+   "province": "BC"
+  },
+  {
+   "id": "isc-162",
+   "bandNumber": 162,
+   "name": "Hiawatha First Nation",
+   "lat": 44.17,
+   "lon": -78.21,
+   "province": "ON"
+  },
+  {
+   "id": "isc-703",
+   "bandNumber": 703,
+   "name": "High Bar",
+   "lat": 51.11,
+   "lon": -122.02,
+   "province": "BC"
+  },
+  {
+   "id": "isc-263",
+   "bandNumber": 263,
+   "name": "Hollow Water",
+   "lat": 51.19,
+   "lon": -96.3,
+   "province": "MB"
+  },
+  {
+   "id": "isc-552",
+   "bandNumber": 552,
+   "name": "Homalco",
+   "lat": 49.95,
+   "lon": -125.24,
+   "province": "BC"
+  },
+  {
+   "id": "isc-449",
+   "bandNumber": 449,
+   "name": "Horse Lake First Nation",
+   "lat": 55.35,
+   "lon": -119.69,
+   "province": "AB"
+  },
+  {
+   "id": "isc-664",
+   "bandNumber": 664,
+   "name": "Hupacasath First Nation",
+   "lat": 49.27,
+   "lon": -124.83,
+   "province": "BC"
+  },
+  {
+   "id": "isc-663",
+   "bandNumber": 663,
+   "name": "Huu-ay-aht First Nations",
+   "lat": 48.8,
+   "lon": -125.13,
+   "province": "BC"
+  },
+  {
+   "id": "isc-10",
+   "bandNumber": 10,
+   "name": "Indian Island",
+   "lat": 46.69,
+   "lon": -64.79,
+   "province": "NB"
+  },
+  {
+   "id": "isc-80",
+   "bandNumber": 80,
+   "name": "Innu Takuaikan Uashat Mak Mani-Utenam",
+   "lat": 50.23,
+   "lon": -66.4,
+   "province": "QC"
+  },
+  {
+   "id": "isc-86",
+   "bandNumber": 86,
+   "name": "Innue Essipit",
+   "lat": 48.34,
+   "lon": -69.4,
+   "province": "QC"
+  },
+  {
+   "id": "isc-780",
+   "bandNumber": 780,
+   "name": "Inuvik Native",
+   "lat": 68.36,
+   "lon": -133.73,
+   "province": "YT"
+  },
+  {
+   "id": "isc-154",
+   "bandNumber": 154,
+   "name": "Iskatewizaagegan #39 Independent First Nation",
+   "lat": 49.63,
+   "lon": -95.1,
+   "province": "ON"
+  },
+  {
+   "id": "isc-683",
+   "bandNumber": 683,
+   "name": "Iskut",
+   "lat": 57.84,
+   "lon": -129.99,
+   "province": "BC"
+  },
+  {
+   "id": "isc-370",
+   "bandNumber": 370,
+   "name": "James Smith",
+   "lat": 53.11,
+   "lon": -104.88,
+   "province": "SK"
+  },
+  {
+   "id": "isc-770",
+   "bandNumber": 770,
+   "name": "Jean Marie River First Nation",
+   "lat": 61.53,
+   "lon": -120.63,
+   "province": "NT"
+  },
+  {
+   "id": "isc-20",
+   "bandNumber": 20,
+   "name": "Jijiktukwej L’nue’kati",
+   "lat": 45.07,
+   "lon": -64.65,
+   "province": "NB"
+  },
+  {
+   "id": "isc-761",
+   "bandNumber": 761,
+   "name": "K'atlodeeche First Nation",
+   "lat": 60.84,
+   "lon": -115.75,
+   "province": "NT"
+  },
+  {
+   "id": "isc-624",
+   "bandNumber": 624,
+   "name": "K'ómoks First Nation",
+   "lat": 49.68,
+   "lon": -124.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-638",
+   "bandNumber": 638,
+   "name": "Ka:'yu:'k't'h'/Che:k'tles7et'h' First Nations",
+   "lat": 50.03,
+   "lon": -127.38,
+   "province": "BC"
+  },
+  {
+   "id": "isc-768",
+   "bandNumber": 768,
+   "name": "Ka'a'gee Tu First Nation",
+   "lat": 60.94,
+   "lon": -117.42,
+   "province": "NT"
+  },
+  {
+   "id": "isc-362",
+   "bandNumber": 362,
+   "name": "Kahkewistahaw",
+   "lat": 50.49,
+   "lon": -102.53,
+   "province": "SK"
+  },
+  {
+   "id": "isc-704",
+   "bandNumber": 704,
+   "name": "Kanaka Bar",
+   "lat": 50.11,
+   "lon": -121.56,
+   "province": "BC"
+  },
+  {
+   "id": "isc-452",
+   "bandNumber": 452,
+   "name": "Kapawe'no First Nation",
+   "lat": 55.55,
+   "lon": -116.15,
+   "province": "AB"
+  },
+  {
+   "id": "isc-210",
+   "bandNumber": 210,
+   "name": "Kasabonika Lake",
+   "lat": 53.53,
+   "lon": -88.61,
+   "province": "ON"
+  },
+  {
+   "id": "isc-243",
+   "bandNumber": 243,
+   "name": "Kashechewan",
+   "lat": 52.29,
+   "lon": -81.64,
+   "province": "ON"
+  },
+  {
+   "id": "isc-563",
+   "bandNumber": 563,
+   "name": "Katzie",
+   "lat": 49.2,
+   "lon": -122.68,
+   "province": "BC"
+  },
+  {
+   "id": "isc-393",
+   "bandNumber": 393,
+   "name": "Kawacatoose",
+   "lat": 51.48,
+   "lon": -104.4,
+   "province": "SK"
+  },
+  {
+   "id": "isc-65",
+   "bandNumber": 65,
+   "name": "Kebaowek First Nation",
+   "lat": 46.79,
+   "lon": -78.99,
+   "province": "QC"
+  },
+  {
+   "id": "isc-367",
+   "bandNumber": 367,
+   "name": "Keeseekoose",
+   "lat": 51.72,
+   "lon": -101.91,
+   "province": "SK"
+  },
+  {
+   "id": "isc-286",
+   "bandNumber": 286,
+   "name": "Keeseekoowenin",
+   "lat": 50.54,
+   "lon": -100.3,
+   "province": "MB"
+  },
+  {
+   "id": "isc-325",
+   "bandNumber": 325,
+   "name": "Keewaywin First Nation",
+   "lat": 53,
+   "lon": -92.8,
+   "province": "ON"
+  },
+  {
+   "id": "isc-466",
+   "bandNumber": 466,
+   "name": "Kehewin Cree Nation",
+   "lat": 54.12,
+   "lon": -110.86,
+   "province": "AB"
+  },
+  {
+   "id": "isc-212",
+   "bandNumber": 212,
+   "name": "Kingfisher",
+   "lat": 53.03,
+   "lon": -89.83,
+   "province": "ON"
+  },
+  {
+   "id": "isc-377",
+   "bandNumber": 377,
+   "name": "Kinistin Saulteaux Nation",
+   "lat": 52.61,
+   "lon": -104.22,
+   "province": "SK"
+  },
+  {
+   "id": "isc-268",
+   "bandNumber": 268,
+   "name": "Kinonjeoshtegon First Nation",
+   "lat": 51.92,
+   "lon": -97.31,
+   "province": "MB"
+  },
+  {
+   "id": "isc-532",
+   "bandNumber": 532,
+   "name": "Kispiox",
+   "lat": 55.35,
+   "lon": -127.7,
+   "province": "BC"
+  },
+  {
+   "id": "isc-540",
+   "bandNumber": 540,
+   "name": "Kitasoo Xai'xais Nation",
+   "lat": 52.59,
+   "lon": -128.52,
+   "province": "BC"
+  },
+  {
+   "id": "isc-209",
+   "bandNumber": 209,
+   "name": "Kitchenuhmaykoosib Inninuwug",
+   "lat": 53.82,
+   "lon": -89.88,
+   "province": "ON"
+  },
+  {
+   "id": "isc-73",
+   "bandNumber": 73,
+   "name": "Kitigan Zibi Anishinabeg",
+   "lat": 46.36,
+   "lon": -75.98,
+   "province": "QC"
+  },
+  {
+   "id": "isc-680",
+   "bandNumber": 680,
+   "name": "Kitselas",
+   "lat": 54.61,
+   "lon": -128.41,
+   "province": "BC"
+  },
+  {
+   "id": "isc-681",
+   "bandNumber": 681,
+   "name": "Kitsumkalum",
+   "lat": 54.52,
+   "lon": -128.67,
+   "province": "BC"
+  },
+  {
+   "id": "isc-553",
+   "bandNumber": 553,
+   "name": "Klahoose First Nation",
+   "lat": 50.13,
+   "lon": -124.92,
+   "province": "BC"
+  },
+  {
+   "id": "isc-503",
+   "bandNumber": 503,
+   "name": "Kluane First Nation",
+   "lat": 61.36,
+   "lon": -138.99,
+   "province": "YT"
+  },
+  {
+   "id": "isc-251",
+   "bandNumber": 251,
+   "name": "Konadaha Seneca",
+   "lat": 43.04,
+   "lon": -80.09,
+   "province": "ON"
+  },
+  {
+   "id": "isc-610",
+   "bandNumber": 610,
+   "name": "Kwadacha Nation",
+   "lat": 57.42,
+   "lon": -125.63,
+   "province": "BC"
+  },
+  {
+   "id": "isc-626",
+   "bandNumber": 626,
+   "name": "Kwakiutl",
+   "lat": 50.69,
+   "lon": -127.41,
+   "province": "BC"
+  },
+  {
+   "id": "isc-500",
+   "bandNumber": 500,
+   "name": "Kwanlin Dun First Nation",
+   "lat": 60.72,
+   "lon": -135.11,
+   "province": "YT"
+  },
+  {
+   "id": "isc-564",
+   "bandNumber": 564,
+   "name": "Kwantlen First Nation",
+   "lat": 49.17,
+   "lon": -122.57,
+   "province": "BC"
+  },
+  {
+   "id": "isc-580",
+   "bandNumber": 580,
+   "name": "Kwaw-kwaw-Apilt",
+   "lat": 49.17,
+   "lon": -121.98,
+   "province": "BC"
+  },
+  {
+   "id": "isc-628",
+   "bandNumber": 628,
+   "name": "Kwiakah",
+   "lat": 50.42,
+   "lon": -125.16,
+   "province": "BC"
+  },
+  {
+   "id": "isc-625",
+   "bandNumber": 625,
+   "name": "Kwikwasut'inuxw Haxwa'mis",
+   "lat": 50.7,
+   "lon": -126.6,
+   "province": "BC"
+  },
+  {
+   "id": "isc-560",
+   "bandNumber": 560,
+   "name": "Kwikwetlem First Nation",
+   "lat": 49.23,
+   "lon": -122.81,
+   "province": "BC"
+  },
+  {
+   "id": "isc-87",
+   "bandNumber": 87,
+   "name": "La Nation Innu Matimekush-Lac John",
+   "lat": 54.8,
+   "lon": -66.81,
+   "province": "QC"
+  },
+  {
+   "id": "isc-53",
+   "bandNumber": 53,
+   "name": "La Nation Micmac de Gespeg",
+   "lat": 48.92,
+   "lon": -64.62,
+   "province": "QC"
+  },
+  {
+   "id": "isc-189",
+   "bandNumber": 189,
+   "name": "Lac Des Mille Lacs",
+   "lat": 48.89,
+   "lon": -90.33,
+   "province": "ON"
+  },
+  {
+   "id": "isc-353",
+   "bandNumber": 353,
+   "name": "Lac La Ronge",
+   "lat": 55.1,
+   "lon": -105.3,
+   "province": "SK"
+  },
+  {
+   "id": "isc-205",
+   "bandNumber": 205,
+   "name": "Lac Seul",
+   "lat": 50.29,
+   "lon": -92.3,
+   "province": "ON"
+  },
+  {
+   "id": "isc-607",
+   "bandNumber": 607,
+   "name": "Lake Babine Nation",
+   "lat": 54.24,
+   "lon": -125.76,
+   "province": "BC"
+  },
+  {
+   "id": "isc-271",
+   "bandNumber": 271,
+   "name": "Lake Manitoba",
+   "lat": 50.95,
+   "lon": -98.61,
+   "province": "MB"
+  },
+  {
+   "id": "isc-275",
+   "bandNumber": 275,
+   "name": "Lake St. Martin",
+   "lat": 51.75,
+   "lon": -98.44,
+   "province": "MB"
+  },
+  {
+   "id": "isc-674",
+   "bandNumber": 674,
+   "name": "Lax Kw'alaams",
+   "lat": 54.56,
+   "lon": -130.43,
+   "province": "BC"
+  },
+  {
+   "id": "isc-2",
+   "bandNumber": 2,
+   "name": "Lennox Island",
+   "lat": 46.6,
+   "lon": -63.86,
+   "province": "PE"
+  },
+  {
+   "id": "isc-579",
+   "bandNumber": 579,
+   "name": "Leq'á:mel First Nation",
+   "lat": 49.2,
+   "lon": -122.03,
+   "province": "BC"
+  },
+  {
+   "id": "isc-78",
+   "bandNumber": 78,
+   "name": "Les Atikamekw de Manawan",
+   "lat": 47.22,
+   "lon": -74.39,
+   "province": "QC"
+  },
+  {
+   "id": "isc-82",
+   "bandNumber": 82,
+   "name": "Les Innus de Ekuanitshit",
+   "lat": 50.29,
+   "lon": -64.03,
+   "province": "QC"
+  },
+  {
+   "id": "isc-611",
+   "bandNumber": 611,
+   "name": "Lheidli T'enneh",
+   "lat": 54.01,
+   "lon": -122.61,
+   "province": "BC"
+  },
+  {
+   "id": "isc-721",
+   "bandNumber": 721,
+   "name": "Lhoosk'uz Dene Nation",
+   "lat": 53.09,
+   "lon": -124.49,
+   "province": "BC"
+  },
+  {
+   "id": "isc-715",
+   "bandNumber": 715,
+   "name": "Lhtako Dene Nation",
+   "lat": 52.95,
+   "lon": -122.45,
+   "province": "BC"
+  },
+  {
+   "id": "isc-502",
+   "bandNumber": 502,
+   "name": "Liard First Nation",
+   "lat": 60.07,
+   "lon": -128.72,
+   "province": "YT"
+  },
+  {
+   "id": "isc-757",
+   "bandNumber": 757,
+   "name": "Liidlii Kue First Nation",
+   "lat": 61.82,
+   "lon": -121.31,
+   "province": "NT"
+  },
+  {
+   "id": "isc-557",
+   "bandNumber": 557,
+   "name": "Lil'wat Nation",
+   "lat": 50.32,
+   "lon": -122.72,
+   "province": "BC"
+  },
+  {
+   "id": "isc-51",
+   "bandNumber": 51,
+   "name": "Listuguj Mi'gmaq Government",
+   "lat": 48.01,
+   "lon": -66.71,
+   "province": "NB"
+  },
+  {
+   "id": "isc-379",
+   "bandNumber": 379,
+   "name": "Little Black Bear",
+   "lat": 51,
+   "lon": -103.32,
+   "province": "SK"
+  },
+  {
+   "id": "isc-270",
+   "bandNumber": 270,
+   "name": "Little Grand Rapids",
+   "lat": 52.02,
+   "lon": -95.46,
+   "province": "MB"
+  },
+  {
+   "id": "isc-340",
+   "bandNumber": 340,
+   "name": "Little Pine",
+   "lat": 52.92,
+   "lon": -109.06,
+   "province": "SK"
+  },
+  {
+   "id": "isc-447",
+   "bandNumber": 447,
+   "name": "Little Red River Cree Nation",
+   "lat": 58.46,
+   "lon": -114.53,
+   "province": "AB"
+  },
+  {
+   "id": "isc-492",
+   "bandNumber": 492,
+   "name": "Little Salmon/Carmacks First Nation",
+   "lat": 62.1,
+   "lon": -136.29,
+   "province": "YT"
+  },
+  {
+   "id": "isc-274",
+   "bandNumber": 274,
+   "name": "Little Saskatchewan",
+   "lat": 51.68,
+   "lon": -98.56,
+   "province": "MB"
+  },
+  {
+   "id": "isc-184",
+   "bandNumber": 184,
+   "name": "Long Lake No.58 First Nation",
+   "lat": 49.79,
+   "lon": -86.57,
+   "province": "ON"
+  },
+  {
+   "id": "isc-287",
+   "bandNumber": 287,
+   "name": "Long Plain",
+   "lat": 49.86,
+   "lon": -98.47,
+   "province": "MB"
+  },
+  {
+   "id": "isc-67",
+   "bandNumber": 67,
+   "name": "Long Point First Nation",
+   "lat": 47.58,
+   "lon": -78.56,
+   "province": "QC"
+  },
+  {
+   "id": "isc-476",
+   "bandNumber": 476,
+   "name": "Loon River Cree",
+   "lat": 56.54,
+   "lon": -115.4,
+   "province": "AB"
+  },
+  {
+   "id": "isc-439",
+   "bandNumber": 439,
+   "name": "Louis Bull Tribe",
+   "lat": 52.87,
+   "lon": -113.57,
+   "province": "AB"
+  },
+  {
+   "id": "isc-250",
+   "bandNumber": 250,
+   "name": "Lower Cayuga",
+   "lat": 43.03,
+   "lon": -80.06,
+   "province": "ON"
+  },
+  {
+   "id": "isc-254",
+   "bandNumber": 254,
+   "name": "Lower Mohawk",
+   "lat": 43.04,
+   "lon": -80.12,
+   "province": "ON"
+  },
+  {
+   "id": "isc-695",
+   "bandNumber": 695,
+   "name": "Lower Nicola",
+   "lat": 50.14,
+   "lon": -120.86,
+   "province": "BC"
+  },
+  {
+   "id": "isc-598",
+   "bandNumber": 598,
+   "name": "Lower Similkameen",
+   "lat": 49.05,
+   "lon": -119.72,
+   "province": "BC"
+  },
+  {
+   "id": "isc-453",
+   "bandNumber": 453,
+   "name": "Lubicon Lake Band No. 453",
+   "lat": 56.45,
+   "lon": -116.12,
+   "province": "AB"
+  },
+  {
+   "id": "isc-341",
+   "bandNumber": 341,
+   "name": "Lucky Man",
+   "lat": 52.99,
+   "lon": -107.24,
+   "province": "SK"
+  },
+  {
+   "id": "isc-764",
+   "bandNumber": 764,
+   "name": "Lutsel K'e Dene First Nation",
+   "lat": 62.4,
+   "lon": -110.74,
+   "province": "NT"
+  },
+  {
+   "id": "isc-646",
+   "bandNumber": 646,
+   "name": "Lyackson",
+   "lat": 48.87,
+   "lon": -123.7,
+   "province": "BC"
+  },
+  {
+   "id": "isc-705",
+   "bandNumber": 705,
+   "name": "Lytton",
+   "lat": 50.24,
+   "lon": -121.58,
+   "province": "BC"
+  },
+  {
+   "id": "isc-181",
+   "bandNumber": 181,
+   "name": "M'Chigeeng First Nation",
+   "lat": 45.83,
+   "lon": -82.16,
+   "province": "ON"
+  },
+  {
+   "id": "isc-6",
+   "bandNumber": 6,
+   "name": "Madawaska Maliseet First Nation",
+   "lat": 47.36,
+   "lon": -68.31,
+   "province": "NB"
+  },
+  {
+   "id": "isc-174",
+   "bandNumber": 174,
+   "name": "Magnetawan",
+   "lat": 45.77,
+   "lon": -80.5,
+   "province": "ON"
+  },
+  {
+   "id": "isc-396",
+   "bandNumber": 396,
+   "name": "Makwa Sahgaiehcan First Nation",
+   "lat": 54.03,
+   "lon": -109.17,
+   "province": "SK"
+  },
+  {
+   "id": "isc-647",
+   "bandNumber": 647,
+   "name": "Malahat Nation",
+   "lat": 48.61,
+   "lon": -123.52,
+   "province": "BC"
+  },
+  {
+   "id": "isc-629",
+   "bandNumber": 629,
+   "name": "Mamalilikulla First Nation",
+   "lat": 50.59,
+   "lon": -126.68,
+   "province": "BC"
+  },
+  {
+   "id": "isc-302",
+   "bandNumber": 302,
+   "name": "Manto Sipi Cree Nation",
+   "lat": 54.84,
+   "lon": -94.05,
+   "province": "MB"
+  },
+  {
+   "id": "isc-328",
+   "bandNumber": 328,
+   "name": "Marcel Colomb First Nation",
+   "lat": 56.8,
+   "lon": -100.58,
+   "province": "MB"
+  },
+  {
+   "id": "isc-186",
+   "bandNumber": 186,
+   "name": "Marten Falls First Nation",
+   "lat": 51.63,
+   "lon": -85.92,
+   "province": "ON"
+  },
+  {
+   "id": "isc-219",
+   "bandNumber": 219,
+   "name": "Matachewan",
+   "lat": 48.07,
+   "lon": -80.64,
+   "province": "ON"
+  },
+  {
+   "id": "isc-311",
+   "bandNumber": 311,
+   "name": "Mathias Colomb",
+   "lat": 55.74,
+   "lon": -101.32,
+   "province": "MB"
+  },
+  {
+   "id": "isc-565",
+   "bandNumber": 565,
+   "name": "Matsqui First Nation",
+   "lat": 49.11,
+   "lon": -122.34,
+   "province": "BC"
+  },
+  {
+   "id": "isc-226",
+   "bandNumber": 226,
+   "name": "Mattagami",
+   "lat": 47.8,
+   "lon": -81.52,
+   "province": "ON"
+  },
+  {
+   "id": "isc-326",
+   "bandNumber": 326,
+   "name": "McDowell Lake",
+   "lat": 52.21,
+   "lon": -92.73,
+   "province": "ON"
+  },
+  {
+   "id": "isc-618",
+   "bandNumber": 618,
+   "name": "McLeod Lake",
+   "lat": 54.98,
+   "lon": -123.05,
+   "province": "BC"
+  },
+  {
+   "id": "isc-26",
+   "bandNumber": 26,
+   "name": "Membertou",
+   "lat": 46.12,
+   "lon": -60.2,
+   "province": "NS"
+  },
+  {
+   "id": "isc-14",
+   "bandNumber": 14,
+   "name": "Metepenagiag Mi'kmaq Nation",
+   "lat": 46.94,
+   "lon": -65.83,
+   "province": "NB"
+  },
+  {
+   "id": "isc-673",
+   "bandNumber": 673,
+   "name": "Metlakatla First Nation",
+   "lat": 54.34,
+   "lon": -130.44,
+   "province": "BC"
+  },
+  {
+   "id": "isc-47",
+   "bandNumber": 47,
+   "name": "Miawpukek",
+   "lat": 47.86,
+   "lon": -55.76,
+   "province": "NL"
+  },
+  {
+   "id": "isc-225",
+   "bandNumber": 225,
+   "name": "Michipicoten",
+   "lat": 47.96,
+   "lon": -84.93,
+   "province": "ON"
+  },
+  {
+   "id": "isc-52",
+   "bandNumber": 52,
+   "name": "Micmacs of Gesgapegiag",
+   "lat": 48.2,
+   "lon": -65.92,
+   "province": "QC"
+  },
+  {
+   "id": "isc-461",
+   "bandNumber": 461,
+   "name": "Mikisew Cree First Nation",
+   "lat": 58.76,
+   "lon": -111.1,
+   "province": "AB"
+  },
+  {
+   "id": "isc-27",
+   "bandNumber": 27,
+   "name": "Millbrook",
+   "lat": 45.33,
+   "lon": -63.29,
+   "province": "NS"
+  },
+  {
+   "id": "isc-282",
+   "bandNumber": 282,
+   "name": "Minegoziibe Anishinabe",
+   "lat": 52.05,
+   "lon": -100.17,
+   "province": "MB"
+  },
+  {
+   "id": "isc-397",
+   "bandNumber": 397,
+   "name": "Ministikwan Lake Cree Nation",
+   "lat": 54.05,
+   "lon": -109.67,
+   "province": "SK"
+  },
+  {
+   "id": "isc-203",
+   "bandNumber": 203,
+   "name": "Mishkeegogamang",
+   "lat": 51.09,
+   "lon": -90.23,
+   "province": "ON"
+  },
+  {
+   "id": "isc-310",
+   "bandNumber": 310,
+   "name": "Misipawistik Cree Nation",
+   "lat": 53.18,
+   "lon": -99.26,
+   "province": "MB"
+  },
+  {
+   "id": "isc-223",
+   "bandNumber": 223,
+   "name": "Missanabie Cree",
+   "lat": 48.31,
+   "lon": -84.08,
+   "province": "ON"
+  },
+  {
+   "id": "isc-200",
+   "bandNumber": 200,
+   "name": "Mississauga",
+   "lat": 46.2,
+   "lon": -83,
+   "province": "ON"
+  },
+  {
+   "id": "isc-140",
+   "bandNumber": 140,
+   "name": "Mississaugas of Scugog Island First Nation",
+   "lat": 44.19,
+   "lon": -78.88,
+   "province": "ON"
+  },
+  {
+   "id": "isc-120",
+   "bandNumber": 120,
+   "name": "Mississaugas of the Credit",
+   "lat": 43,
+   "lon": -80.1,
+   "province": "ON"
+  },
+  {
+   "id": "isc-374",
+   "bandNumber": 374,
+   "name": "Mistawasis Nêhiyawak",
+   "lat": 53.17,
+   "lon": -106.81,
+   "province": "SK"
+  },
+  {
+   "id": "isc-133",
+   "bandNumber": 133,
+   "name": "Mitaanjigamiing First Nation",
+   "lat": 48.71,
+   "lon": -93.39,
+   "province": "ON"
+  },
+  {
+   "id": "isc-159",
+   "bandNumber": 159,
+   "name": "Mohawks of Akwesasne",
+   "lat": 45,
+   "lon": -74.65,
+   "province": "ON"
+  },
+  {
+   "id": "isc-70",
+   "bandNumber": 70,
+   "name": "Mohawks of Kahnawá:ke",
+   "lat": 45.41,
+   "lon": -73.68,
+   "province": "QC"
+  },
+  {
+   "id": "isc-69",
+   "bandNumber": 69,
+   "name": "Mohawks of Kanesatake",
+   "lat": 45.48,
+   "lon": -74.13,
+   "province": "QC"
+  },
+  {
+   "id": "isc-164",
+   "bandNumber": 164,
+   "name": "Mohawks of the Bay of Quinte",
+   "lat": 44.19,
+   "lon": -77.14,
+   "province": "ON"
+  },
+  {
+   "id": "isc-88",
+   "bandNumber": 88,
+   "name": "Montagnais de Pakua Shipi",
+   "lat": 51.23,
+   "lon": -58.67,
+   "province": "NL"
+  },
+  {
+   "id": "isc-84",
+   "bandNumber": 84,
+   "name": "Montagnais de Unamen Shipu",
+   "lat": 50.22,
+   "lon": -60.67,
+   "province": "QC"
+  },
+  {
+   "id": "isc-442",
+   "bandNumber": 442,
+   "name": "Montana",
+   "lat": 52.73,
+   "lon": -113.44,
+   "province": "AB"
+  },
+  {
+   "id": "isc-354",
+   "bandNumber": 354,
+   "name": "Montreal Lake",
+   "lat": 54.05,
+   "lon": -105.79,
+   "province": "SK"
+  },
+  {
+   "id": "isc-144",
+   "bandNumber": 144,
+   "name": "Moose Cree First Nation",
+   "lat": 51.26,
+   "lon": -80.6,
+   "province": "ON"
+  },
+  {
+   "id": "isc-135",
+   "bandNumber": 135,
+   "name": "Moose Deer Point",
+   "lat": 45.08,
+   "lon": -80,
+   "province": "ON"
+  },
+  {
+   "id": "isc-342",
+   "bandNumber": 342,
+   "name": "Moosomin",
+   "lat": 53.08,
+   "lon": -108.32,
+   "province": "SK"
+  },
+  {
+   "id": "isc-167",
+   "bandNumber": 167,
+   "name": "Moravian of the Thames",
+   "lat": 42.56,
+   "lon": -81.87,
+   "province": "ON"
+  },
+  {
+   "id": "isc-312",
+   "bandNumber": 312,
+   "name": "Mosakahiken Cree Nation",
+   "lat": 53.71,
+   "lon": -100.31,
+   "province": "MB"
+  },
+  {
+   "id": "isc-343",
+   "bandNumber": 343,
+   "name": "Mosquito, Grizzly Bear's Head, Lean Man First Nations",
+   "lat": 52.49,
+   "lon": -108.25,
+   "province": "SK"
+  },
+  {
+   "id": "isc-630",
+   "bandNumber": 630,
+   "name": "Mowachaht/Muchalaht",
+   "lat": 49.81,
+   "lon": -126.07,
+   "province": "BC"
+  },
+  {
+   "id": "isc-168",
+   "bandNumber": 168,
+   "name": "Munsee-Delaware Nation",
+   "lat": 42.79,
+   "lon": -81.47,
+   "province": "ON"
+  },
+  {
+   "id": "isc-381",
+   "bandNumber": 381,
+   "name": "Muscowpetung",
+   "lat": 50.78,
+   "lon": -104.28,
+   "province": "SK"
+  },
+  {
+   "id": "isc-32",
+   "bandNumber": 32,
+   "name": "Mushuau Innu First Nation",
+   "lat": 55.91,
+   "lon": -61.12,
+   "province": "NL"
+  },
+  {
+   "id": "isc-124",
+   "bandNumber": 124,
+   "name": "Musk-kosiminiziibing",
+   "lat": 49.07,
+   "lon": -94.32,
+   "province": "ON"
+  },
+  {
+   "id": "isc-375",
+   "bandNumber": 375,
+   "name": "Muskeg Lake Cree Nation #102",
+   "lat": 53,
+   "lon": -106.87,
+   "province": "SK"
+  },
+  {
+   "id": "isc-371",
+   "bandNumber": 371,
+   "name": "Muskoday First Nation",
+   "lat": 53.09,
+   "lon": -105.49,
+   "province": "SK"
+  },
+  {
+   "id": "isc-392",
+   "bandNumber": 392,
+   "name": "Muskowekwan",
+   "lat": 51.33,
+   "lon": -104,
+   "province": "SK"
+  },
+  {
+   "id": "isc-213",
+   "bandNumber": 213,
+   "name": "Muskrat Dam Lake",
+   "lat": 53.4,
+   "lon": -91.78,
+   "province": "ON"
+  },
+  {
+   "id": "isc-550",
+   "bandNumber": 550,
+   "name": "Musqueam",
+   "lat": 49.22,
+   "lon": -123.2,
+   "province": "BC"
+  },
+  {
+   "id": "isc-556",
+   "bandNumber": 556,
+   "name": "N'Quatqua",
+   "lat": 50.55,
+   "lon": -122.48,
+   "province": "BC"
+  },
+  {
+   "id": "isc-612",
+   "bandNumber": 612,
+   "name": "Nadleh Whuten",
+   "lat": 54.08,
+   "lon": -124.61,
+   "province": "BC"
+  },
+  {
+   "id": "isc-766",
+   "bandNumber": 766,
+   "name": "Nahanni Butte",
+   "lat": 61.04,
+   "lon": -123.38,
+   "province": "NT"
+  },
+  {
+   "id": "isc-128",
+   "bandNumber": 128,
+   "name": "Naicatchewenin",
+   "lat": 48.86,
+   "lon": -93.57,
+   "province": "ON"
+  },
+  {
+   "id": "isc-614",
+   "bandNumber": 614,
+   "name": "Nak'azdli Whut'en",
+   "lat": 54.44,
+   "lon": -124.25,
+   "province": "BC"
+  },
+  {
+   "id": "isc-631",
+   "bandNumber": 631,
+   "name": "Namgis First Nation",
+   "lat": 50.6,
+   "lon": -126.94,
+   "province": "BC"
+  },
+  {
+   "id": "isc-649",
+   "bandNumber": 649,
+   "name": "Nanoose First Nation",
+   "lat": 49.25,
+   "lon": -124.13,
+   "province": "BC"
+  },
+  {
+   "id": "isc-158",
+   "bandNumber": 158,
+   "name": "Naotkamegwanning",
+   "lat": 49.41,
+   "lon": -93.96,
+   "province": "ON"
+  },
+  {
+   "id": "isc-81",
+   "bandNumber": 81,
+   "name": "Naskapi Nation of Kawawachikamach",
+   "lat": 54.86,
+   "lon": -66.76,
+   "province": "QC"
+  },
+  {
+   "id": "isc-63",
+   "bandNumber": 63,
+   "name": "Nation Anishnabe du Lac Simon",
+   "lat": 48.06,
+   "lon": -77.35,
+   "province": "QC"
+  },
+  {
+   "id": "isc-50",
+   "bandNumber": 50,
+   "name": "Nation Wendat",
+   "lat": 46.86,
+   "lon": -71.36,
+   "province": "QC"
+  },
+  {
+   "id": "isc-7",
+   "bandNumber": 7,
+   "name": "Natoaganeg",
+   "lat": 46.96,
+   "lon": -65.63,
+   "province": "NB"
+  },
+  {
+   "id": "isc-720",
+   "bandNumber": 720,
+   "name": "Nazko First Nation",
+   "lat": 52.94,
+   "lon": -123.58,
+   "province": "BC"
+  },
+  {
+   "id": "isc-726",
+   "bandNumber": 726,
+   "name": "Nee-Tahi-Buhn",
+   "lat": 53.93,
+   "lon": -125.67,
+   "province": "BC"
+  },
+  {
+   "id": "isc-380",
+   "bandNumber": 380,
+   "name": "Nekaneet",
+   "lat": 49.68,
+   "lon": -109.2,
+   "province": "SK"
+  },
+  {
+   "id": "isc-239",
+   "bandNumber": 239,
+   "name": "Neskantaga First Nation",
+   "lat": 52.2,
+   "lon": -88.01,
+   "province": "ON"
+  },
+  {
+   "id": "isc-690",
+   "bandNumber": 690,
+   "name": "Neskonlith",
+   "lat": 50.77,
+   "lon": -119.73,
+   "province": "BC"
+  },
+  {
+   "id": "isc-195",
+   "bandNumber": 195,
+   "name": "Netmizaaggamig Nishnaabeg",
+   "lat": 48.69,
+   "lon": -85.64,
+   "province": "ON"
+  },
+  {
+   "id": "isc-566",
+   "bandNumber": 566,
+   "name": "New Westminster",
+   "lat": 49.24,
+   "lon": -123.02,
+   "province": "BC"
+  },
+  {
+   "id": "isc-241",
+   "bandNumber": 241,
+   "name": "Nibinamik First Nation",
+   "lat": 52.75,
+   "lon": -88.52,
+   "province": "ON"
+  },
+  {
+   "id": "isc-696",
+   "bandNumber": 696,
+   "name": "Nicomen",
+   "lat": 50.26,
+   "lon": -121.4,
+   "province": "BC"
+  },
+  {
+   "id": "isc-129",
+   "bandNumber": 129,
+   "name": "Nigigoonsiminikaaning First Nation",
+   "lat": 48.71,
+   "lon": -92.94,
+   "province": "ON"
+  },
+  {
+   "id": "isc-252",
+   "bandNumber": 252,
+   "name": "Niharondasa Seneca",
+   "lat": 43.04,
+   "lon": -80.1,
+   "province": "ON"
+  },
+  {
+   "id": "isc-147",
+   "bandNumber": 147,
+   "name": "Niisaachewan Anishinaabe Nation",
+   "lat": 49.89,
+   "lon": -94.54,
+   "province": "ON"
+  },
+  {
+   "id": "isc-220",
+   "bandNumber": 220,
+   "name": "Nipissing First Nation",
+   "lat": 46.32,
+   "lon": -79.87,
+   "province": "ON"
+  },
+  {
+   "id": "isc-671",
+   "bandNumber": 671,
+   "name": "Nisga'a Village of Gingolx",
+   "lat": 54.99,
+   "lon": -129.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-679",
+   "bandNumber": 679,
+   "name": "Nisga'a Village of Gitwinksihlkw",
+   "lat": 55.19,
+   "lon": -129.22,
+   "province": "BC"
+  },
+  {
+   "id": "isc-678",
+   "bandNumber": 678,
+   "name": "Nisga'a Village of Laxgalt'sap",
+   "lat": 55.04,
+   "lon": -129.58,
+   "province": "BC"
+  },
+  {
+   "id": "isc-677",
+   "bandNumber": 677,
+   "name": "Nisga'a Village of New Aiyansh",
+   "lat": 55.21,
+   "lon": -129.08,
+   "province": "BC"
+  },
+  {
+   "id": "isc-313",
+   "bandNumber": 313,
+   "name": "Nisichawayasihk Cree Nation",
+   "lat": 55.78,
+   "lon": -98.89,
+   "province": "MB"
+  },
+  {
+   "id": "isc-699",
+   "bandNumber": 699,
+   "name": "Nooaitch",
+   "lat": 50.15,
+   "lon": -121.04,
+   "province": "BC"
+  },
+  {
+   "id": "isc-204",
+   "bandNumber": 204,
+   "name": "North Caribou Lake",
+   "lat": 52.95,
+   "lon": -91.35,
+   "province": "ON"
+  },
+  {
+   "id": "isc-238",
+   "bandNumber": 238,
+   "name": "North Spirit Lake",
+   "lat": 52.51,
+   "lon": -93.02,
+   "province": "ON"
+  },
+  {
+   "id": "isc-317",
+   "bandNumber": 317,
+   "name": "Northlands Denesuline First Nation",
+   "lat": 58.62,
+   "lon": -101.49,
+   "province": "MB"
+  },
+  {
+   "id": "isc-151",
+   "bandNumber": 151,
+   "name": "Northwest Angle No.33",
+   "lat": 49.36,
+   "lon": -95.02,
+   "province": "ON"
+  },
+  {
+   "id": "isc-278",
+   "bandNumber": 278,
+   "name": "Norway House Cree Nation",
+   "lat": 53.99,
+   "lon": -97.77,
+   "province": "MB"
+  },
+  {
+   "id": "isc-639",
+   "bandNumber": 639,
+   "name": "Nuchatlaht",
+   "lat": 49.99,
+   "lon": -126.94,
+   "province": "BC"
+  },
+  {
+   "id": "isc-539",
+   "bandNumber": 539,
+   "name": "Nuxalk Nation",
+   "lat": 52.36,
+   "lon": -126.72,
+   "province": "BC"
+  },
+  {
+   "id": "isc-279",
+   "bandNumber": 279,
+   "name": "O-Chi-Chak-Ko-Sipi First Nation",
+   "lat": 51.5,
+   "lon": -99.26,
+   "province": "MB"
+  },
+  {
+   "id": "isc-318",
+   "bandNumber": 318,
+   "name": "O-Pipon-Na-Piwin Cree Nation",
+   "lat": 56.77,
+   "lon": -98.93,
+   "province": "MB"
+  },
+  {
+   "id": "isc-431",
+   "bandNumber": 431,
+   "name": "O'Chiese",
+   "lat": 52.71,
+   "lon": -115.28,
+   "province": "AB"
+  },
+  {
+   "id": "isc-408",
+   "bandNumber": 408,
+   "name": "Ocean Man",
+   "lat": 49.82,
+   "lon": -102.93,
+   "province": "SK"
+  },
+  {
+   "id": "isc-363",
+   "bandNumber": 363,
+   "name": "Ochapowace",
+   "lat": 50.47,
+   "lon": -102.39,
+   "province": "SK"
+  },
+  {
+   "id": "isc-72",
+   "bandNumber": 72,
+   "name": "Odanak",
+   "lat": 46.07,
+   "lon": -72.82,
+   "province": "QC"
+  },
+  {
+   "id": "isc-258",
+   "bandNumber": 258,
+   "name": "Ojibway Nation of Saugeen",
+   "lat": 50.42,
+   "lon": -90.66,
+   "province": "ON"
+  },
+  {
+   "id": "isc-131",
+   "bandNumber": 131,
+   "name": "Ojibways of Onigaming First Nation",
+   "lat": 49.17,
+   "lon": -93.93,
+   "province": "ON"
+  },
+  {
+   "id": "isc-616",
+   "bandNumber": 616,
+   "name": "Okanagan",
+   "lat": 50.36,
+   "lon": -119.32,
+   "province": "BC"
+  },
+  {
+   "id": "isc-382",
+   "bandNumber": 382,
+   "name": "Okanese",
+   "lat": 50.94,
+   "lon": -103.36,
+   "province": "SK"
+  },
+  {
+   "id": "isc-669",
+   "bandNumber": 669,
+   "name": "Old Massett Village Council",
+   "lat": 54.03,
+   "lon": -132.18,
+   "province": "BC"
+  },
+  {
+   "id": "isc-373",
+   "bandNumber": 373,
+   "name": "One Arrow First Nation",
+   "lat": 52.74,
+   "lon": -106.03,
+   "province": "SK"
+  },
+  {
+   "id": "isc-246",
+   "bandNumber": 246,
+   "name": "Oneida",
+   "lat": 43.06,
+   "lon": -80.15,
+   "province": "ON"
+  },
+  {
+   "id": "isc-169",
+   "bandNumber": 169,
+   "name": "Oneida Nation of the Thames",
+   "lat": 42.82,
+   "lon": -81.41,
+   "province": "ON"
+  },
+  {
+   "id": "isc-344",
+   "bandNumber": 344,
+   "name": "Onion Lake Cree Nation",
+   "lat": 53.71,
+   "lon": -109.96,
+   "province": "SK"
+  },
+  {
+   "id": "isc-247",
+   "bandNumber": 247,
+   "name": "Onondaga Clear Sky",
+   "lat": 43.02,
+   "lon": -80.03,
+   "province": "ON"
+  },
+  {
+   "id": "isc-315",
+   "bandNumber": 315,
+   "name": "Opaskwayak Cree Nation",
+   "lat": 53.84,
+   "lon": -101.27,
+   "province": "MB"
+  },
+  {
+   "id": "isc-692",
+   "bandNumber": 692,
+   "name": "Oregon Jack Creek",
+   "lat": 50.62,
+   "lon": -121.32,
+   "province": "BC"
+  },
+  {
+   "id": "isc-12",
+   "bandNumber": 12,
+   "name": "Oromocto First Nation",
+   "lat": 45.85,
+   "lon": -66.46,
+   "province": "NB"
+  },
+  {
+   "id": "isc-596",
+   "bandNumber": 596,
+   "name": "Osoyoos",
+   "lat": 49.18,
+   "lon": -119.53,
+   "province": "BC"
+  },
+  {
+   "id": "isc-89",
+   "bandNumber": 89,
+   "name": "Oujé-Bougoumou Cree Nation",
+   "lat": 49.92,
+   "lon": -74.82,
+   "province": "QC"
+  },
+  {
+   "id": "isc-13",
+   "bandNumber": 13,
+   "name": "Pabineau",
+   "lat": 47.53,
+   "lon": -65.67,
+   "province": "NB"
+  },
+  {
+   "id": "isc-658",
+   "bandNumber": 658,
+   "name": "Pacheedaht First Nation",
+   "lat": 48.58,
+   "lon": -124.41,
+   "province": "BC"
+  },
+  {
+   "id": "isc-19",
+   "bandNumber": 19,
+   "name": "Paqtnkek Mi'kmaw Nation",
+   "lat": 45.6,
+   "lon": -61.74,
+   "province": "NS"
+  },
+  {
+   "id": "isc-383",
+   "bandNumber": 383,
+   "name": "Pasqua First Nation #79",
+   "lat": 50.74,
+   "lon": -103.99,
+   "province": "SK"
+  },
+  {
+   "id": "isc-327",
+   "bandNumber": 327,
+   "name": "Pauingassi First Nation",
+   "lat": 52.16,
+   "lon": -95.37,
+   "province": "MB"
+  },
+  {
+   "id": "isc-441",
+   "bandNumber": 441,
+   "name": "Paul",
+   "lat": 53.52,
+   "lon": -114.37,
+   "province": "AB"
+  },
+  {
+   "id": "isc-652",
+   "bandNumber": 652,
+   "name": "Pauquachin",
+   "lat": 48.63,
+   "lon": -123.46,
+   "province": "BC"
+  },
+  {
+   "id": "isc-191",
+   "bandNumber": 191,
+   "name": "Pays Plat",
+   "lat": 48.88,
+   "lon": -87.56,
+   "province": "ON"
+  },
+  {
+   "id": "isc-384",
+   "bandNumber": 384,
+   "name": "Peepeekisis Cree Nation No.81",
+   "lat": 50.87,
+   "lon": -103.34,
+   "province": "SK"
+  },
+  {
+   "id": "isc-478",
+   "bandNumber": 478,
+   "name": "Peerless Trout First Nation",
+   "lat": 56.68,
+   "lon": -114.58,
+   "province": "AB"
+  },
+  {
+   "id": "isc-269",
+   "bandNumber": 269,
+   "name": "Peguis",
+   "lat": 51.31,
+   "lon": -97.56,
+   "province": "MB"
+  },
+  {
+   "id": "isc-756",
+   "bandNumber": 756,
+   "name": "Pehdzeh Ki First Nation",
+   "lat": 63.23,
+   "lon": -123.47,
+   "province": "NT"
+  },
+  {
+   "id": "isc-405",
+   "bandNumber": 405,
+   "name": "Pelican Lake",
+   "lat": 53.69,
+   "lon": -107.78,
+   "province": "SK"
+  },
+  {
+   "id": "isc-650",
+   "bandNumber": 650,
+   "name": "Penelakut Tribe",
+   "lat": 48.97,
+   "lon": -123.66,
+   "province": "BC"
+  },
+  {
+   "id": "isc-597",
+   "bandNumber": 597,
+   "name": "Penticton",
+   "lat": 49.49,
+   "lon": -119.64,
+   "province": "BC"
+  },
+  {
+   "id": "isc-355",
+   "bandNumber": 355,
+   "name": "Peter Ballantyne Cree Nation",
+   "lat": 55.17,
+   "lon": -102.93,
+   "province": "SK"
+  },
+  {
+   "id": "isc-586",
+   "bandNumber": 586,
+   "name": "Peters First Nation",
+   "lat": 49.29,
+   "lon": -121.66,
+   "province": "BC"
+  },
+  {
+   "id": "isc-409",
+   "bandNumber": 409,
+   "name": "Pheasant Rump Nakota",
+   "lat": 49.66,
+   "lon": -102.68,
+   "province": "SK"
+  },
+  {
+   "id": "isc-385",
+   "bandNumber": 385,
+   "name": "Piapot",
+   "lat": 50.78,
+   "lon": -104.43,
+   "province": "SK"
+  },
+  {
+   "id": "isc-24",
+   "bandNumber": 24,
+   "name": "Pictou Landing",
+   "lat": 45.67,
+   "lon": -62.65,
+   "province": "NS"
+  },
+  {
+   "id": "isc-436",
+   "bandNumber": 436,
+   "name": "Piikani Nation",
+   "lat": 49.55,
+   "lon": -113.75,
+   "province": "AB"
+  },
+  {
+   "id": "isc-208",
+   "bandNumber": 208,
+   "name": "Pikangikum",
+   "lat": 51.8,
+   "lon": -93.99,
+   "province": "ON"
+  },
+  {
+   "id": "isc-272",
+   "bandNumber": 272,
+   "name": "Pinaymootang First Nation",
+   "lat": 51.57,
+   "lon": -98.68,
+   "province": "MB"
+  },
+  {
+   "id": "isc-585",
+   "bandNumber": 585,
+   "name": "Popkum First Nation",
+   "lat": 49.2,
+   "lon": -121.72,
+   "province": "BC"
+  },
+  {
+   "id": "isc-236",
+   "bandNumber": 236,
+   "name": "Poplar Hill",
+   "lat": 52.1,
+   "lon": -94.31,
+   "province": "ON"
+  },
+  {
+   "id": "isc-277",
+   "bandNumber": 277,
+   "name": "Poplar River First Nation",
+   "lat": 52.99,
+   "lon": -97.28,
+   "province": "MB"
+  },
+  {
+   "id": "isc-22",
+   "bandNumber": 22,
+   "name": "Potlotek First Nation",
+   "lat": 45.68,
+   "lon": -60.77,
+   "province": "NS"
+  },
+  {
+   "id": "isc-345",
+   "bandNumber": 345,
+   "name": "Poundmaker",
+   "lat": 52.9,
+   "lon": -108.97,
+   "province": "SK"
+  },
+  {
+   "id": "isc-95",
+   "bandNumber": 95,
+   "name": "Première nation de Whapmagoostui",
+   "lat": 55.28,
+   "lon": -77.76,
+   "province": "QC"
+  },
+  {
+   "id": "isc-71",
+   "bandNumber": 71,
+   "name": "Première Nation des Abénakis de Wôlinak",
+   "lat": 46.33,
+   "lon": -72.42,
+   "province": "QC"
+  },
+  {
+   "id": "isc-83",
+   "bandNumber": 83,
+   "name": "Première Nation des Innus de Nutashkuan",
+   "lat": 50.13,
+   "lon": -61.8,
+   "province": "QC"
+  },
+  {
+   "id": "isc-76",
+   "bandNumber": 76,
+   "name": "Première Nation des Pekuakamiulnuatsh",
+   "lat": 48.58,
+   "lon": -72.23,
+   "province": "QC"
+  },
+  {
+   "id": "isc-54",
+   "bandNumber": 54,
+   "name": "Première Nation Wolastoqiyik (Malécite) Wahsipekuk",
+   "lat": 47.92,
+   "lon": -69.51,
+   "province": "QC"
+  },
+  {
+   "id": "isc-544",
+   "bandNumber": 544,
+   "name": "Prophet River First Nation",
+   "lat": 58.09,
+   "lon": -122.7,
+   "province": "BC"
+  },
+  {
+   "id": "isc-34",
+   "bandNumber": 34,
+   "name": "Qalipu Mi'kmaq First Nation",
+   "lat": 48.95,
+   "lon": -57.94,
+   "province": "NL"
+  },
+  {
+   "id": "isc-651",
+   "bandNumber": 651,
+   "name": "Qualicum First Nation",
+   "lat": 49.4,
+   "lon": -124.62,
+   "province": "BC"
+  },
+  {
+   "id": "isc-633",
+   "bandNumber": 633,
+   "name": "Quatsino",
+   "lat": 50.61,
+   "lon": -127.57,
+   "province": "BC"
+  },
+  {
+   "id": "isc-130",
+   "bandNumber": 130,
+   "name": "Rainy River First Nations",
+   "lat": 48.64,
+   "lon": -93.91,
+   "province": "ON"
+  },
+  {
+   "id": "isc-356",
+   "bandNumber": 356,
+   "name": "Red Earth",
+   "lat": 53.49,
+   "lon": -102.86,
+   "province": "SK"
+  },
+  {
+   "id": "isc-346",
+   "bandNumber": 346,
+   "name": "Red Pheasant",
+   "lat": 52.46,
+   "lon": -108.18,
+   "province": "SK"
+  },
+  {
+   "id": "isc-193",
+   "bandNumber": 193,
+   "name": "Red Rock",
+   "lat": 49.03,
+   "lon": -88.25,
+   "province": "ON"
+  },
+  {
+   "id": "isc-300",
+   "bandNumber": 300,
+   "name": "Red Sucker Lake",
+   "lat": 54.16,
+   "lon": -93.57,
+   "province": "MB"
+  },
+  {
+   "id": "isc-291",
+   "bandNumber": 291,
+   "name": "Rolling River",
+   "lat": 50.45,
+   "lon": -99.99,
+   "province": "MB"
+  },
+  {
+   "id": "isc-273",
+   "bandNumber": 273,
+   "name": "Roseau River Anishinabe First Nation Government",
+   "lat": 49.13,
+   "lon": -97.24,
+   "province": "MB"
+  },
+  {
+   "id": "isc-497",
+   "bandNumber": 497,
+   "name": "Ross River Dena Council",
+   "lat": 61.98,
+   "lon": -132.45,
+   "province": "YT"
+  },
+  {
+   "id": "isc-214",
+   "bandNumber": 214,
+   "name": "Sachigo Lake",
+   "lat": 53.87,
+   "lon": -92.18,
+   "province": "ON"
+  },
+  {
+   "id": "isc-462",
+   "bandNumber": 462,
+   "name": "Saddle Lake Cree Nation",
+   "lat": 53.97,
+   "lon": -111.69,
+   "province": "AB"
+  },
+  {
+   "id": "isc-179",
+   "bandNumber": 179,
+   "name": "Sagamok Anishnawbek",
+   "lat": 46.16,
+   "lon": -82.11,
+   "province": "ON"
+  },
+  {
+   "id": "isc-615",
+   "bandNumber": 615,
+   "name": "Saik'uz First Nation",
+   "lat": 53.94,
+   "lon": -124.11,
+   "province": "BC"
+  },
+  {
+   "id": "isc-15",
+   "bandNumber": 15,
+   "name": "Saint Mary's",
+   "lat": 45.97,
+   "lon": -66.63,
+   "province": "NB"
+  },
+  {
+   "id": "isc-759",
+   "bandNumber": 759,
+   "name": "Salt River First Nation #195",
+   "lat": 60.11,
+   "lon": -112.23,
+   "province": "NT"
+  },
+  {
+   "id": "isc-567",
+   "bandNumber": 567,
+   "name": "Samahquam",
+   "lat": 50.05,
+   "lon": -122.54,
+   "province": "BC"
+  },
+  {
+   "id": "isc-767",
+   "bandNumber": 767,
+   "name": "Sambaa K'e First Nation",
+   "lat": 60.44,
+   "lon": -121.24,
+   "province": "NT"
+  },
+  {
+   "id": "isc-444",
+   "bandNumber": 444,
+   "name": "Samson",
+   "lat": 52.82,
+   "lon": -113.46,
+   "province": "AB"
+  },
+  {
+   "id": "isc-283",
+   "bandNumber": 283,
+   "name": "Sandy Bay",
+   "lat": 50.55,
+   "lon": -98.65,
+   "province": "MB"
+  },
+  {
+   "id": "isc-211",
+   "bandNumber": 211,
+   "name": "Sandy Lake",
+   "lat": 53.06,
+   "lon": -93.33,
+   "province": "ON"
+  },
+  {
+   "id": "isc-314",
+   "bandNumber": 314,
+   "name": "Sapotaweyak Cree Nation",
+   "lat": 52.74,
+   "lon": -100.69,
+   "province": "MB"
+  },
+  {
+   "id": "isc-123",
+   "bandNumber": 123,
+   "name": "Saugeen",
+   "lat": 44.51,
+   "lon": -81.33,
+   "province": "ON"
+  },
+  {
+   "id": "isc-542",
+   "bandNumber": 542,
+   "name": "Saulteau First Nations",
+   "lat": 55.85,
+   "lon": -121.65,
+   "province": "BC"
+  },
+  {
+   "id": "isc-347",
+   "bandNumber": 347,
+   "name": "Saulteaux",
+   "lat": 53.13,
+   "lon": -108.33,
+   "province": "SK"
+  },
+  {
+   "id": "isc-454",
+   "bandNumber": 454,
+   "name": "Sawridge First Nation",
+   "lat": 55.3,
+   "lon": -114.84,
+   "province": "AB"
+  },
+  {
+   "id": "isc-303",
+   "bandNumber": 303,
+   "name": "Sayisi Dene First Nation",
+   "lat": 58.72,
+   "lon": -98.49,
+   "province": "MB"
+  },
+  {
+   "id": "isc-581",
+   "bandNumber": 581,
+   "name": "Seabird Island",
+   "lat": 49.26,
+   "lon": -121.73,
+   "province": "BC"
+  },
+  {
+   "id": "isc-132",
+   "bandNumber": 132,
+   "name": "Seine River First Nation",
+   "lat": 48.72,
+   "lon": -92.43,
+   "province": "ON"
+  },
+  {
+   "id": "isc-498",
+   "bandNumber": 498,
+   "name": "Selkirk First Nation",
+   "lat": 62.82,
+   "lon": -136.57,
+   "province": "YT"
+  },
+  {
+   "id": "isc-569",
+   "bandNumber": 569,
+   "name": "Semiahmoo",
+   "lat": 49.01,
+   "lon": -122.78,
+   "province": "BC"
+  },
+  {
+   "id": "isc-201",
+   "bandNumber": 201,
+   "name": "Serpent River",
+   "lat": 46.2,
+   "lon": -82.47,
+   "province": "ON"
+  },
+  {
+   "id": "isc-698",
+   "bandNumber": 698,
+   "name": "Shackan",
+   "lat": 50.29,
+   "lon": -121.18,
+   "province": "BC"
+  },
+  {
+   "id": "isc-307",
+   "bandNumber": 307,
+   "name": "Shamattawa First Nation",
+   "lat": 55.87,
+   "lon": -92.1,
+   "province": "MB"
+  },
+  {
+   "id": "isc-137",
+   "bandNumber": 137,
+   "name": "Shawanaga First Nation",
+   "lat": 45.51,
+   "lon": -80.27,
+   "province": "ON"
+  },
+  {
+   "id": "isc-176",
+   "bandNumber": 176,
+   "name": "Sheguiandah",
+   "lat": 45.88,
+   "lon": -81.92,
+   "province": "ON"
+  },
+  {
+   "id": "isc-33",
+   "bandNumber": 33,
+   "name": "Sheshatshiu Innu First Nation",
+   "lat": 53.51,
+   "lon": -60.14,
+   "province": "NL"
+  },
+  {
+   "id": "isc-178",
+   "bandNumber": 178,
+   "name": "Sheshegwaning",
+   "lat": 45.93,
+   "lon": -82.84,
+   "province": "ON"
+  },
+  {
+   "id": "isc-551",
+   "bandNumber": 551,
+   "name": "shishálh Nation",
+   "lat": 49.47,
+   "lon": -123.75,
+   "province": "BC"
+  },
+  {
+   "id": "isc-357",
+   "bandNumber": 357,
+   "name": "Shoal Lake Cree Nation",
+   "lat": 53.48,
+   "lon": -102.63,
+   "province": "SK"
+  },
+  {
+   "id": "isc-155",
+   "bandNumber": 155,
+   "name": "Shoal Lake No.40",
+   "lat": 49.61,
+   "lon": -95.14,
+   "province": "ON"
+  },
+  {
+   "id": "isc-605",
+   "bandNumber": 605,
+   "name": "Shuswap Band",
+   "lat": 50.52,
+   "lon": -116.01,
+   "province": "BC"
+  },
+  {
+   "id": "isc-587",
+   "bandNumber": 587,
+   "name": "Shxw'ow'hamel First Nation",
+   "lat": 49.34,
+   "lon": -121.61,
+   "province": "BC"
+  },
+  {
+   "id": "isc-570",
+   "bandNumber": 570,
+   "name": "Shxwhá:y Village",
+   "lat": 49.17,
+   "lon": -121.99,
+   "province": "BC"
+  },
+  {
+   "id": "isc-533",
+   "bandNumber": 533,
+   "name": "Sik-E-Dakh",
+   "lat": 55.31,
+   "lon": -127.68,
+   "province": "BC"
+  },
+  {
+   "id": "isc-430",
+   "bandNumber": 430,
+   "name": "Siksika Nation",
+   "lat": 50.86,
+   "lon": -113.05,
+   "province": "AB"
+  },
+  {
+   "id": "isc-691",
+   "bandNumber": 691,
+   "name": "Simpcw First Nation",
+   "lat": 51.32,
+   "lon": -120.15,
+   "province": "BC"
+  },
+  {
+   "id": "isc-290",
+   "bandNumber": 290,
+   "name": "Sioux Valley Dakota Nation",
+   "lat": 49.86,
+   "lon": -100.48,
+   "province": "MB"
+  },
+  {
+   "id": "isc-25",
+   "bandNumber": 25,
+   "name": "SIPEKNE'KATIK",
+   "lat": 45.1,
+   "lon": -63.49,
+   "province": "NS"
+  },
+  {
+   "id": "isc-706",
+   "bandNumber": 706,
+   "name": "Siska",
+   "lat": 50.14,
+   "lon": -121.57,
+   "province": "BC"
+  },
+  {
+   "id": "isc-121",
+   "bandNumber": 121,
+   "name": "Six Nations of the Grand River",
+   "lat": 43.07,
+   "lon": -80.12,
+   "province": "ON"
+  },
+  {
+   "id": "isc-562",
+   "bandNumber": 562,
+   "name": "Skatin",
+   "lat": 49.94,
+   "lon": -122.41,
+   "province": "BC"
+  },
+  {
+   "id": "isc-582",
+   "bandNumber": 582,
+   "name": "Skawahlook First Nation",
+   "lat": 49.36,
+   "lon": -121.61,
+   "province": "BC"
+  },
+  {
+   "id": "isc-687",
+   "bandNumber": 687,
+   "name": "Skeetchestn",
+   "lat": 50.84,
+   "lon": -120.95,
+   "province": "BC"
+  },
+  {
+   "id": "isc-670",
+   "bandNumber": 670,
+   "name": "Skidegate",
+   "lat": 53.27,
+   "lon": -131.99,
+   "province": "BC"
+  },
+  {
+   "id": "isc-729",
+   "bandNumber": 729,
+   "name": "Skin Tyee",
+   "lat": 54,
+   "lon": -125.88,
+   "province": "BC"
+  },
+  {
+   "id": "isc-571",
+   "bandNumber": 571,
+   "name": "Skowkale",
+   "lat": 49.14,
+   "lon": -121.94,
+   "province": "BC"
+  },
+  {
+   "id": "isc-281",
+   "bandNumber": 281,
+   "name": "Skownan First Nation",
+   "lat": 51.97,
+   "lon": -99.6,
+   "province": "MB"
+  },
+  {
+   "id": "isc-707",
+   "bandNumber": 707,
+   "name": "Skuppah",
+   "lat": 50.19,
+   "lon": -121.57,
+   "province": "BC"
+  },
+  {
+   "id": "isc-689",
+   "bandNumber": 689,
+   "name": "Skwlax te Secwepemculecw",
+   "lat": 50.87,
+   "lon": -119.6,
+   "province": "BC"
+  },
+  {
+   "id": "isc-259",
+   "bandNumber": 259,
+   "name": "Slate Falls Nation",
+   "lat": 51.15,
+   "lon": -91.62,
+   "province": "ON"
+  },
+  {
+   "id": "isc-648",
+   "bandNumber": 648,
+   "name": "Snuneymuxw First Nation",
+   "lat": 49.15,
+   "lon": -123.93,
+   "province": "BC"
+  },
+  {
+   "id": "isc-656",
+   "bandNumber": 656,
+   "name": "Songhees Nation",
+   "lat": 48.44,
+   "lon": -123.43,
+   "province": "BC"
+  },
+  {
+   "id": "isc-572",
+   "bandNumber": 572,
+   "name": "Soowahlie",
+   "lat": 49.08,
+   "lon": -121.97,
+   "province": "BC"
+  },
+  {
+   "id": "isc-600",
+   "bandNumber": 600,
+   "name": "Splatsin",
+   "lat": 50.54,
+   "lon": -119.14,
+   "province": "BC"
+  },
+  {
+   "id": "isc-708",
+   "bandNumber": 708,
+   "name": "Spuzzum",
+   "lat": 49.66,
+   "lon": -121.41,
+   "province": "BC"
+  },
+  {
+   "id": "isc-568",
+   "bandNumber": 568,
+   "name": "Sq'éwlets",
+   "lat": 49.24,
+   "lon": -122,
+   "province": "BC"
+  },
+  {
+   "id": "isc-555",
+   "bandNumber": 555,
+   "name": "Squamish",
+   "lat": 49.32,
+   "lon": -123.13,
+   "province": "BC"
+  },
+  {
+   "id": "isc-574",
+   "bandNumber": 574,
+   "name": "Squiala First Nation",
+   "lat": 49.16,
+   "lon": -121.98,
+   "province": "BC"
+  },
+  {
+   "id": "isc-573",
+   "bandNumber": 573,
+   "name": "Sqwá First Nation",
+   "lat": 49.18,
+   "lon": -121.97,
+   "province": "BC"
+  },
+  {
+   "id": "isc-298",
+   "bandNumber": 298,
+   "name": "St. Theresa Point",
+   "lat": 53.82,
+   "lon": -94.85,
+   "province": "MB"
+  },
+  {
+   "id": "isc-386",
+   "bandNumber": 386,
+   "name": "Standing Buffalo",
+   "lat": 50.8,
+   "lon": -103.89,
+   "province": "SK"
+  },
+  {
+   "id": "isc-387",
+   "bandNumber": 387,
+   "name": "Star Blanket Cree Nation",
+   "lat": 50.96,
+   "lon": -103.3,
+   "province": "SK"
+  },
+  {
+   "id": "isc-613",
+   "bandNumber": 613,
+   "name": "Stellat'en First Nation",
+   "lat": 54.06,
+   "lon": -124.91,
+   "province": "BC"
+  },
+  {
+   "id": "isc-471",
+   "bandNumber": 471,
+   "name": "Stoney",
+   "lat": 51.17,
+   "lon": -114.85,
+   "province": "AB"
+  },
+  {
+   "id": "isc-559",
+   "bandNumber": 559,
+   "name": "Sts'ailes",
+   "lat": 49.3,
+   "lon": -121.91,
+   "province": "BC"
+  },
+  {
+   "id": "isc-723",
+   "bandNumber": 723,
+   "name": "Stswecem'c Xget'tem First Nation",
+   "lat": 51.59,
+   "lon": -122.21,
+   "province": "BC"
+  },
+  {
+   "id": "isc-455",
+   "bandNumber": 455,
+   "name": "Sturgeon Lake Cree Nation",
+   "lat": 55.07,
+   "lon": -117.42,
+   "province": "AB"
+  },
+  {
+   "id": "isc-360",
+   "bandNumber": 360,
+   "name": "Sturgeon Lake First Nation",
+   "lat": 53.39,
+   "lon": -106.13,
+   "province": "SK"
+  },
+  {
+   "id": "isc-641",
+   "bandNumber": 641,
+   "name": "Stz'uminus First Nation",
+   "lat": 48.99,
+   "lon": -123.77,
+   "province": "BC"
+  },
+  {
+   "id": "isc-456",
+   "bandNumber": 456,
+   "name": "Sucker Creek",
+   "lat": 55.4,
+   "lon": -116.15,
+   "province": "AB"
+  },
+  {
+   "id": "isc-578",
+   "bandNumber": 578,
+   "name": "Sumas First Nation",
+   "lat": 49.06,
+   "lon": -122.19,
+   "province": "BC"
+  },
+  {
+   "id": "isc-434",
+   "bandNumber": 434,
+   "name": "Sunchild First Nation",
+   "lat": 52.7,
+   "lon": -115.34,
+   "province": "AB"
+  },
+  {
+   "id": "isc-293",
+   "bandNumber": 293,
+   "name": "Swan Lake First Nation",
+   "lat": 49.4,
+   "lon": -98.84,
+   "province": "MB"
+  },
+  {
+   "id": "isc-457",
+   "bandNumber": 457,
+   "name": "Swan River First Nation",
+   "lat": 55.33,
+   "lon": -115.43,
+   "province": "AB"
+  },
+  {
+   "id": "isc-348",
+   "bandNumber": 348,
+   "name": "Sweetgrass",
+   "lat": 52.77,
+   "lon": -108.72,
+   "province": "SK"
+  },
+  {
+   "id": "isc-593",
+   "bandNumber": 593,
+   "name": "T'it'q'et",
+   "lat": 50.68,
+   "lon": -121.95,
+   "province": "BC"
+  },
+  {
+   "id": "isc-657",
+   "bandNumber": 657,
+   "name": "T'Sou-ke First Nation",
+   "lat": 48.38,
+   "lon": -123.7,
+   "province": "BC"
+  },
+  {
+   "id": "isc-508",
+   "bandNumber": 508,
+   "name": "Ta'an Kwach'an",
+   "lat": 60.74,
+   "lon": -135.08,
+   "province": "YT"
+  },
+  {
+   "id": "isc-682",
+   "bandNumber": 682,
+   "name": "Tahltan",
+   "lat": 57.9,
+   "lon": -131.18,
+   "province": "BC"
+  },
+  {
+   "id": "isc-608",
+   "bandNumber": 608,
+   "name": "Takla Nation",
+   "lat": 55.48,
+   "lon": -125.98,
+   "province": "BC"
+  },
+  {
+   "id": "isc-501",
+   "bandNumber": 501,
+   "name": "Taku River Tlingit",
+   "lat": 59.51,
+   "lon": -133.66,
+   "province": "BC"
+  },
+  {
+   "id": "isc-446",
+   "bandNumber": 446,
+   "name": "Tallcree Tribal Government",
+   "lat": 58.06,
+   "lon": -115.62,
+   "province": "AB"
+  },
+  {
+   "id": "isc-306",
+   "bandNumber": 306,
+   "name": "Tataskweyak Cree Nation",
+   "lat": 56.24,
+   "lon": -96.1,
+   "province": "MB"
+  },
+  {
+   "id": "isc-145",
+   "bandNumber": 145,
+   "name": "Taykwa Tagamou Nation",
+   "lat": 49,
+   "lon": -80.83,
+   "province": "ON"
+  },
+  {
+   "id": "isc-751",
+   "bandNumber": 751,
+   "name": "Teetl'it Gwich'in Band Council",
+   "lat": 67.44,
+   "lon": -134.89,
+   "province": "YT"
+  },
+  {
+   "id": "isc-222",
+   "bandNumber": 222,
+   "name": "Teme Augama Anishinabek",
+   "lat": 46.97,
+   "lon": -80.07,
+   "province": "ON"
+  },
+  {
+   "id": "isc-499",
+   "bandNumber": 499,
+   "name": "Teslin Tlingit Council",
+   "lat": 60.17,
+   "lon": -132.73,
+   "province": "YT"
+  },
+  {
+   "id": "isc-61",
+   "bandNumber": 61,
+   "name": "The Crees of the Waskaganish First Nation",
+   "lat": 51.49,
+   "lon": -78.75,
+   "province": "QC"
+  },
+  {
+   "id": "isc-368",
+   "bandNumber": 368,
+   "name": "The Key First Nation",
+   "lat": 51.78,
+   "lon": -102.13,
+   "province": "SK"
+  },
+  {
+   "id": "isc-202",
+   "bandNumber": 202,
+   "name": "Thessalon",
+   "lat": 46.26,
+   "lon": -83.42,
+   "province": "ON"
+  },
+  {
+   "id": "isc-349",
+   "bandNumber": 349,
+   "name": "Thunderchild First Nation",
+   "lat": 53.48,
+   "lon": -108.87,
+   "province": "SK"
+  },
+  {
+   "id": "isc-64",
+   "bandNumber": 64,
+   "name": "Timiskaming First Nation",
+   "lat": 47.61,
+   "lon": -79.47,
+   "province": "QC"
+  },
+  {
+   "id": "isc-688",
+   "bandNumber": 688,
+   "name": "Tk'emlúps te Secwépemc",
+   "lat": 50.68,
+   "lon": -120.29,
+   "province": "BC"
+  },
+  {
+   "id": "isc-617",
+   "bandNumber": 617,
+   "name": "Tl'azt'en Nation",
+   "lat": 54.66,
+   "lon": -124.72,
+   "province": "BC"
+  },
+  {
+   "id": "isc-718",
+   "bandNumber": 718,
+   "name": "Tl’esqox",
+   "lat": 51.93,
+   "lon": -122.5,
+   "province": "BC"
+  },
+  {
+   "id": "isc-712",
+   "bandNumber": 712,
+   "name": "Tl'etinqox Government",
+   "lat": 52.02,
+   "lon": -123.18,
+   "province": "BC"
+  },
+  {
+   "id": "isc-660",
+   "bandNumber": 660,
+   "name": "Tla-o-qui-aht First Nations",
+   "lat": 49.17,
+   "lon": -125.91,
+   "province": "BC"
+  },
+  {
+   "id": "isc-554",
+   "bandNumber": 554,
+   "name": "Tla'amin Nation",
+   "lat": 49.9,
+   "lon": -124.62,
+   "province": "BC"
+  },
+  {
+   "id": "isc-632",
+   "bandNumber": 632,
+   "name": "Tlatlasikwala",
+   "lat": 50.92,
+   "lon": -127.94,
+   "province": "BC"
+  },
+  {
+   "id": "isc-637",
+   "bandNumber": 637,
+   "name": "Tlowitsis Tribe",
+   "lat": 49.91,
+   "lon": -125.21,
+   "province": "BC"
+  },
+  {
+   "id": "isc-16",
+   "bandNumber": 16,
+   "name": "Tobique",
+   "lat": 46.79,
+   "lon": -67.7,
+   "province": "NB"
+  },
+  {
+   "id": "isc-292",
+   "bandNumber": 292,
+   "name": "Tootinaowaziibeeng Treaty Reserve",
+   "lat": 51.23,
+   "lon": -100.97,
+   "province": "MB"
+  },
+  {
+   "id": "isc-666",
+   "bandNumber": 666,
+   "name": "Toquaht",
+   "lat": 49,
+   "lon": -125.37,
+   "province": "BC"
+  },
+  {
+   "id": "isc-494",
+   "bandNumber": 494,
+   "name": "Tr'ondëk Hwëch'in",
+   "lat": 64.06,
+   "lon": -139.43,
+   "province": "YT"
+  },
+  {
+   "id": "isc-619",
+   "bandNumber": 619,
+   "name": "Ts'il Kaz Koh",
+   "lat": 54.24,
+   "lon": -125.77,
+   "province": "BC"
+  },
+  {
+   "id": "isc-594",
+   "bandNumber": 594,
+   "name": "Ts'kw'aylaxw First Nation",
+   "lat": 50.89,
+   "lon": -121.82,
+   "province": "BC"
+  },
+  {
+   "id": "isc-643",
+   "bandNumber": 643,
+   "name": "Ts'uubaa-asatx",
+   "lat": 48.83,
+   "lon": -124.07,
+   "province": "BC"
+  },
+  {
+   "id": "isc-595",
+   "bandNumber": 595,
+   "name": "Tsal'alh",
+   "lat": 50.73,
+   "lon": -122.22,
+   "province": "BC"
+  },
+  {
+   "id": "isc-653",
+   "bandNumber": 653,
+   "name": "Tsartlip",
+   "lat": 48.58,
+   "lon": -123.47,
+   "province": "BC"
+  },
+  {
+   "id": "isc-654",
+   "bandNumber": 654,
+   "name": "Tsawout First Nation",
+   "lat": 48.59,
+   "lon": -123.39,
+   "province": "BC"
+  },
+  {
+   "id": "isc-577",
+   "bandNumber": 577,
+   "name": "Tsawwassen First Nation",
+   "lat": 49.04,
+   "lon": -123.1,
+   "province": "BC"
+  },
+  {
+   "id": "isc-609",
+   "bandNumber": 609,
+   "name": "Tsay Keh Dene",
+   "lat": 56.89,
+   "lon": -124.96,
+   "province": "BC"
+  },
+  {
+   "id": "isc-665",
+   "bandNumber": 665,
+   "name": "Tseshaht",
+   "lat": 49.27,
+   "lon": -124.85,
+   "province": "BC"
+  },
+  {
+   "id": "isc-655",
+   "bandNumber": 655,
+   "name": "Tseycum",
+   "lat": 48.67,
+   "lon": -123.45,
+   "province": "BC"
+  },
+  {
+   "id": "isc-710",
+   "bandNumber": 710,
+   "name": "Tŝideldel First Nation",
+   "lat": 52.14,
+   "lon": -123.95,
+   "province": "BC"
+  },
+  {
+   "id": "isc-549",
+   "bandNumber": 549,
+   "name": "Tsleil-Waututh Nation",
+   "lat": 49.31,
+   "lon": -122.99,
+   "province": "BC"
+  },
+  {
+   "id": "isc-713",
+   "bandNumber": 713,
+   "name": "Tsq'escen' First Nation",
+   "lat": 51.77,
+   "lon": -120.99,
+   "province": "BC"
+  },
+  {
+   "id": "isc-432",
+   "bandNumber": 432,
+   "name": "Tsuut'ina Nation",
+   "lat": 50.95,
+   "lon": -114.15,
+   "province": "AB"
+  },
+  {
+   "id": "isc-477",
+   "bandNumber": 477,
+   "name": "Tthebatthie Denesuliné Nation",
+   "lat": 59.99,
+   "lon": -111.84,
+   "province": "AB"
+  },
+  {
+   "id": "isc-750",
+   "bandNumber": 750,
+   "name": "Tulita Dene",
+   "lat": 64.9,
+   "lon": -125.58,
+   "province": "YT"
+  },
+  {
+   "id": "isc-245",
+   "bandNumber": 245,
+   "name": "Tuscarora",
+   "lat": 43.02,
+   "lon": -80.04,
+   "province": "ON"
+  },
+  {
+   "id": "isc-575",
+   "bandNumber": 575,
+   "name": "Tzeachten",
+   "lat": 49.11,
+   "lon": -121.95,
+   "province": "BC"
+  },
+  {
+   "id": "isc-667",
+   "bandNumber": 667,
+   "name": "Uchucklesaht",
+   "lat": 49.02,
+   "lon": -125.04,
+   "province": "BC"
+  },
+  {
+   "id": "isc-668",
+   "bandNumber": 668,
+   "name": "Ucluelet First Nation",
+   "lat": 48.94,
+   "lon": -125.53,
+   "province": "BC"
+  },
+  {
+   "id": "isc-722",
+   "bandNumber": 722,
+   "name": "Ulkatcho",
+   "lat": 52.47,
+   "lon": -125.31,
+   "province": "BC"
+  },
+  {
+   "id": "isc-588",
+   "bandNumber": 588,
+   "name": "Union Bar First Nation",
+   "lat": 49.44,
+   "lon": -121.43,
+   "province": "BC"
+  },
+  {
+   "id": "isc-249",
+   "bandNumber": 249,
+   "name": "Upper Cayuga",
+   "lat": 43.03,
+   "lon": -80.07,
+   "province": "ON"
+  },
+  {
+   "id": "isc-257",
+   "bandNumber": 257,
+   "name": "Upper Mohawk",
+   "lat": 43.07,
+   "lon": -80.17,
+   "province": "ON"
+  },
+  {
+   "id": "isc-697",
+   "bandNumber": 697,
+   "name": "Upper Nicola",
+   "lat": 50.14,
+   "lon": -120.28,
+   "province": "BC"
+  },
+  {
+   "id": "isc-599",
+   "bandNumber": 599,
+   "name": "Upper Similkameen",
+   "lat": 49.36,
+   "lon": -120.08,
+   "province": "BC"
+  },
+  {
+   "id": "isc-496",
+   "bandNumber": 496,
+   "name": "Vuntut Gwitchin First Nation",
+   "lat": 67.57,
+   "lon": -139.83,
+   "province": "YT"
+  },
+  {
+   "id": "isc-150",
+   "bandNumber": 150,
+   "name": "Wabaseemoong Independent Nations",
+   "lat": 50.13,
+   "lon": -94.94,
+   "province": "ON"
+  },
+  {
+   "id": "isc-156",
+   "bandNumber": 156,
+   "name": "Wabauskang First Nation",
+   "lat": 50.38,
+   "lon": -93.17,
+   "province": "ON"
+  },
+  {
+   "id": "isc-157",
+   "bandNumber": 157,
+   "name": "Wabigoon Lake Ojibway Nation",
+   "lat": 49.63,
+   "lon": -92.52,
+   "province": "ON"
+  },
+  {
+   "id": "isc-28",
+   "bandNumber": 28,
+   "name": "Wagmatcook",
+   "lat": 46.07,
+   "lon": -60.92,
+   "province": "NS"
+  },
+  {
+   "id": "isc-232",
+   "bandNumber": 232,
+   "name": "Wahnapitae",
+   "lat": 46.77,
+   "lon": -80.81,
+   "province": "ON"
+  },
+  {
+   "id": "isc-358",
+   "bandNumber": 358,
+   "name": "Wahpeton Dakota Nation",
+   "lat": 53.28,
+   "lon": -105.9,
+   "province": "SK"
+  },
+  {
+   "id": "isc-134",
+   "bandNumber": 134,
+   "name": "Wahta Mohawk",
+   "lat": 44.99,
+   "lon": -79.78,
+   "province": "ON"
+  },
+  {
+   "id": "isc-255",
+   "bandNumber": 255,
+   "name": "Walker Mohawk",
+   "lat": 43.05,
+   "lon": -80.12,
+   "province": "ON"
+  },
+  {
+   "id": "isc-170",
+   "bandNumber": 170,
+   "name": "Walpole Island",
+   "lat": 42.59,
+   "lon": -82.49,
+   "province": "ON"
+  },
+  {
+   "id": "isc-206",
+   "bandNumber": 206,
+   "name": "Wapekeka",
+   "lat": 53.84,
+   "lon": -89.54,
+   "province": "ON"
+  },
+  {
+   "id": "isc-323",
+   "bandNumber": 323,
+   "name": "War Lake First Nation",
+   "lat": 56.07,
+   "lon": -95.6,
+   "province": "MB"
+  },
+  {
+   "id": "isc-299",
+   "bandNumber": 299,
+   "name": "Wasagamack First Nation",
+   "lat": 53.9,
+   "lon": -94.93,
+   "province": "MB"
+  },
+  {
+   "id": "isc-136",
+   "bandNumber": 136,
+   "name": "Wasauksing First Nation",
+   "lat": 45.33,
+   "lon": -80.06,
+   "province": "ON"
+  },
+  {
+   "id": "isc-235",
+   "bandNumber": 235,
+   "name": "Washagamis Bay",
+   "lat": 49.71,
+   "lon": -94.59,
+   "province": "ON"
+  },
+  {
+   "id": "isc-18",
+   "bandNumber": 18,
+   "name": "Wasoqopa’q First Nation",
+   "lat": 43.83,
+   "lon": -66.08,
+   "province": "NS"
+  },
+  {
+   "id": "isc-56",
+   "bandNumber": 56,
+   "name": "Waswanipi",
+   "lat": 49.7,
+   "lon": -75.96,
+   "province": "QC"
+  },
+  {
+   "id": "isc-402",
+   "bandNumber": 402,
+   "name": "Waterhen Lake",
+   "lat": 54.52,
+   "lon": -108.41,
+   "province": "SK"
+  },
+  {
+   "id": "isc-234",
+   "bandNumber": 234,
+   "name": "Wawakapewin",
+   "lat": 53.45,
+   "lon": -89.14,
+   "province": "ON"
+  },
+  {
+   "id": "isc-285",
+   "bandNumber": 285,
+   "name": "Waywayseecappo First Nation Treaty Four - 1874",
+   "lat": 50.68,
+   "lon": -100.88,
+   "province": "MB"
+  },
+  {
+   "id": "isc-623",
+   "bandNumber": 623,
+   "name": "We Wai Kai Nation",
+   "lat": 50.02,
+   "lon": -125.29,
+   "province": "BC"
+  },
+  {
+   "id": "isc-29",
+   "bandNumber": 29,
+   "name": "We'koqma'q L’nue’kati",
+   "lat": 45.97,
+   "lon": -61.14,
+   "province": "NS"
+  },
+  {
+   "id": "isc-240",
+   "bandNumber": 240,
+   "name": "Webequie",
+   "lat": 52.98,
+   "lon": -87.36,
+   "province": "ON"
+  },
+  {
+   "id": "isc-146",
+   "bandNumber": 146,
+   "name": "Weenusk",
+   "lat": 55.01,
+   "lon": -85.42,
+   "province": "ON"
+  },
+  {
+   "id": "isc-545",
+   "bandNumber": 545,
+   "name": "West Moberly First Nations",
+   "lat": 55.83,
+   "lon": -121.83,
+   "province": "BC"
+  },
+  {
+   "id": "isc-772",
+   "bandNumber": 772,
+   "name": "West Point First Nation",
+   "lat": 60.85,
+   "lon": -115.74,
+   "province": "NT"
+  },
+  {
+   "id": "isc-601",
+   "bandNumber": 601,
+   "name": "Westbank First Nation",
+   "lat": 49.84,
+   "lon": -119.61,
+   "province": "BC"
+  },
+  {
+   "id": "isc-725",
+   "bandNumber": 725,
+   "name": "Wet'suwet'en First Nation",
+   "lat": 54.33,
+   "lon": -125.88,
+   "province": "BC"
+  },
+  {
+   "id": "isc-769",
+   "bandNumber": 769,
+   "name": "Wha Ti First Nation",
+   "lat": 63.14,
+   "lon": -117.27,
+   "province": "NT"
+  },
+  {
+   "id": "isc-702",
+   "bandNumber": 702,
+   "name": "Whispering Pines/Clinton",
+   "lat": 50.99,
+   "lon": -120.24,
+   "province": "BC"
+  },
+  {
+   "id": "isc-365",
+   "bandNumber": 365,
+   "name": "White Bear",
+   "lat": 49.75,
+   "lon": -102.27,
+   "province": "SK"
+  },
+  {
+   "id": "isc-506",
+   "bandNumber": 506,
+   "name": "White River First Nation",
+   "lat": 62.38,
+   "lon": -140.88,
+   "province": "YT"
+  },
+  {
+   "id": "isc-372",
+   "bandNumber": 372,
+   "name": "Whitecap Dakota Nation",
+   "lat": 51.88,
+   "lon": -106.71,
+   "province": "SK"
+  },
+  {
+   "id": "isc-459",
+   "bandNumber": 459,
+   "name": "Whitefish Lake",
+   "lat": 55.92,
+   "lon": -115.65,
+   "province": "AB"
+  },
+  {
+   "id": "isc-230",
+   "bandNumber": 230,
+   "name": "Whitefish River",
+   "lat": 46.07,
+   "lon": -81.78,
+   "province": "ON"
+  },
+  {
+   "id": "isc-190",
+   "bandNumber": 190,
+   "name": "Whitesand",
+   "lat": 50.31,
+   "lon": -89.04,
+   "province": "ON"
+  },
+  {
+   "id": "isc-175",
+   "bandNumber": 175,
+   "name": "Wikwemikong",
+   "lat": 45.8,
+   "lon": -81.73,
+   "province": "ON"
+  },
+  {
+   "id": "isc-719",
+   "bandNumber": 719,
+   "name": "Williams Lake First Nation",
+   "lat": 52.12,
+   "lon": -122.02,
+   "province": "BC"
+  },
+  {
+   "id": "isc-407",
+   "bandNumber": 407,
+   "name": "Witchekan Lake",
+   "lat": 53.51,
+   "lon": -107.6,
+   "province": "SK"
+  },
+  {
+   "id": "isc-530",
+   "bandNumber": 530,
+   "name": "Witset First Nation",
+   "lat": 55.02,
+   "lon": -127.33,
+   "province": "BC"
+  },
+  {
+   "id": "isc-68",
+   "bandNumber": 68,
+   "name": "Wolf Lake",
+   "lat": 47,
+   "lon": -78.8,
+   "province": "QC"
+  },
+  {
+   "id": "isc-388",
+   "bandNumber": 388,
+   "name": "Wood Mountain",
+   "lat": 49.34,
+   "lon": -106.45,
+   "province": "SK"
+  },
+  {
+   "id": "isc-474",
+   "bandNumber": 474,
+   "name": "Woodland Cree First Nation",
+   "lat": 56.47,
+   "lon": -116.4,
+   "province": "AB"
+  },
+  {
+   "id": "isc-17",
+   "bandNumber": 17,
+   "name": "Woodstock",
+   "lat": 46.11,
+   "lon": -67.58,
+   "province": "NB"
+  },
+  {
+   "id": "isc-541",
+   "bandNumber": 541,
+   "name": "Wuikinuxv Nation",
+   "lat": 51.68,
+   "lon": -127.23,
+   "province": "BC"
+  },
+  {
+   "id": "isc-217",
+   "bandNumber": 217,
+   "name": "Wunnumin",
+   "lat": 52.93,
+   "lon": -89.3,
+   "province": "ON"
+  },
+  {
+   "id": "isc-324",
+   "bandNumber": 324,
+   "name": "Wuskwi Sipihk First Nation",
+   "lat": 52.51,
+   "lon": -100.87,
+   "province": "MB"
+  },
+  {
+   "id": "isc-716",
+   "bandNumber": 716,
+   "name": "Xatsull First Nation",
+   "lat": 52.28,
+   "lon": -122.14,
+   "province": "BC"
+  },
+  {
+   "id": "isc-592",
+   "bandNumber": 592,
+   "name": "Xaxli'p",
+   "lat": 50.73,
+   "lon": -121.86,
+   "province": "BC"
+  },
+  {
+   "id": "isc-714",
+   "bandNumber": 714,
+   "name": "Xeni Gwet'in First Nations Government",
+   "lat": 51.42,
+   "lon": -124.1,
+   "province": "BC"
+  },
+  {
+   "id": "isc-576",
+   "bandNumber": 576,
+   "name": "Yakweakwioose",
+   "lat": 49.13,
+   "lon": -121.94,
+   "province": "BC"
+  },
+  {
+   "id": "isc-589",
+   "bandNumber": 589,
+   "name": "Yale First Nation",
+   "lat": 49.56,
+   "lon": -121.43,
+   "province": "BC"
+  },
+  {
+   "id": "isc-606",
+   "bandNumber": 606,
+   "name": "yaqan nukiy",
+   "lat": 49.07,
+   "lon": -116.52,
+   "province": "BC"
+  },
+  {
+   "id": "isc-603",
+   "bandNumber": 603,
+   "name": "Yaqit ?a·knuqli‘it First Nation",
+   "lat": 49.09,
+   "lon": -115.08,
+   "province": "BC"
+  },
+  {
+   "id": "isc-728",
+   "bandNumber": 728,
+   "name": "Yekooche First Nation",
+   "lat": 54.6,
+   "lon": -125.08,
+   "province": "BC"
+  },
+  {
+   "id": "isc-376",
+   "bandNumber": 376,
+   "name": "Yellow Quill",
+   "lat": 52.3,
+   "lon": -103.63,
+   "province": "SK"
+  },
+  {
+   "id": "isc-763",
+   "bandNumber": 763,
+   "name": "Yellowknives Dene First Nation",
+   "lat": 62.46,
+   "lon": -114.38,
+   "province": "NT"
+  },
+  {
+   "id": "isc-304",
+   "bandNumber": 304,
+   "name": "York Factory First Nation",
+   "lat": 56.09,
+   "lon": -96.1,
+   "province": "MB"
+  },
+  {
+   "id": "isc-717",
+   "bandNumber": 717,
+   "name": "Yunesit'in Government",
+   "lat": 51.93,
+   "lon": -123.14,
+   "province": "BC"
+  },
+  {
+   "id": "isc-364",
+   "bandNumber": 364,
+   "name": "Zagime Anishinabek",
+   "lat": 50.53,
+   "lon": -102.79,
+   "province": "SK"
+  },
+  {
+   "id": "isc-173",
+   "bandNumber": 173,
+   "name": "Zhiibaahaasing First Nation",
+   "lat": 45.95,
+   "lon": -82.87,
+   "province": "ON"
+  }
+ ]
+}
