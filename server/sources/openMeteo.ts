@@ -19,11 +19,26 @@ const sum = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) : null)
 
 const HOURLY = 'temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation,vapour_pressure_deficit,soil_moisture_0_to_1cm,snow_depth'
 
+const RETRY_MS = 2000
+/**
+ * One retry, after about 2 s, when Open-Meteo says it is busy (HTTP 429 Too Many Requests, or 503).
+ * fetchUpstream does not pass response headers back, so Retry-After is not read; the wait is fixed.
+ */
+async function fetchWeather(url: string): Promise<any> {
+  try {
+    return await fetchUpstream('open-meteo-weather', url)
+  } catch (e) {
+    if (!/HTTP (429|503)\b/.test((e as Error)?.message ?? '')) throw e
+    await new Promise((r) => setTimeout(r, RETRY_MS))
+    return fetchUpstream('open-meteo-weather', url)
+  }
+}
+
 /** Weather for several points in one request: 7 days back, today and `days` ahead. Hourly values are aggregated to local days here. */
 export function getWeather(pts: Pt[], days = DEFAULT_HORIZON): Promise<WeatherResult[]> {
   const url = `https://api.open-meteo.com/v1/forecast?${coords(pts)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=${HOURLY}&past_days=7&forecast_days=${days + 1}&timezone=auto&wind_speed_unit=kmh`
   return cached(`wx:${coords(pts)}:${days}`, async () => {
-    const json = asArray(await fetchUpstream('open-meteo-weather', url))
+    const json = asArray(await fetchWeather(url))
     if (json.length !== pts.length) throw new Error('Open-Meteo returned an unexpected number of locations')
     return json.map(parseWeather)
   })

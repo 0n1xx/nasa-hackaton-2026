@@ -19,6 +19,15 @@ interface Turn { id: number; question: string; reply: Reply | null }
 
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
+/** Scroll a part of the community page into view and flash its outline. */
+function showSection(el: HTMLElement) {
+  el.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' })
+  const prev = el.style.outline
+  el.style.outline = '3px solid var(--color-action)'
+  el.style.outlineOffset = '4px'
+  window.setTimeout(() => { el.style.outline = prev; el.style.outlineOffset = '' }, 1600)
+}
+
 export default function Assistant({ communityId, variant = 'column' }: { communityId: string | null; variant?: 'column' | 'page' }) {
   const { mode, horizon } = useApp()
   const place = usePlace(communityId)
@@ -78,14 +87,19 @@ export default function Assistant({ communityId, variant = 'column' }: { communi
   /** '#id': scroll to that part of the page (or open the community page there). */
   function goTo(hash: string) {
     const el = document.getElementById(hash.slice(1))
-    if (el) {
-      el.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' })
-      const prev = el.style.outline
-      el.style.outline = '3px solid var(--color-action)'
-      el.style.outlineOffset = '4px'
-      window.setTimeout(() => { el.style.outline = prev; el.style.outlineOffset = '' }, 1600)
-    } else if (communityId) {
+    if (el) showSection(el)
+    else if (communityId) {
+      // From /c/:id/ask (phones): open the community page, then scroll once that part has rendered.
+      // The timer outlives this component, which unmounts on the way. It starts after App's scroll-to-top.
       navigate(`/c/${encodeURIComponent(communityId)}${hash}`)
+      const id = hash.slice(1)
+      const until = Date.now() + 8000
+      const look = () => {
+        const target = document.getElementById(id)
+        if (target) showSection(target)
+        else if (Date.now() < until) window.setTimeout(look, 150)
+      }
+      window.setTimeout(look, 150)
     }
   }
 
@@ -186,7 +200,7 @@ export default function Assistant({ communityId, variant = 'column' }: { communi
   return (
     <section aria-label="Ask a question" className="flex h-full min-h-0 flex-col bg-ink-950">
       {header}
-      <div ref={scroller} className="relative min-h-0 flex-1 overflow-y-auto px-4 py-4">{thread}</div>
+      <div ref={scroller} className="quiet-scroll relative min-h-0 flex-1 overflow-y-auto px-4 py-4">{thread}</div>
       <div className="border-t border-line px-4 pb-3 pt-3">
         {form}
         {footerLine}

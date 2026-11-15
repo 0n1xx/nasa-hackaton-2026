@@ -8,6 +8,8 @@
 import type { Mode, PlaceReport, RiskLevel } from './types.ts'
 import { levelFor, levelLabel } from './risk.ts'
 import { PROVINCE_NAMES, type ProvinceCode } from './province.ts'
+import { SMOKE_MEDICAL, SMOKE_RANK, smokePlain } from './aqi.ts'
+import { dayWord, onDayWord, outlookPhrase, relativeDays } from './outlookWords.ts'
 
 export type Intent =
   | 'risk_now' | 'why' | 'when_worse' | 'what_to_do' | 'who_to_contact' | 'request_help' | 'smoke_health'
@@ -55,13 +57,13 @@ export interface ProvinceContacts {
 }
 
 export const PROVINCE_CONTACTS: Partial<Record<ProvinceCode, ProvinceContacts>> = {
-  ON: { agency: 'Ontario’s forest fire service (AFFES)', page: 'https://www.ontario.ca/page/forest-fires', report: '310-FIRE (310-3473) if you are north of the French and Mattawa rivers, or 911 south of them', reportTel: 'tel:3103473', danger: 'https://www.lioapplications.lrc.gov.on.ca/ForestFireInformationMap/index.html?viewer=FFIM.FFIM' },
+  ON: { agency: 'Ontario’s forest fire service', page: 'https://www.ontario.ca/page/forest-fires', report: '310-FIRE (310-3473) if you are north of the French and Mattawa rivers, or 911 south of them', reportTel: 'tel:3103473', danger: 'https://www.lioapplications.lrc.gov.on.ca/ForestFireInformationMap/index.html?viewer=FFIM.FFIM' },
   MB: { agency: 'the Manitoba Wildfire Service', page: 'https://www.gov.mb.ca/wildfire/contact.html', report: '911 or 1-800-782-0076', reportTel: 'tel:18007820076', danger: 'https://www.gov.mb.ca/wildfire/reports_updates.html' },
-  SK: { agency: 'the Saskatchewan Public Safety Agency (SPSA)', page: 'https://www.saskpublicsafety.ca/about-the-spsa/contact-us', report: null, reportTel: null, danger: 'https://www.saskpublicsafety.ca/active-incidents/maps' },
+  SK: { agency: 'the Saskatchewan Public Safety Agency', page: 'https://www.saskpublicsafety.ca/about-the-spsa/contact-us', report: null, reportTel: null, danger: 'https://www.saskpublicsafety.ca/active-incidents/maps' },
   AB: { agency: 'Alberta Wildfire', page: 'https://www.alberta.ca/report-a-wildfire', report: '310-FIRE (310-3473), toll free, any time', reportTel: 'tel:3103473', danger: 'https://www.alberta.ca/fire-danger' },
   BC: { agency: 'the BC Wildfire Service', page: 'https://www2.gov.bc.ca/gov/content?id=F4EA16310CC541899EFC156A60D74FC9', report: '1-800-663-5555, or *5555 from a cell phone', reportTel: 'tel:18006635555', danger: 'https://www2.gov.bc.ca/gov/content/safety/wildfire-status/wildfire-situation/fire-danger' },
   NT: { agency: 'Wildfire Operations, Government of the Northwest Territories', page: 'https://www.gov.nt.ca/ecc/en/services/wildfire-operations', report: '1-877-NWT-FIRE (1-877-698-3473)', reportTel: 'tel:18776983473', danger: null },
-  QC: { agency: 'SOPFEU', page: 'https://sopfeu.qc.ca/en/contact/', report: 'SOPFEU at 1-800-463-FEUX (1-800-463-3389)', reportTel: 'tel:18004633389', danger: 'https://sopfeu.qc.ca/en/prevention/fire-danger-index/' },
+  QC: { agency: 'SOPFEU, Quebec’s forest fire service', page: 'https://sopfeu.qc.ca/en/contact/', report: 'SOPFEU at 1-800-463-FEUX (1-800-463-3389)', reportTel: 'tel:18004633389', danger: 'https://sopfeu.qc.ca/en/prevention/fire-danger-index/' },
 }
 
 /** Indigenous Services Canada regional emergency management offices, as published on the EMAP page. */
@@ -99,11 +101,11 @@ export function provinceCode(p: string | null | undefined): ProvinceCode | null 
 // do this week" before "when will it get worse").
 
 const RULES: [Intent, RegExp[]][] = [
-  ['evacuation', [/\bevac\w*/, /\bevauc\w*/, /\bflee\b/, /\bget out\b/, /\b(should|do|must) (we|i) (leave|go)\b/, /\bleave (our |my |the )?(home|house|community|reserve)\b/]],
+  ['evacuation', [/\bevac\w*/, /\b(need|have|got) to (leave|get out|go\b(?! (to|through|for|and|ahead|over|with|about|back)\b))/, /\btime to (leave|go|get out)\b/, /\b(we|i) (should|must) (leave|go\b(?! (to|through|for|and|ahead|over|with|about|back)\b))/, /\bevauc\w*/, /\bflee\b/, /\bget out\b/, /\b(should|do|must) (we|i) (leave|go)\b/, /\bleave (our |my |the )?(home|house|community|reserve)\b/]],
   ['request_help', [/\b(write|draft|prepare|make|create|send)\b.*\b(request|letter|email|e mail)\b/, /\brequest (for )?(help|resources|firefighters)\b/, /\bask(ing)? for help\b/, /\bletter\b/]],
   ['who_to_contact', [/\bwho\b.*\b(call|contact|phone|email|send|help|ask|talk|reach)\b/, /\bfire ?fi\w*/, /\bfire ?crews?\b/, /\bwater ?bombers?\b/, /\bequipment\b/, /\bphone numbers?\b/, /\bcontacts?\b/, /\b(send|get|need) help\b/, /\breport (a |the )?(wild)?fire\b/, /\b911\b/, /\bisc\b/, /\bindigenous services\b/, /\bwho (do|should|can) (we|i)\b/]],
   ['smoke_health', [/\bsmo\w*/, /\bsmk\w*/, /\bair quality\b/, /\bbr[ea]+th\w*/, /\bmasks?\b/, /\bn95\b/, /\bpm ?2/, /\baqi\b/, /\baqhi\b/, /\bcough\w*/, /\basthma\b/, /\blungs?\b/, /\bhaz[ey]\b/, /\bclean air\b/]],
-  ['how_sure', [/\bhow (sure|certain|confident|accurate|reliable|good)\b/, /\bsure\b/, /\bshure\b/, /\bcertain\w*/, /\bconfid\w*/, /\bac+ura\w*/, /\breliab\w*/, /\btrust\b/, /\buncertain\w*/]],
+  ['how_sure', [/\bhow (sure|certain|confident|accurate|reliable|good)\b/, /(?<!\bmake )\bsure\b/, /\bshure\b/, /\bcertain\w*/, /\bconfid\w*/, /\bac+ura\w*/, /\breliab\w*/, /\btrust\b/, /\buncertain\w*/]],
   ['meaning_of_level', [/\bmean(s|ing)?\b/, /\bdefin\w*/, /\bout of (a )?100\b/, /\bwhat (is|are) (a |the )?(very high|high|medium|moderate|low|levels?|score)\b/]],
   ['data_sources', [/\bdata\b/, /\bsources?\b/, /\bsatell\w*/, /\bnasa\b/, /\bhow do you know\b/, /\bwhere do (you|the numbers|these numbers) (get|come)\b/, /\bcome from\b/, /\bcalculat\w*/, /\bmodel\b/]],
   ['what_to_do', [/\bwhat (can|should|could|do|must) (we|i|our community|people)\b/, /\bwhat to do\b/, /\bprep[ae]r\w*/, /\bget ready\b/, /\bready\b/, /\bdo now\b/, /\bactions?\b/, /\bsteps?\b/, /\bplan\b/, /\bprotect\w*/, /\bhow can (we|i)\b/]],
@@ -129,13 +131,11 @@ export function classifyIntent(question: string): Intent {
 
 const RANK: Record<RiskLevel, number> = { Low: 0, Moderate: 1, High: 2, Critical: 3 }
 const lv = (level: RiskLevel) => levelLabel(level).toLowerCase()
-const weekday = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-CA', { weekday: 'long' })
 const dayGap = (a: string, b: string) => Math.round((Date.parse(`${b}T12:00:00`) - Date.parse(`${a}T12:00:00`)) / 86400000)
-/** "today", "tomorrow" or "on Sunday" */
-function onDay(iso: string, todayIso: string): string {
-  const g = dayGap(todayIso, iso)
-  return g === 0 ? 'today' : g === 1 ? 'tomorrow' : `on ${weekday(iso)}`
-}
+/** "today", "tomorrow", "Sunday", or "Monday 27 July" a week or more out: the same day words as the community page. */
+const day = (iso: string, todayIso: string) => dayWord(iso, todayIso)
+/** "today", "tomorrow", "on Sunday", "on Monday 27 July" */
+const onDay = (iso: string, todayIso: string) => onDayWord(iso, todayIso)
 const COMPASS: Record<string, string> = { N: 'north', NE: 'north-east', E: 'east', SE: 'south-east', S: 'south', SW: 'south-west', W: 'west', NW: 'north-west' }
 const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s)
 const list = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`)
@@ -152,19 +152,11 @@ const FIND: AssistantAction = { label: 'Find your community', to: '/' }
 
 function forecast(r: PlaceReport) { return r.risk.timeline.filter((t) => t.kind === 'forecast') }
 
-/** Where the risk goes over the look-ahead, as a clause after "fire risk is X today". */
+/** Where the risk goes over the look-ahead, as a clause after "fire risk is X today": the community page's status rule (shared/outlookWords.ts). */
 function outlookClause(r: PlaceReport): string {
-  const fc = forecast(r)
-  const level = r.risk.today.level
-  if (!fc.length) return ''
-  if (r.outlook.firstHigherLevelDate) {
-    const d = fc.find((t) => t.date === r.outlook.firstHigherLevelDate)
-    if (d) return ` and is expected to be ${lv(d.level)} ${onDay(d.date, r.risk.todayDate)}`
-  }
-  if (fc.every((t) => t.level === level)) return ` and is expected to stay ${lv(level)} for the next ${plural(fc.length, 'day')}`
-  const last = fc[fc.length - 1]
-  if (RANK[last.level] < RANK[level]) return ` and is expected to ease to ${lv(last.level)} by ${weekday(last.date)}`
-  return ` and is expected to stay ${lv(level)} or lower through ${weekday(last.date)}`
+  const today = r.outlook.todayDate ?? r.risk.todayDate
+  const o = outlookPhrase({ todayLevel: r.outlook.todayLevel ?? r.risk.today.level, ahead: forecast(r), firstHigherLevelDate: r.outlook.firstHigherLevelDate, horizon: r.horizon }, relativeDays(today))
+  return o ? ` and is ${o.text}` : ''
 }
 
 /** Plain phrases for the active warning signs, built from the weather itself (never the sign's technical text). */
@@ -183,7 +175,7 @@ function signPhrases(r: PlaceReport): string[] {
   }
   if (active.has('fire') && r.risk.hotspots100km) out.push(`satellites spotted heat in ${plural(r.risk.hotspots100km, 'place')} within 100 km`)
   if (active.has('wind')) {
-    const win = [today, ...ahead].filter((d): d is NonNullable<typeof d> => !!d && d.windMax != null)
+    const win = [today, ...ahead.slice(0, 3)].filter((d): d is NonNullable<typeof d> => !!d && d.windMax != null)
     const peak = win.reduce<(typeof win)[number] | null>((a, b) => (!a || b.windMax! > a.windMax! ? b : a), null)
     out.push(peak ? `strong wind is expected ${onDay(peak.date, r.risk.todayDate)}` : 'strong wind is expected')
   }
@@ -202,6 +194,9 @@ function nearestFireSentence(r: PlaceReport): string | null {
   if (!f || f.distanceKm > 100) return 'Fire crews report no wildfires within 100 km.'
   return `The nearest wildfire reported by fire crews is ${f.distanceKm} km ${COMPASS[f.bearing] ?? ''} of you.`.replace(/ +of you/, ' of you')
 }
+
+/** An agency as a button name: "Ontario’s forest fire service", "SOPFEU" (no leading "the", nothing after a comma). */
+const siteName = (agency: string) => cap(agency.replace(/^the /, '').replace(/,.*$/, ''))
 
 function dangerPage(r: PlaceReport | null): AssistantAction {
   const code = provinceCode(r?.community.province)
@@ -245,7 +240,7 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
         text: join([
           'If your leadership or an official order tells you to leave, leave right away, and call 911 if lives or homes are in danger.',
           'This site does not issue evacuation orders: Chief and Council and official agencies do.',
-          'You may want to keep go-bags packed and know your main and backup routes out.',
+          'You may want to keep a packed bag for each person, ready to grab, and know your main and backup routes out.',
         ]),
         from: 'From Government of Canada wildfire guidance.',
         actions: [{ label: 'How to get ready to leave', to: PREPARE_PAGE }, ...(r ? [helpLink(r)] : [])],
@@ -304,14 +299,14 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
         : p
           ? `We could not confirm the wildfire report number for ${prov} on an official page, so check ${p.agency}’s contact page.`
           : `We do not have a checked wildfire report number for ${prov}, so check the official page.`
-      const iscWays = isc ? [isc.phone, isc.email].filter((x): x is string => !!x).join(' or ') : ''
       const ask = isc
-        ? `To ask for firefighters and equipment, Chief and Council can contact Indigenous Services Canada’s ${isc.region} emergency office (${iscWays})${p ? ` and ${p.agency}` : ''}.`
+        ? `To ask for firefighters and equipment, Chief and Council can contact Indigenous Services Canada’s ${isc.region} emergency office${p ? ` and ${p.agency}` : ''}.`
         : 'To ask for firefighters and equipment, Chief and Council can contact Indigenous Services Canada’s regional emergency office.'
       const actions: AssistantAction[] = [helpLink(r)]
-      actions.push(p ? { label: `Official page: ${p.agency.replace(/^the /, '')}`, to: p.page } : { label: 'Indigenous Services Canada emergency help', to: ISC_EMAP_PAGE })
+      actions.push(p ? { label: `${siteName(p.agency)} website`, to: p.page } : { label: 'Indigenous Services Canada emergency help', to: ISC_EMAP_PAGE })
+      // The phone number and email live in these buttons, not in the sentence (a long address wraps badly).
+      if (isc?.phone) actions.push({ label: `Call Indigenous Services Canada ${isc.region}`, to: `tel:${isc.phone.replace(/[^0-9]/g, '')}` })
       if (isc?.email) actions.push({ label: `Email Indigenous Services Canada ${isc.region}`, to: `mailto:${isc.email}` })
-      else if (isc?.phone) actions.push({ label: `Call Indigenous Services Canada ${isc.region}`, to: `tel:${isc.phone.replace(/[^0-9]/g, '')}` })
       return {
         text: join(['If lives or homes are in danger, call 911 first.', report, ask]),
         from: 'From official provincial and Indigenous Services Canada pages, checked 14 November 2026.',
@@ -325,7 +320,7 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
       const p = code ? PROVINCE_CONTACTS[code] : undefined
       return {
         text: join([
-          `The Ask for help page writes a request for firefighters and equipment for ${name}, addressed to ${p ? `${p.agency} and ` : ''}Indigenous Services Canada.`,
+          `The Ask for help page writes a request for firefighters and equipment for ${name}, addressed to Indigenous Services Canada${p ? ` and ${p.agency}` : ''}.`,
           say(ctx, 'it already includes today’s fire risk, the nearest fires and the warning signs.'),
           'Nothing is sent for you: you add your name and role, then copy, email or print it.',
         ]),
@@ -369,10 +364,10 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
       if (!fc.length) return { text: 'We have no forecast days to look at right now.', from: 'From the weather forecast and our fire risk estimate.', actions: [page('#look-ahead')] }
       const o = r.outlook
       const peakLine = o.peakDate !== r.risk.todayDate
-        ? `The highest day in the next ${plural(fc.length, 'day')} is expected to be ${weekday(o.peakDate)}, at ${lv(o.peakLevel)} (${o.peakScore} out of 100).`
+        ? `The highest day in the next ${plural(fc.length, 'day')} is expected to be ${day(o.peakDate, r.risk.todayDate)}, at ${lv(o.peakLevel)} (${o.peakScore} out of 100).`
         : `Today is the highest day in the next ${plural(fc.length, 'day')}.`
       const act = o.actByDate
-        ? (dayGap(r.risk.todayDate, o.actByDate) <= 0 ? 'You may want to have plans in place today.' : `You may want to have plans in place by ${weekday(o.actByDate)}.`)
+        ? (dayGap(r.risk.todayDate, o.actByDate) <= 0 ? 'You may want to have plans in place today.' : `You may want to have plans in place by ${day(o.actByDate, r.risk.todayDate)}.`)
         : 'Further ahead is less certain.'
       return {
         text: join([say(ctx, `fire risk is ${lv(t.level)} today${outlookClause(r)}.`), peakLine, act]),
@@ -386,7 +381,7 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
       const DO: Record<RiskLevel, [string, string]> = {
         Low: ['This is a good time to prepare: you may want to review your community emergency plan and test phone trees, radio and door-to-door lists.', 'Consider clearing dry brush, firewood and debris from around homes.'],
         Moderate: ['You may want to check conditions each day and confirm who will need extra help, such as Elders, babies and people with heart or lung problems.', 'Consider checking pumps, hoses, sprinklers and the filters for a clean-air room.'],
-        High: ['You may want to hold a readiness check with leadership and your local fire crew.', 'Consider checking pumps, hoses and sprinklers, and setting up a clean-air room for Elders and anyone with breathing problems.'],
+        High: ['You may want to hold a meeting with leadership and your local fire crew to check you are ready.', 'Consider checking pumps, hoses and sprinklers, and setting up a clean-air room for Elders and anyone with breathing problems.'],
         Critical: ['You may want to put your emergency plan into action at the level leadership chooses, and keep one trusted channel for updates.', 'Consider asking for firefighters and equipment now, while there is still time to bring them in.'],
       }
       const actions: AssistantAction[] = [{ label: 'More ways to prepare', to: '#what-to-do' }]
@@ -407,17 +402,18 @@ export function answer(intent: Intent, ctx: AssistantContext): AssistantAnswer {
           actions: [{ label: 'Air Quality Health Index', to: AQHI_PAGE }],
         }
       }
+      // The same words and advice as the community page and the letter (shared/aqi.ts smokePlain).
+      const plain = smokePlain(aqi)!
       const ahead = r.air.max3d.usAqi
-      const aheadLine = ahead != null && r.air.max3d.date && Math.abs(ahead - aqi) >= 25
-        ? say(ctx, `smoke is expected to be ${ahead > aqi ? 'worse' : 'lighter'} by ${weekday(r.air.max3d.date)} (US air quality index ${ahead}).`)
+      const later = smokePlain(ahead)
+      const aheadLine = later && ahead != null && r.air.max3d.date && SMOKE_RANK[later.word] !== SMOKE_RANK[plain.word]
+        ? say(ctx, `smoke is expected to be ${later.word} ${onDay(r.air.max3d.date, r.risk.todayDate)} (smoke reading: ${Math.round(ahead)}).`)
         : null
-      let first: string, advice: string
-      if (aqi <= 50) { first = `there is little smoke in the air right now (US air quality index ${aqi}).`; advice = 'Smoke can change quickly, so you may want to check again if the wind shifts.' }
-      else if (aqi <= 100) { first = `there is some smoke in the air (US air quality index ${aqi}).`; advice = 'Health Canada advises people with heart or lung problems, Elders, young children and pregnant people to cut back on hard outdoor work if they have symptoms.' }
-      else if (aqi <= 150) { first = `the smoke is unhealthy for people at higher risk (US air quality index ${aqi}).`; advice = 'Health Canada advises Elders, young children, pregnant people and anyone with heart or lung problems to cut back on hard outdoor work and keep windows closed.' }
-      else if (aqi <= 200) { first = `the smoke is unhealthy for everyone (US air quality index ${aqi}).`; advice = 'Health Canada advises cutting back on outdoor activity, keeping windows and doors closed, and using a portable air cleaner or a clean-air room.' }
-      else { first = `the smoke is at a very unhealthy level for everyone (US air quality index ${aqi}).`; advice = 'Health Canada advises staying indoors with windows and doors closed, using a portable air cleaner or clean-air room, and wearing a well-fitted N95 mask if you must go out.' }
-      const third = aqi > 150 ? 'Get medical help for chest pain, dizziness or trouble breathing.' : aheadLine ?? 'Get medical help for chest pain, dizziness or trouble breathing.'
+      // The number second, in the same words as the community page (docs/design/review-wave3.md #10).
+      const reading = `(smoke reading: ${Math.round(aqi)} on the US air quality scale, where over 300 is the worst level)`
+      const first = `there is ${plain.word} smoke in the air today ${reading}.`
+      const advice = plain.healthLine
+      const third = SMOKE_RANK[plain.word] >= SMOKE_RANK.heavy ? SMOKE_MEDICAL : aheadLine ?? SMOKE_MEDICAL
       return {
         text: join([say(ctx, first), advice, third]),
         from: 'From the smoke forecast and Health Canada advice.',

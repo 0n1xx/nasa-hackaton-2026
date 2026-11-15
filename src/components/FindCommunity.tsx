@@ -7,10 +7,11 @@ import { useApp } from '../state.tsx'
 import { placeName } from './ui.tsx'
 
 /** The part of GET /api/places/levels this needs (server/ranked.ts PlaceLevels). */
-interface PlaceLevels { places: { id: string; lat: number; lon: number }[] }
+interface PlaceLevels { places: { id: string; name: string; lat: number; lon: number }[] }
 
-/** Further than this from every community we know, "Use my location" asks the person to search instead. */
-const NEAR_KM = 300
+/** Within this of a community we know, "Use my location" opens it. Further, it names the nearest one and lets
+ *  the person choose, so nobody is sent to another Nation's page without being told. */
+const NEAR_KM = 100
 const DEBOUNCE_MS = 180
 
 function km(aLat: number, aLon: number, bLat: number, bLon: number) {
@@ -37,7 +38,9 @@ export default function FindCommunity() {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
 
-  const term = q.trim()
+  // The server needs 2 characters (one letter matches half the country); until then, show nothing.
+  const typed = q.trim()
+  const term = typed.length >= 2 ? typed : ''
   useEffect(() => {
     if (!term) { setResult(null); setSearchError(false); setActive(-1); return }
     const ctrl = new AbortController()
@@ -81,8 +84,9 @@ export default function FindCommunity() {
   // ---- Use my location ----
   const [locating, setLocating] = useState(false)
   const [locMsg, setLocMsg] = useState<string | null>(null)
+  const [nearest, setNearest] = useState<{ id: string; name: string; km: number } | null>(null)
   const locate = () => {
-    setLocMsg(null)
+    setLocMsg(null); setNearest(null)
     if (!('geolocation' in navigator)) { setLocMsg('This browser cannot share your location. Try searching by name.'); return }
     setLocating(true)
     navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -92,9 +96,10 @@ export default function FindCommunity() {
         if (!res.ok) throw new Error(String(res.status))
         const { data } = (await res.json()) as Envelope<PlaceLevels>
         const { latitude: lat, longitude: lon } = pos.coords
-        let best: { id: string; d: number } | null = null
-        for (const p of data.places) { const d = km(lat, lon, p.lat, p.lon); if (!best || d < best.d) best = { id: p.id, d } }
-        if (!best || best.d > NEAR_KM) { setLocMsg('We could not find a community near you. Try searching by name.'); return }
+        let best: { id: string; name: string; d: number } | null = null
+        for (const p of data.places) { const d = km(lat, lon, p.lat, p.lon); if (!best || d < best.d) best = { id: p.id, name: p.name, d } }
+        if (!best) { setLocMsg('We could not find a community near you. Try searching by name.'); return }
+        if (best.d > NEAR_KM) { setNearest({ id: best.id, name: best.name, km: Math.round(best.d) }); return }
         nav(`/c/${encodeURIComponent(best.id)}`)
       } catch {
         setLocMsg('Could not load the list of communities. Try again.')
@@ -148,5 +153,12 @@ export default function FindCommunity() {
       {locating ? 'Finding where you are…' : 'Use my location'}
     </button>
     {locMsg && <p role="alert" className="mt-2 text-[17px] text-fg">{locMsg}</p>}
+    {nearest && <div className="mt-2">
+      <p role="alert" className="text-[17px] text-fg">The nearest community we have is {nearest.name}, {nearest.km.toLocaleString('en-US')} km away.</p>
+      <button type="button" onClick={() => nav(`/c/${encodeURIComponent(nearest.id)}`)}
+        className="mt-2 inline-flex min-h-11 items-center rounded-md bg-action px-4 text-[17px] font-semibold text-white hover:bg-action-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+        Open {nearest.name}
+      </button>
+    </div>}
   </div>
 }

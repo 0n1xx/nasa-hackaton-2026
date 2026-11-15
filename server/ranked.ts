@@ -1,7 +1,7 @@
 // Every community on the map, scored at its own point with the same function as /api/place (services.ts
 // pointsRisk -> scorePoint), so a community's number on the home list, the map and its own page agree.
 //
-// One computation per (mode, days), cached 10 minutes, feeds both endpoints:
+// One computation per mode (at MAX_HORIZON, sliced per look-ahead), cached 10 minutes, feeds both endpoints:
 //   GET /api/places/ranked?mode=&days=&limit=   highest expected risk over today + the look-ahead
 //   GET /api/places/levels?mode=&days=          every community's score for each day (map discs, "use my location")
 // Live weather comes from Open-Meteo in 40-point requests (pointsRisk chunks them), about 440 points in all.
@@ -9,10 +9,12 @@ import type { Envelope, Mode, RiskDay, RiskLevel, SourceMeta } from '../shared/t
 import { riskOutlook } from '../shared/outlook.ts'
 import { allCommunities, locationSource } from './directory.ts'
 import { pointsRisk } from './services.ts'
-import { cached } from './util.ts'
+import { MAX_HORIZON } from '../shared/horizon.ts'
 
-/** The map area (HeroMap bounds). Communities outside it are not ranked or drawn. */
-export const MAP_AREA = { latMin: 48, latMax: 62, lonMin: -126, lonMax: -70 }
+/** The area whose communities are ranked and drawn. Wide enough for southern Ontario and Quebec, the Atlantic
+ *  provinces, the Yukon and the North, not only the 48–62° N band. The home map still opens on that band
+ *  (HeroMap HOME_BOUNDS), where most communities and the risk are; people pan out for the rest. */
+export const MAP_AREA = { latMin: 41.5, latMax: 69.5, lonMin: -141, lonMax: -52 }
 const TTL = 10 * 60 * 1000
 
 export interface RankedPlace {
@@ -41,22 +43,94 @@ interface Scored {
 export const mapCommunities = () => allCommunities().filter((c) =>
   c.lat >= MAP_AREA.latMin && c.lat <= MAP_AREA.latMax && c.lon >= MAP_AREA.lonMin && c.lon <= MAP_AREA.lonMax)
 
-async function compute(mode: Mode, days: number): Promise<{ list: Scored[]; sources: SourceMeta[]; ms: number }> {
+interface Computed { list: Scored[]; sources: SourceMeta[]; ms: number; partial: boolean }
+
+/** Open-Meteo takes up to 40 points per request (services.ts uses the same chunks, so the cache keys match). */
+const CHUNK = 40
+/** Pause between live chunk requests that actually went upstream, to stay under Open-Meteo's per-minute limit. */
+const PACE_MS = 250
+/** A list with skipped chunks is kept for a minute only, so the missing communities come back soon. */
+const PARTIAL_TTL = 60 * 1000
+/** After the TTL, the last good list is still served (and refreshed in the background) for up to this long. */
+const STALE_MS = 2 * 60 * 60 * 1000
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Every map community scored ONCE per mode at MAX_HORIZON; each look-ahead is a slice of it (scoredPlaces).
+ * A day's score does not depend on the look-ahead: services.ts riskDays scores day i from wx.days[i] and the
+ * 7 days before it only, and the horizon just stops the loop (the sim draws days past +3 from their own
+ * generator, so they never shift). A chunk whose weather fails is skipped, the rest is returned.
+ */
+async function compute(mode: Mode): Promise<Computed> {
   const t0 = Date.now()
   const comms = mapCommunities()
-  const { points, sources } = await pointsRisk(mode, comms.map((c) => ({ lat: c.lat, lon: c.lon })), days)
-  const list = comms.map((c, i): Scored => ({
-    c: { id: c.id, name: c.name, kind: c.kind, province: c.province, lat: c.lat, lon: c.lon },
-    timeline: points[i].timeline, todayDate: points[i].todayDate,
-  }))
+  const list: Scored[] = []
+  let sources: SourceMeta[] = []
+  const failed: { n: number; msg: string }[] = []
+  let wentUpstream = false
+  for (let i = 0; i < comms.length; i += CHUNK) {
+    const part = comms.slice(i, i + CHUNK)
+    if (mode === 'live' && wentUpstream) await sleep(PACE_MS)
+    const t = Date.now()
+    try {
+      const r = await pointsRisk(mode, part.map((c) => ({ lat: c.lat, lon: c.lon })), MAX_HORIZON)
+      if (!sources.length) sources = r.sources
+      part.forEach((c, j) => list.push({
+        c: { id: c.id, name: c.name, kind: c.kind, province: c.province, lat: c.lat, lon: c.lon },
+        timeline: r.points[j].timeline, todayDate: r.points[j].todayDate,
+      }))
+    } catch (e) {
+      failed.push({ n: part.length, msg: (e as Error).message })
+    }
+    wentUpstream = Date.now() - t > 20 // a cached chunk answers in a few ms; only pace real requests
+  }
+  if (!list.length) throw new Error(failed[0]?.msg ?? 'No communities could be scored')
+  if (failed.length) {
+    // One line per computation, not one per chunk.
+    console.warn(`[places] weather failed for ${failed.length} of ${Math.ceil(comms.length / CHUNK)} chunks; ${failed.reduce((a, f) => a + f.n, 0)} communities left out for now (${failed[0].msg})`)
+  }
   const locs = [...new Map(comms.map((c) => [c.source, locationSource(c)])).values()]
   const ms = Date.now() - t0
-  if (mode === 'live') console.log(`[places] scored ${comms.length} communities (live, ${days} days ahead) in ${ms} ms`)
-  return { list, sources: [...sources, ...locs], ms }
+  if (mode === 'live') console.log(`[places] scored ${list.length} of ${comms.length} communities (live, ${MAX_HORIZON} days ahead) in ${ms} ms`)
+  return { list, sources: [...sources, ...locs], ms, partial: failed.length > 0 }
 }
 
-/** The one shared computation for both endpoints. */
-export const scoredPlaces = (mode: Mode, days: number) => cached(`places:${mode}:${days}`, () => compute(mode, days), TTL)
+const memo = new Map<Mode, { at: number; value: Computed }>()
+const inflight = new Map<Mode, Promise<Computed>>()
+
+/** One computation per mode at a time (concurrent requests share it). Failures are not cached. */
+function refresh(mode: Mode): Promise<Computed> {
+  let p = inflight.get(mode)
+  if (!p) {
+    p = compute(mode).then((value) => { memo.set(mode, { at: Date.now(), value }); return value }).finally(() => inflight.delete(mode))
+    inflight.set(mode, p)
+  }
+  return p
+}
+
+async function computed(mode: Mode): Promise<Computed> {
+  const hit = memo.get(mode)
+  const age = hit ? Date.now() - hit.at : Infinity
+  if (hit && age < (hit.value.partial ? PARTIAL_TTL : TTL)) return hit.value
+  if (hit && !hit.value.partial && age < STALE_MS) {
+    // Serve the last good list now and refresh behind it.
+    refresh(mode).catch((e) => console.warn(`[places] refresh failed, still serving the last list: ${(e as Error).message}`))
+    return hit.value
+  }
+  try { return await refresh(mode) } catch (e) { if (hit && age < STALE_MS) return hit.value; throw e }
+}
+
+/** Today and the first `days` look-ahead days of a MAX_HORIZON timeline (the same cut as services.ts riskDays). */
+function sliceTimeline(t: RiskDay[], days: number): RiskDay[] {
+  let ahead = 0
+  return t.filter((d) => d.kind !== 'forecast' || ++ahead <= days)
+}
+
+/** The one shared computation for both endpoints, cut to the look-ahead. */
+export async function scoredPlaces(mode: Mode, days: number): Promise<Computed> {
+  const v = await computed(mode)
+  return { ...v, list: v.list.map((s) => ({ ...s, timeline: sliceTimeline(s.timeline, days) })) }
+}
 
 const RANK: Record<RiskLevel, number> = { Low: 0, Moderate: 1, High: 2, Critical: 3 }
 

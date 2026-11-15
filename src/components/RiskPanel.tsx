@@ -13,6 +13,8 @@ import { LevelTag, placeName } from './ui.tsx'
 // (status, warning signs, what to do, who to ask) lives on the community view, /c/:id.
 
 const SHORT = 6
+/** From md up the panel is one screen tall (1440×900 projector): five rows, so nothing scrolls. */
+const SHORT_MD = 5
 const LONG = 20
 
 const dayDiff = (a: string, b: string) => Math.round((Date.parse(`${b}T12:00:00`) - Date.parse(`${a}T12:00:00`)) / 86400000)
@@ -40,10 +42,10 @@ function LookAhead() {
   </div>
 }
 
-function Row({ r }: { r: RankedPlace }) {
+function Row({ r, wideHidden }: { r: RankedPlace; wideHidden?: boolean }) {
   const later = r.peakLevelFrom > r.todayDate
-  return <li className="border-t border-line">
-    <Link to={`/c/${encodeURIComponent(r.id)}`} className="-mx-4 block px-4 py-2 hover:bg-ink-900 focus-visible:bg-ink-900 md:-mx-6 md:px-6">
+  return <li className={`border-t border-line ${wideHidden ? 'md:hidden' : ''}`}>
+    <Link to={`/c/${encodeURIComponent(r.id)}`} className="-mx-4 block px-4 py-2 hover:bg-ink-900 md:py-1.5 focus-visible:bg-ink-900 md:-mx-6 md:px-6">
       <span className="block text-[17px] leading-snug font-semibold text-fg">{r.name}</span>
       <span className="mt-0.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[16px] leading-snug">
         <span className="text-[15px] text-mute">{placeName(r.province)}</span>
@@ -64,24 +66,24 @@ function RankedList() {
   const rows = ranked.data ?? []
   const shown = all ? rows : rows.slice(0, SHORT)
 
-  return <section aria-labelledby="ranked-head" className="mt-7">
+  return <section aria-labelledby="ranked-head" className="mt-7 md:mt-5">
     <h2 id="ranked-head" className="text-[19px] leading-snug font-semibold">Highest fire risk, {nextWords(horizon).replace(/^the /, '')}</h2>
-    <div className="mt-3"><LookAhead /></div>
+    <div className="mt-3 md:mt-2"><LookAhead /></div>
 
     {ranked.error && !ranked.loading ? <div role="alert" className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
       <p className="text-[17px]">Couldn't load the list. Try again.</p>
       <button type="button" onClick={ranked.reload} className="h-10 rounded-md border border-edge bg-white px-4 text-[16px] font-semibold text-fg hover:bg-ink-850">Try again</button>
     </div>
-      : !ranked.data ? <ul aria-label="Loading the list" className="mt-3">
-        {Array.from({ length: SHORT }, (_, i) => <li key={i} className="border-t border-line py-3">
+      : !ranked.data ? <ul aria-label="Loading the list" className="mt-3 md:mt-2">
+        {Array.from({ length: SHORT }, (_, i) => <li key={i} className={`border-t border-line py-3 ${i >= SHORT_MD ? 'md:hidden' : ''}`}>
           <div className="skeleton h-[18px] w-3/4" /><div className="skeleton mt-2 h-[16px] w-1/2" />
         </li>)}
       </ul>
         : <>
-          <ul aria-busy={ranked.loading} className={`mt-3 border-b border-line transition-opacity ${ranked.loading ? 'opacity-60' : ''}`}>
-            {shown.map((r) => <Row key={r.id} r={r} />)}
+          <ul aria-busy={ranked.loading} className={`mt-3 border-b border-line transition-opacity md:mt-2 ${ranked.loading ? 'opacity-60' : ''}`}>
+            {shown.map((r, i) => <Row key={r.id} r={r} wideHidden={!all && i >= SHORT_MD} />)}
           </ul>
-          {rows.length > SHORT && <button type="button" aria-expanded={all} onClick={() => setAll((v) => !v)}
+          {rows.length > SHORT_MD && <button type="button" aria-expanded={all} onClick={() => setAll((v) => !v)}
             className="mt-1 h-9 rounded-md px-1 text-[16px] font-semibold text-action underline underline-offset-2 hover:text-action-deep">
             {all ? 'Show fewer' : `Show the top ${rows.length}`}
           </button>}
@@ -91,12 +93,20 @@ function RankedList() {
 
 /** Home panel: Find your community + Highest fire risk. */
 export default function HomePanel() {
-  return <div className="flex min-h-full flex-col px-4 pt-5 pb-5 text-fg md:px-6">
+  return <div className="flex min-h-full flex-col px-4 pt-5 pb-5 text-fg md:px-6 md:pt-4 md:pb-4">
     <h1 className="text-[26px] leading-tight font-semibold">Find your community</h1>
     <p className="mt-2 text-[17px] leading-normal">See the fire risk for the next few days, what you can do, and who to ask for help.</p>
-    <div className="mt-4"><FindCommunity /></div>
+    <div className="mt-4 md:mt-3"><FindCommunity /></div>
     <RankedList />
     {/* TODO: link the provincial fire danger rating here once the contacts data provides the official URLs. */}
-    <p className="mt-6 text-[15px] text-mute md:mt-auto md:pt-4">Our estimate, not an official fire danger rating.</p>
+    {/* From md up the two notes run as one 14 px paragraph so the panel fits a 1440×900 screen without scrolling. */}
+    <div className="mt-6 space-y-1 text-mute md:mt-auto md:pt-2">
+      <p className="text-[14px] leading-snug">
+        <span className="block text-[15px] md:inline md:text-[14px]">Our estimate, not an official fire danger rating.</span>
+        {' '}A student prototype for NASA Space Apps 2026. Not an emergency alerting service, and it does not speak for any First Nation.
+      </p>
+      {/* Phones hide "About the data" in the header (App.tsx), so it lives here too. */}
+      <p className="text-[15px] sm:hidden"><Link to="/about" className="font-semibold text-action underline underline-offset-2 hover:text-action-deep">About the data</Link></p>
+    </div>
   </div>
 }

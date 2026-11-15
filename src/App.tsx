@@ -25,7 +25,7 @@ function ExampleBanner() {
   const { mode, setMode } = useApp()
   if (mode !== 'sim') return null
   return <div role="status" className="flex shrink-0 items-center gap-3 border-b border-line border-l-4 border-l-fg bg-example px-4 py-2 text-[15px] md:px-6 print:border-0 print:bg-transparent print:px-0">
-    <p className="min-w-0 flex-1"><span className="font-semibold">Example scenario, not real conditions.</span><span className="hidden sm:inline"> Fires, weather and smoke here are made up to show how the site works. The NASA satellite photo is real.</span></p>
+    <p className="min-w-0 flex-1"><span className="font-semibold">Example scenario, not real conditions.</span><span className="sm:hidden"> Set on 14 July 2026.</span><span className="hidden sm:inline"> A summer day, 14 July 2026, the week of the real evacuations near Thunder Bay. Fires, weather and smoke here are made up; the NASA satellite photo is real.</span></p>
     <button type="button" onClick={() => setMode('live')} className="shrink-0 rounded-md px-2 py-1 text-[15px] font-semibold text-action underline underline-offset-2 hover:text-action-deep print:hidden">Use live data</button>
   </div>
 }
@@ -45,9 +45,9 @@ export default function App() {
       <div className="ml-auto flex items-center gap-4">
         {loc.pathname !== '/' && <Link to="/" className="hidden text-[15px] text-mute hover:text-fg sm:inline">All communities</Link>}
         <Link to="/about" className="hidden text-[15px] text-mute hover:text-fg sm:inline">About the data</Link>
-        <div className="flex shrink-0 rounded-full bg-ink-800 p-0.5" role="group" aria-label="Which data to show">
-          {(['live', 'sim'] as const).map((m) => <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
-            className={`rounded-full px-3 py-1.5 text-[14px] whitespace-nowrap sm:px-3.5 ${mode === m ? 'bg-white font-semibold text-fg shadow-sm' : 'text-mute hover:text-fg'}`}>
+        <div className="inline-flex shrink-0 overflow-hidden rounded-md border border-edge bg-white" role="group" aria-label="Which data to show">
+          {(['live', 'sim'] as const).map((m, i) => <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
+            className={`h-10 px-3 text-[14px] whitespace-nowrap sm:px-3.5 ${i ? 'border-l border-edge' : ''} ${mode === m ? 'bg-fg font-semibold text-white' : 'text-fg hover:bg-ink-800'}`}>
             <span className="sm:hidden">{m === 'live' ? 'Live' : 'Example'}</span>
             <span className="hidden sm:inline">{m === 'live' ? 'Live data' : 'Example scenario'}</span>
           </button>)}

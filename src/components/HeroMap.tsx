@@ -18,13 +18,23 @@ const NASA_DATE = '2026-07-14'
 const NASA_REGION = 'thunder-bay'
 const NASA_FALLBACK = { lat: 49.4, lon: -89.6 }
 const NASA_ZOOM = 7
+/** Where the July photo matters: the Thunder Bay district evacuation area. Further than NASA_NEAR_KM from it,
+ *  a community's map offers no satellite photo, so nobody reads it as a picture of their own place. */
+const NASA_AREA = { latMin: 49, latMax: 52, lonMin: -93, lonMax: -87 }
+const NASA_NEAR_KM = 300
 const INK = '#1b1f1d'
-const FIRE_RED = '#A8231C'
 const HEAT_ORANGE = '#ee6a1a'
 const PANEL_W = 440 // the home panel sits flush left over the map on md+
 const STEP_MS = 1200
 const MAX_PLAY = 7
-const HOME = { lat: 58, lon: -96 }
+const HOME = { lat: 55, lon: -98 }
+/** Home opens on the 48–62° N band, where most communities and the risk are; people pan out for the rest. */
+const HOME_BOUNDS: [[number, number], [number, number]] = [[48, -126], [62, -70]]
+const FIT_PAD = 24
+/** Below this height the map is a preview: no top bar, key or zoom buttons, only the focus label. */
+const COMPACT_H = 300
+/** Home disc sizes: only the places that matter stand out. Every level keeps the ink ring. */
+const HOME_RADIUS: Record<RiskLevel, number> = { Low: 3.5, Moderate: 4.5, High: 6, Critical: 7 }
 const FOCUS_ZOOM = 8
 const RINGS_KM = [10, 25]
 
@@ -103,6 +113,10 @@ const distanceKm = (a: { lat: number; lon: number }, b: { lat: number; lon: numb
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2
   return 6371 * 2 * Math.asin(Math.sqrt(h))
 }
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+/** Kilometres from a point to the nearest edge of the photo's area (0 inside it). */
+const kmToNasaArea = (p: { lat: number; lon: number }) =>
+  distanceKm(p, { lat: clamp(p.lat, NASA_AREA.latMin, NASA_AREA.latMax), lon: clamp(p.lon, NASA_AREA.lonMin, NASA_AREA.lonMax) })
 const COMPASS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
 /** Direction you would travel from `from` to reach `to`. */
 const direction = (from: { lat: number; lon: number }, to: { lat: number; lon: number }) => {
@@ -147,15 +161,30 @@ function Card({ title, sub, children, from }: { title: string; sub?: string; chi
 }
 
 /** Moves the map when the target changes: jumps on first load, flies (0.8 s) after that.
- *  `shift` pushes the target right by that many pixels, clear of a panel lying over the map's left edge. */
-function FlyTo({ lat, lon, zoom, shift }: { lat: number; lon: number; zoom: number; shift: number }) {
+ *  `shift` pushes the target right by that many pixels, clear of a panel lying over the map's left edge.
+ *  With `bounds` it frames that area instead, `shift` pixels clear on the left. A change of `fit` refits it
+ *  (panel shown or not, preview or full map), but a plain resize does not undo someone's pan. */
+function FlyTo({ lat, lon, zoom, shift, bounds, fit = '' }: { lat: number; lon: number; zoom: number; shift: number; bounds?: [[number, number], [number, number]]; fit?: string }) {
   const map = useMap()
   const first = useRef(true)
+  const area = bounds ? bounds.flat().join(',') : ''
   useEffect(() => {
+    const jump = first.current
+    first.current = false
+    if (bounds) {
+      // Leaflet caches its size and updates it a beat after a resize; measure now so the frame fits.
+      map.invalidateSize({ animate: false })
+      const pad = { paddingTopLeft: L.point(shift + FIT_PAD, FIT_PAD), paddingBottomRight: L.point(FIT_PAD, FIT_PAD) }
+      if (jump) map.fitBounds(bounds, { ...pad, animate: false })
+      else map.flyToBounds(bounds, { ...pad, duration: 0.8, animate: !reducedMotion() })
+      return
+    }
     const center = map.unproject(map.project([lat, lon], zoom).subtract([shift, 0]), zoom)
-    if (first.current) { first.current = false; map.setView(center, zoom, { animate: false }); return }
+    if (jump) { map.setView(center, zoom, { animate: false }); return }
     map.flyTo(center, zoom, { duration: 0.8, animate: !reducedMotion() })
-  }, [lat, lon, zoom, shift, map])
+    // `bounds` is read through `area`, its value, so a new array with the same corners does not refit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lon, zoom, shift, area, fit, map])
   return null
 }
 
@@ -163,7 +192,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
   const { regions, mode, day, setDay, horizon } = useApp()
   const navigate = useNavigate()
   const [query] = useSearchParams()
-  const [nasa, setNasa] = useState(() => query.get('nasa') === '1')
+  const [nasaPick, setNasa] = useState(() => query.get('nasa') === '1')
   const [keyOpen, setKeyOpen] = useState(false)
   const sim = mode === 'sim'
 
@@ -197,7 +226,11 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
   const clear = underPanel ? 'md:left-[456px]' : ''
   const visibleW = underPanel ? size.w - PANEL_W : size.w
   const wideBar = visibleW >= 720 // caption and the long toggle label fit on one row
-  const roomyKey = visibleW >= 480 && size.h >= 460 // room for the open legend without hiding the map
+  const roomyKey = visibleW >= 800 && size.h >= 460 // room for the open legend without hiding the map
+  const compact = size.h > 0 && size.h < COMPACT_H // a preview: no top bar, key or zoom buttons
+  // The July photo is offered only near where it was taken, and never on a preview with no date or key beside it.
+  const photoNear = !focus || kmToNasaArea(focus) <= NASA_NEAR_KM
+  const nasa = nasaPick && photoNear && !compact
 
   // ---- The shared day, and opt-in playback ----
   // One shown date for every layer. The community levels (same scoring as the panel) set the calendar;
@@ -237,14 +270,17 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
   useEffect(() => () => { if (playingRef.current) setDay(null) }, [setDay])
   const stop = () => { expected.current = undefined; setPlaying(false); setDay(null) }
   const showNasa = (on: boolean) => { if (on && playingRef.current) stop(); setNasa(on) }
+  // The Stop button goes with the top bar on a preview, so playback must not run where nobody can stop it.
+  useEffect(() => { if (compact && playingRef.current) stop() }, [compact]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- Where the map looks ----
   const nasaRegion = regions.find((r) => r.id === NASA_REGION) ?? NASA_FALLBACK
-  const narrow = (size.w || window.innerWidth) < 700
+  const home = !nasa && !focus
   const target = nasa ? { lat: nasaRegion.lat, lon: nasaRegion.lon, zoom: NASA_ZOOM }
     : focus ? { lat: focus.lat, lon: focus.lon, zoom: FOCUS_ZOOM }
-    : { lat: HOME.lat, lon: HOME.lon, zoom: narrow ? 3 : 4 }
-  const shift = underPanel ? PANEL_W / 2 : 0
+    : { lat: HOME.lat, lon: HOME.lon, zoom: 4 }
+  // Centred targets move by half the panel's width; the home frame keeps its whole left edge clear of the panel.
+  const shift = underPanel ? (home ? PANEL_W : PANEL_W / 2) : 0
 
   // ---- Layers ----
   const cellBounds = useMemo(() => (grid?.cells ?? []).map((c) => [
@@ -266,6 +302,15 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
     return all.length <= 300 ? all : []
   }, [hotspots.data, focus])
 
+  // Every community but the one in view, quietest first so the louder discs draw on top of them.
+  const placeDiscs = useMemo(() => {
+    if (!levels || li < 0) return []
+    const at = (p: PlaceLevels['places'][number]) => { const v = p.scores[li]; return validScore(v) ? v : -1 }
+    return levels.places.filter((p) => p.id !== focus?.id).sort((a, b) => at(a) - at(b))
+  }, [levels, li, focus?.id])
+  /** On home a disc's size follows its level; on a community's map every other disc is the same size. */
+  const discRadius = (level: RiskLevel | null) => (focus ? 6 : level ? HOME_RADIUS[level] : HOME_RADIUS.Low)
+
   const evacuated = (c: CommunityExposure) => c.reported.some((r) => r.includes('July 2026'))
   const fireSrc = fires.sources[0]
   const fireTitle = sim ? 'Example fire (not real)' : 'Wildfire reported by fire crews'
@@ -284,15 +329,18 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
       </Card>
     </Popup>
 
-  const btn = (active: boolean) => `inline-flex h-9 items-center rounded-full px-4 text-[14px] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg ${active ? 'bg-fg text-white' : 'text-mute hover:text-fg'}`
+  // Flat, bordered controls, the same as the panel's segmented ones (community/LookAhead.tsx).
+  const btn = (active: boolean, first: boolean) => `inline-flex h-9 items-center ${wideBar ? 'px-3.5' : 'px-2.5'} text-[14px] whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg ${first ? '' : 'border-l border-edge'} ${active ? 'bg-fg font-semibold text-white' : 'text-fg hover:bg-ink-800'}`
+  const smallBtn = 'inline-flex h-8 items-center gap-1.5 rounded-md border border-edge bg-white px-3 text-[14px] font-medium hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg'
 
   return <div ref={box} className="relative h-full w-full">
-    <MapContainer center={[HOME.lat, HOME.lon]} zoom={4} minZoom={3} maxZoom={11} zoomControl={false} maxBounds={[[38, -170], [85, -40]]}
+    <MapContainer center={[HOME.lat, HOME.lon]} zoom={4} zoomSnap={0.25} minZoom={3} maxZoom={11} zoomControl={false} maxBounds={[[38, -170], [85, -40]]}
       className="h-full w-full" style={{ height: '100%', borderRadius: 0, background: '#f4f4f1' }}>
-      {size.w > 0 && <FlyTo lat={target.lat} lon={target.lon} zoom={target.zoom} shift={shift} />}
+      {size.w > 0 && <FlyTo lat={target.lat} lon={target.lon} zoom={target.zoom} shift={shift}
+        bounds={home ? HOME_BOUNDS : undefined} fit={home ? `${underPanel}-${compact}` : ''} />}
       <TileLayer url={`${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`} maxZoom={16} zIndex={1} attribution="Tiles © Esri" />
       {!nasa && <TileLayer key="esri-ref" url={`${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`} maxZoom={16} zIndex={2} />}
-      <ZoomControl position="bottomright" />
+      {!compact && <ZoomControl position="bottomright" />}
 
       {nasa && <>
         <WMSTileLayer key="gibs-true" zIndex={3} url={GIBS_WMS} params={{ layers: 'MODIS_Terra_CorrectedReflectance_TrueColor', format: 'image/jpeg', version: '1.3.0', time: NASA_DATE } as any} opacity={1} attribution="Imagery: NASA GIBS / EOSDIS" />
@@ -308,7 +356,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
           const v = c.scores[gi]
           const shown = validScore(v) && levelFor(v) !== 'Low'
           return <Rectangle key={i} bounds={cellBounds[i]} interactive={false}
-            pathOptions={{ className: 'risk-cell', stroke: false, weight: 0, fillColor: shown ? LEVEL_COLORS[levelFor(v)] : '#ffffff', fillOpacity: shown ? 0.45 : 0 }} />
+            pathOptions={{ className: 'risk-cell', stroke: false, weight: 0, fillColor: shown ? LEVEL_COLORS[levelFor(v)] : '#ffffff', fillOpacity: shown ? 0.25 : 0 }} />
         })}
       </Pane>
 
@@ -339,10 +387,10 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
 
       <Pane name="hero-communities" style={{ zIndex: 450 }}>
         {/* Map view: every community filled with its level on the shared day (Low = sand). */}
-        {!nasa && levels && li >= 0 && levels.places.filter((p) => p.id !== focus?.id).map((p) => {
+        {!nasa && placeDiscs.map((p) => {
           const v = p.scores[li]
           const level = validScore(v) ? levelFor(v) : null
-          return <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={6}
+          return <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={discRadius(level)}
             pathOptions={{ color: INK, weight: 1.5, opacity: 1, fillColor: level ? LEVEL_COLORS[level] : '#ffffff', fillOpacity: 1 }}>
             <Tooltip pane="tooltipPane" className="hero-tip">{p.name}</Tooltip>
             {placePopup(p, level, true)}
@@ -381,33 +429,34 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
     </MapContainer>
 
     {/* Top bar. Phone: layer toggle first, caption below, both on the left (the page may put a close button top right).
-        Wider: caption left, toggle right. */}
-    <div className={`pointer-events-none absolute inset-x-3 top-3 z-[1000] flex items-start gap-2 ${wideBar ? 'flex-row justify-between' : 'flex-col-reverse'} ${clear}`}>
+        Wider: caption left, toggle right. None on a preview (shorter than COMPACT_H): there it would hide the map. */}
+    {!compact && <div className={`pointer-events-none absolute inset-x-3 top-3 z-[1000] flex items-start gap-2 ${wideBar ? 'flex-row justify-between' : 'flex-col-reverse'} ${clear}`}>
       {!nasa
-        ? <div aria-live="polite" className="pointer-events-auto flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-white/95 px-3.5 py-1.5 text-[15px] font-semibold text-fg shadow-md">
+        ? <div aria-live="polite" className="pointer-events-auto flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-edge bg-white px-3.5 py-1.5 text-[15px] font-semibold text-fg shadow-sm">
           <span>{showingLine(day, knownDays)}</span>
           {canPlay && (playing
-            ? <button type="button" onClick={stop} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-fg px-3 text-[14px] font-medium hover:bg-fg/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+            ? <button type="button" onClick={stop} className={smallBtn}>
               <Square size={12} fill="currentColor" aria-hidden />Stop
             </button>
-            : <button type="button" onClick={() => setPlaying(true)} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-fg px-3 text-[14px] font-medium hover:bg-fg/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+            : <button type="button" onClick={() => setPlaying(true)} className={smallBtn}>
               <Play size={12} fill="currentColor" aria-hidden />{playList.length === 1 ? 'Play the next day' : `Play the next ${playList.length} days`}
             </button>)}
         </div>
         : null}
-      <div className={`pointer-events-auto flex flex-col gap-1.5 ${wideBar ? 'ml-auto items-end' : 'items-start'}`}>
-        <div role="group" aria-label="Map view" className="flex gap-1 rounded-full bg-white p-1 shadow-lg">
-          <button type="button" aria-pressed={!nasa} onClick={() => showNasa(false)} className={btn(!nasa)}>Map</button>
-          <button type="button" aria-pressed={nasa} onClick={() => showNasa(true)} className={btn(nasa)}>
-            {wideBar ? 'Satellite photo, 14 July 2026' : 'Satellite photo'}
+      {/* The photo always carries its date. Far from where it was taken, it is not offered at all. */}
+      {photoNear && <div className={`pointer-events-auto flex flex-col gap-1.5 ${wideBar ? 'ml-auto items-end' : 'items-start'}`}>
+        <div role="group" aria-label="Map view" className="inline-flex overflow-hidden rounded-md border border-edge bg-white shadow-sm">
+          <button type="button" aria-pressed={!nasa} onClick={() => showNasa(false)} className={btn(!nasa, true)}>Map</button>
+          <button type="button" aria-pressed={nasa} onClick={() => showNasa(true)} className={btn(nasa, false)}>
+            {wideBar ? 'Satellite photo, 14 July 2026' : 'Satellite photo, July 2026'}
           </button>
         </div>
-        {nasa && <p className="rounded-full bg-white/95 px-3 py-1 text-[14px] text-fg shadow-sm">A real NASA photo from this summer’s fires.</p>}
-      </div>
-    </div>
+        {nasa && <p className="rounded-md border border-edge bg-white px-3 py-1 text-[14px] text-fg shadow-sm">A real NASA photo from this summer’s fires.</p>}
+      </div>}
+    </div>}
 
-    {/* Legend: bottom left of the visible map. Collapsed behind "Map key" on small maps. */}
-    <div aria-label="Map key" className={`absolute bottom-4 left-3 z-[1000] max-w-[calc(100%-80px)] rounded-xl bg-white/95 text-[14px] text-fg shadow-md ${clear}`}>
+    {/* Legend: bottom left of the visible map. Collapsed behind "Map key" on small maps, none on a preview. */}
+    {!compact && <div aria-label="Map key" className={`absolute bottom-4 left-3 z-[1000] max-w-[calc(100%-80px)] rounded-md border border-edge bg-white text-[14px] text-fg shadow-sm ${clear}`}>
       {!roomyKey && <button type="button" aria-expanded={keyOpen} onClick={() => setKeyOpen((o) => !o)}
         className="px-3 py-2 text-[14px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
         {keyOpen ? 'Hide map key' : 'Map key'}
@@ -427,7 +476,7 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
             <span aria-hidden className="mx-[6px] h-1.5 w-1.5 shrink-0" style={{ background: HEAT_ORANGE }} />Heat spotted by satellites
           </InfoPopover>}
           <InfoPopover k="community" className="px-1 py-0.5 hover:bg-fg/5">
-            <span aria-hidden className="mx-[3px] h-3 w-3 shrink-0 rounded-full border-[1.5px] border-fg" style={{ background: LEVEL_COLORS.High }} />Community
+            <span aria-hidden className="mx-[3px] h-3 w-3 shrink-0 rounded-full border-[1.5px] border-fg bg-white" />Community (filled with its fire risk)
           </InfoPopover>
         </>}
         {nasa && <>
@@ -437,11 +486,12 @@ export default function HeroMap({ focus = null }: { focus?: { id: string; name: 
           <InfoPopover k="nasaThermal" className="px-1 py-0.5 hover:bg-fg/5">
             <span aria-hidden className="mx-0.5 h-2 w-2 shrink-0 rounded-[2px] bg-[#ff3b1f]" />Heat seen by satellite that day
           </InfoPopover>
-          <InfoPopover k="community" className="px-1 py-0.5 hover:bg-fg/5">
+          {/* Plain line, no popover: the "community" popover describes risk-filled discs, and these are ink. */}
+          <span className="inline-flex items-center gap-2 px-1 py-0.5">
             <span aria-hidden className="h-3 w-3 shrink-0 rounded-full border-[1.5px] border-white bg-fg shadow-[0_0_0_1px_#1b1f1d]" />Community (named: evacuated in July 2026)
-          </InfoPopover>
+          </span>
         </>}
       </div>
-    </div>
+    </div>}
   </div>
 }

@@ -34,19 +34,15 @@ async function airAt(mode: Mode, pt: Pt) {
   try { return mode === 'sim' ? simAirSeries(pt, 2, AIR_AHEAD_DAYS + 1) : await getAirSeries(pt, 2, AIR_AHEAD_DAYS + 1) } catch { return null }
 }
 
-/** Local calendar day of an hourly air time. Live times are already local to the point (Open-Meteo timezone=auto);
- *  simulated times are UTC, so convert them the way sim.ts dates its weather days (server-local date). */
-export function airDay(mode: Mode, time: string): string {
-  if (mode !== 'sim') return time.slice(0, 10)
-  const d = new Date(`${time}Z`)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+/** Local calendar day of an hourly air time. Both modes give local wall-clock times: live is local to the point
+ *  (Open-Meteo timezone=auto), the example is in the scenario's own zone (sim.ts simLocalTime), so the date is the prefix. */
+export const airDay = (time: string): string => time.slice(0, 10)
 
 /** Highest daily-mean PM2.5 over the AIR_AHEAD_DAYS local days after todayDate (12+ forecast hours each, as in services.ts regionAir). */
-export function max3d(mode: Mode, hourly: AirPoint[], todayDate: string) {
+export function max3d(hourly: AirPoint[], todayDate: string) {
   const byDay = new Map<string, { sum: number; n: number }>()
   for (const h of hourly) {
-    const d = airDay(mode, h.time)
+    const d = airDay(h.time)
     if (h.kind !== 'forecast' || h.pm25 == null || d <= todayDate) continue
     const b = byDay.get(d) ?? byDay.set(d, { sum: 0, n: 0 }).get(d)!
     b.sum += h.pm25; b.n++
@@ -91,7 +87,7 @@ export async function placeCore(mode: Mode, id: string, days = DEFAULT_HORIZON):
     outlook: riskOutlook(p.timeline)!,
     fires: fires.list ? nearFires(fires.list, c.lat, c.lon) : null,
     hotspots24h: nearHotspots(p.hotspots, c.lat, c.lon),
-    air: air ? { now: air.now, max3d: max3d(mode, air.hourly, p.todayDate) } : null,
+    air: air ? { now: air.now, max3d: max3d(air.hourly, p.todayDate) } : null,
   }
   return { data, sources: dedupe([...p.sources, ...fires.sources, ...(air ? [airSrc(mode)] : []), locationSource(c)]) }
 }

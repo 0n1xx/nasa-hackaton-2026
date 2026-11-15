@@ -32,20 +32,20 @@ const NOW: Record<RiskLevel, string[]> = {
     'Consider checking pumps, hoses, sprinklers and air filters.',
   ],
   High: [
-    'You may want to hold a readiness check with leadership and your local fire crew.',
+    'You may want to hold a meeting with leadership and your local fire crew to check you are ready.',
     'Consider checking pumps, hoses and sprinklers.',
     'Consider setting up a clean-air room for Elders and anyone with breathing problems.',
   ],
   Critical: [
     'You may want to meet with leadership about starting the community emergency plan.',
-    'Consider having go-bags packed and vehicles fuelled, in case people are asked to leave.',
+    'Consider having a packed bag for each person, ready to grab, and vehicles fuelled, in case people are asked to leave.',
     'Consider setting up a clean-air room for Elders and anyone with breathing problems.',
   ],
 }
 
 const MORE: { title: string; items: { text: string; src: Src }[] }[] = [
   { title: 'For your household', items: [
-    { text: 'Pack a go-bag everyone can find: water (about 4 litres per person per day), food, a flashlight and radio with spare batteries, chargers, a first aid kit, masks, two weeks of medicine and copies of important papers.', src: SRC.kit },
+    { text: 'Have a packed bag for each person, ready to grab, with water (about 4 litres per person per day), food, a flashlight and radio with spare batteries, chargers, a first aid kit, masks, two weeks of medicine and copies of important papers.', src: SRC.kit },
     { text: 'Make a household plan: practise your way out and a second way, and plan for Elders, children, pets and anyone with health needs. Keep the vehicle fuelled.', src: SRC.wildfire },
     { text: 'Clear dry leaves, needles and anything that burns from the first 1.5 metres around the house, and keep firewood well away from it.', src: SRC.firesmart },
     { text: 'For smoke: a portable air cleaner, spare clean filters and well-fitted N95 masks.', src: SRC.wildfire },

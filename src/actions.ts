@@ -16,7 +16,7 @@ export const ACTIONS: Record<RiskLevel, { community: string[]; agency: string[] 
     agency: ['Check this region every day: weather, new satellite detections and smoke.', 'Confirm which crews, aircraft, pumps and sprinkler kits could reach the region within 24 hours, and share that with community leadership.', 'Open a direct line with community emergency coordinators.'],
   },
   High: {
-    community: ['Hold a readiness check with leadership and the local fire crew.', 'Set up community structure protection where equipment exists (sprinklers, cleared perimeters).', 'Open clean-air shelters if smoke is rising; share air quality updates in the community’s languages.', 'Decide, as a community, the conditions under which vulnerable members would leave first.'],
+    community: ['Hold a meeting with leadership and your local fire crew to check you are ready.', 'Set up community structure protection where equipment exists (sprinklers, cleared perimeters).', 'Open clean-air shelters if smoke is rising; share air quality updates in the community’s languages.', 'Decide, as a community, the conditions under which vulnerable members would leave first.'],
     agency: ['Pre-position initial-attack crews, pumps, hose and sprinkler kits near the region’s communities before ignitions occur.', 'Put aircraft on standby within reach of the region and confirm fuel and water for them.', 'Deliver air purifiers, N95 masks and generator fuel to communities ahead of the smoke.', 'Brief community leadership daily and act on local observations.'],
   },
   Critical: {

@@ -106,14 +106,26 @@ test('dates are a weekday and a date', () => {
   for (const w of weekdays) assert.match(w, /^\w+day \d{1,2} (January|February|March|April|May|June|July|August|September|October|November|December)/, w)
 })
 
-test('no rise ahead: the risk sentence says the highest expected level, and the help is asked for now', () => {
+test('no rise ahead: the risk sentence follows the page rule, and the help is asked for now', () => {
   const p = place({ outlook: { todayDate: '2026-11-15', todayLevel: 'Critical', peakLevel: 'Critical', peakScore: 94, peakDate: '2026-11-17', firstHigherLevelDate: null, actByDate: null } })
   p.risk.today = { ...p.risk.today, score: 75, level: 'Critical' }
   const { body } = buildLetter({ place: p, needs: defaults, contacts: on, mode: 'live' })
   assert.ok(body.includes('is very high today, Sunday 15 November'), body)
-  assert.ok(body.includes('the highest expected is very high, on Tuesday 17 November'), body)
+  assert.ok(body.includes('and expected to stay at or below very high for the next 3 days.'), body)
   assert.ok(body.includes('ready now:'), body)
-  assert.ok(!/\bstay\b/.test(body))
+})
+
+test('a single very high day reads "reach … on", the same rule as the community page', async () => {
+  const { statusSentence } = await import('../src/components/community/words.ts')
+  // Fort William in the example: High on 14 and 15 July, Very high on 16 July, High again on 17 July.
+  const scores: [string, RiskDay['kind'], number][] = [['2026-07-13', 'historical', 55], ['2026-07-14', 'today', 60], ['2026-07-15', 'forecast', 65], ['2026-07-16', 'forecast', 80], ['2026-07-17', 'forecast', 70]]
+  const timeline: RiskDay[] = scores.map(([date, kind, score]) => ({ date, kind, score, level: levelFor(score) }))
+  const p = place({ outlook: { todayDate: '2026-07-14', todayLevel: 'High', peakLevel: 'Critical', peakScore: 80, peakDate: '2026-07-16', firstHigherLevelDate: '2026-07-16', actByDate: '2026-07-15' } })
+  p.risk = { ...p.risk, todayDate: '2026-07-14', timeline, today: { ...p.risk.today, score: 60, level: 'High' } }
+  const { body } = buildLetter({ place: p, needs: defaults, contacts: on, mode: 'live' })
+  assert.ok(body.includes('is high today, Tuesday 14 July (60 out of 100 on our estimate), and expected to reach very high on Thursday 16 July.'), body)
+  assert.ok(!/very high from/.test(body), body)
+  assert.equal(statusSentence(p).second, 'It is expected to reach very high on Thursday.')
 })
 
 test('warning-sign count leaves out the outlook sign and inactive signs', () => {

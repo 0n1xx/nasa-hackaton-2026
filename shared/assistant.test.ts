@@ -98,11 +98,19 @@ test('assistant: contacts are the verified ones for the province, never invented
   assert.match(on.text, /911/)
   assert.match(on.text, /310-FIRE/)
   assert.match(on.text, /French and Mattawa/)
-  assert.match(on.text, /emergencyon-urgenceon@sac-isc\.gc\.ca/)
+  assert.doesNotMatch(on.text, /AFFES|@/)
+  // The email address is a button (a mailto: link), not part of the sentence.
+  assert.ok(on.actions.some((a) => a.to === 'mailto:emergencyon-urgenceon@sac-isc.gc.ca'))
   assert.ok(on.actions.some((a) => a.to === '/c/whitesand/help'))
+  assert.ok(on.actions.every((a) => !a.label.includes(':')), 'no colon labels')
+  // Alberta's office lists a phone and an email: both get a button, and neither goes in the sentence.
+  const ab = answer('who_to_contact', { report: { ...r, community: { ...r.community, province: 'AB' } }, mode: 'live' })
+  assert.ok(ab.actions.some((a) => a.to === 'tel:7804957707'))
+  assert.ok(ab.actions.some((a) => a.to === 'mailto:ab.emergency@sac-isc.gc.ca'))
+  assert.doesNotMatch(ab.text, /780-495-7707|@/)
   // Saskatchewan: the report number was not confirmed on an official page, so point to the page instead.
   const sk = answer('who_to_contact', { report: { ...r, community: { ...r.community, province: 'SK' } }, mode: 'live' })
-  assert.doesNotMatch(sk.text, /667-9660/)
+  assert.doesNotMatch(sk.text, /667-9660|SPSA/)
   assert.ok(sk.actions.some((a) => a.to.startsWith('https://www.saskpublicsafety.ca/')))
 })
 
@@ -119,7 +127,46 @@ test('assistant: levels use the page words and the risk is honest when it is not
   assert.doesNotMatch(sure.text, /±|%/)
   const smoke = answer('smoke_health', { report: r, mode: 'sim' })
   assert.doesNotMatch(smoke.text, /\bsafe\b/i)
-  assert.match(smoke.text, /US air quality index \d+/)
+  assert.match(smoke.text, /smoke reading: \d+ on the US air quality scale, where over 300 is the worst level/)
+  assert.doesNotMatch(smoke.text, /air quality index/)
+  assert.match(smoke.text, /Get medical help/)
   const unk = answer('unknown', { report: r, mode: 'sim' })
   assert.deepEqual(unk.actions.map((a) => a.label), SUGGESTED_QUESTIONS)
+})
+
+test('assistant: common ways of asking whether to leave get the evacuation answer', () => {
+  for (const q of ['Do we need to leave?', 'Is it time to leave?', 'Should we leave?', 'Do we have to go?', 'Evacuate?', 'Do we have to leave?', 'Does this mean we should leave?']) {
+    assert.equal(classifyIntent(q), 'evacuation', q)
+  }
+  // Not evacuation: "go to" someone for help, and "make sure" is not "how sure".
+  assert.equal(classifyIntent('Who do we need to go to for firefighters?'), 'who_to_contact')
+  assert.notEqual(classifyIntent('What should we do to make sure we are ready?'), 'how_sure')
+})
+
+test('assistant: days a week or more away are named with the date, not a bare weekday', async () => {
+  const r = await placeCore('sim', 'whitesand', 14).then((p) => p.data)
+  const today = r.risk.todayDate
+  const far = r.risk.timeline.filter((t) => t.kind === 'forecast').at(-1)!
+  // Make the last day the peak, 14 days out.
+  const timeline = r.risk.timeline.map((t) => (t.date === far.date ? { ...t, score: 99, level: levelFor(99) } : t))
+  const p: PlaceReport = { ...r, history: null, historyStatus: 'loading', risk: { ...r.risk, timeline }, outlook: riskOutlook(timeline)! }
+  const a = answer('when_worse', { report: p, mode: 'live' })
+  assert.match(a.text, /expected to be (Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday) \d{1,2} (July|August)/, a.text)
+  assert.ok(today < far.date)
+})
+
+test('smoke: a reading of 183 is "heavy" on the page, in the letter and in the assistant', async () => {
+  const { smokePlain } = await import('./aqi.ts')
+  const { smokeWords } = await import('../src/components/community/words.ts')
+  const { buildLetter } = await import('./letter.ts')
+  const { contactsFor } = await import('./contacts.ts')
+  assert.equal(smokePlain(183)?.word, 'heavy')
+  assert.equal(smokePlain(50)?.word, 'very little')
+  assert.equal(smokePlain(301)?.word, 'very heavy')
+  const r0 = await base()
+  const r: PlaceReport = { ...r0, air: { ...r0.air!, now: { ...r0.air!.now, usAqi: 183 } } }
+  assert.equal(smokeWords(r)?.line, 'Smoke in the air: heavy today.')
+  assert.match(smokeWords(r)!.number!, /^Smoke reading: 183 on the US air quality scale \(over 300 is the worst level\)\.$/)
+  assert.match(answer('smoke_health', { report: r, mode: 'live' }).text, /there is heavy smoke in the air today/i)
+  assert.match(buildLetter({ place: r, needs: [], contacts: contactsFor('ON'), mode: 'live' }).body, /Smoke in the air today: heavy \(/)
 })

@@ -98,7 +98,9 @@ export function warningSigns(risk: RegionRisk, air?: RegionAir | null): WarningS
   // 4. Wind in the next three days (wind drives spread).
   {
     const rule = 'Active when the daily maximum wind reaches 30 km/h today or in the next 3 days.'
-    const window = [today, ...ahead].filter((d): d is DayWeather => !!d && d.windMax != null)
+    // Exactly the 3 days the rule names, whatever look-ahead is chosen, so the count of warning signs
+    // does not change when someone picks "2 weeks".
+    const window = [today, ...ahead.slice(0, 3)].filter((d): d is DayWeather => !!d && d.windMax != null)
     if (window.length) {
       const peak = window.reduce((a, b) => (b.windMax! > a.windMax! ? b : a))
       const active = peak.windMax! >= 30

@@ -45,7 +45,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppState>(() => ({
     regions, region: regions.find((r) => r.id === regionId) ?? regions[0] ?? null,
     setRegionId: (id) => { setRegionIdRaw(id); store('bw.region', id) },
-    mode: mode ?? 'live', setMode: (m) => { setModeRaw(m); store('bw.mode', m) },
+    // A day picked in one mode means nothing in the other (the example runs in July), so switching clears it.
+    mode: mode ?? 'live', setMode: (m) => { setModeRaw(m); store('bw.mode', m); setDay(null) },
     horizon, setHorizon: (n) => { const h = validHorizon(n); if (h == null) return; setHorizonRaw(h); store('bw.horizon', String(h)); setDay(null) },
     day, setDay,
     status, bootError,

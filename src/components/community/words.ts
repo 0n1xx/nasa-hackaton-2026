@@ -5,7 +5,10 @@
 import type { Compass8, PlaceFire, PlaceReport, RiskDay, RiskLevel } from '../../../shared/types.ts'
 import type { WarningSign } from '../../../shared/signals.ts'
 import { levelFor, levelLabel } from '../../../shared/risk.ts'
-import { aqiFromPm25 } from '../../../shared/aqi.ts'
+import { SMOKE_MEDICAL, SMOKE_RANK, aqiFromPm25, smokePlain, smokeReading, type SmokeWord } from '../../../shared/aqi.ts'
+import { aheadPhrase, dayWord, outlookPhrase, relativeDays } from '../../../shared/outlookWords.ts'
+
+export { aheadPhrase, dayWord }
 
 const RANK: Record<RiskLevel, number> = { Low: 0, Moderate: 1, High: 2, Critical: 3 }
 
@@ -22,29 +25,14 @@ export const monthLong = (iso: string) => at(iso).toLocaleDateString('en-CA', { 
 export const fullDate = (iso: string) => `${weekdayLong(iso)} ${dayOfMonth(iso)} ${monthLong(iso)}`
 const daysBetween = (a: string, b: string) => Math.round((at(b).getTime() - at(a).getTime()) / 86400000)
 
-/** The data's own today. Never new Date(): the example scenario dates its days in UTC. */
+/** The data's own today. Never new Date(): the example scenario is set on 14 July 2026, and live dates are local to the place. */
 export function todayOf(p: PlaceReport): string {
   return p.outlook.todayDate ?? p.risk.timeline.find((d) => d.kind === 'today')?.date ?? p.risk.todayDate
 }
 
-/** "today", "tomorrow", "Tuesday", or "Sunday 22 November" a week or more out (a bare weekday would be ambiguous). */
-export function dayWord(iso: string, todayIso: string): string {
-  const n = daysBetween(todayIso, iso)
-  if (n === 0) return 'today'
-  if (n === 1) return 'tomorrow'
-  return n >= 7 ? fullDate(iso) : weekdayLong(iso)
-}
 const onDay = (iso: string, todayIso: string) => {
   const w = dayWord(iso, todayIso)
   return w === 'today' || w === 'tomorrow' ? w : `on ${w}`
-}
-
-/** "for the next 3 days", "tomorrow", "for the next week". */
-export function aheadPhrase(horizon: number): string {
-  if (horizon === 1) return 'tomorrow'
-  if (horizon === 7) return 'for the next week'
-  if (horizon === 14) return 'for the next 2 weeks'
-  return `for the next ${horizon} days`
 }
 
 /** Today and the look-ahead days, in order (past days left out). */
@@ -64,31 +52,11 @@ export function statusSentence(p: PlaceReport): { first: string; second: string 
   const today = todayOf(p)
   const L = todayLevel(p)
   const first = `Fire risk is ${lower(L)} today.`
-  const ahead = p.risk.timeline.filter((d) => d.kind === 'forecast')
-  if (!ahead.length) return { first, second: null }
-
-  const higherDate = p.outlook.firstHigherLevelDate
-  const hi = higherDate ? ahead.findIndex((d) => d.date === higherDate) : -1
-  if (hi >= 0) {
-    // The level of the first higher day, not the peak: they can differ ("high from Sunday and very high on Tuesday").
-    const h = ahead[hi]
-    const rest = ahead.slice(hi)
-    const holds = rest.every((d) => RANK[d.level] >= RANK[h.level])
-    let s = holds ? `It is expected to be ${lower(h.level)} from ${dayWord(h.date, today)}` : `It is expected to reach ${lower(h.level)} ${onDay(h.date, today)}`
-    const peak = rest.reduce((a, b) => (RANK[b.level] > RANK[a.level] ? b : a))
-    if (RANK[peak.level] > RANK[h.level]) s += ` and ${lower(peak.level)} ${onDay(peak.date, today)}`
-    return { first, second: `${s}.` }
-  }
+  // The shared rule (shared/outlookWords.ts), so the letter and the assistant say the same thing.
+  const o = outlookPhrase({ todayLevel: L, ahead: p.risk.timeline.filter((d) => d.kind === 'forecast'), firstHigherLevelDate: p.outlook.firstHigherLevelDate, horizon: p.horizon }, relativeDays(today))
+  if (!o) return { first, second: null }
   // One joined sentence for the steady case: 'Fire risk is high today and expected to stay high for the next 3 days.'
-  if (ahead.every((d) => d.level === L)) return { first: first.slice(0, -1), second: `and expected to stay ${lower(L)} ${aheadPhrase(p.horizon)}.` }
-  const last = ahead[ahead.length - 1]
-  if (RANK[last.level] < RANK[L]) {
-    // From the first day after which it stays at or below the last day's level.
-    let j = ahead.length - 1
-    while (j > 0 && RANK[ahead[j - 1].level] <= RANK[last.level]) j--
-    return { first, second: `It is expected to ease to ${lower(last.level)} by ${dayWord(ahead[j].date, today)}.` }
-  }
-  return { first, second: `It is expected to stay at or below ${lower(L)} ${aheadPhrase(p.horizon)}.` }
+  return o.steady ? { first: first.slice(0, -1), second: `and ${o.text}.` } : { first, second: `It is ${o.text}.` }
 }
 
 /** "Very high (75 out of 100)": the number is secondary, after the word. */
@@ -182,6 +150,8 @@ export function signSentence(s: WarningSign, p: PlaceReport): string {
       return day === 'today' ? `Strong wind today, up to ${v} km/h.` : `Strong wind expected ${day}, up to ${v} km/h.`
     }
     case 'fire': {
+      // Feed down: the sign arrives as 0, which must never read as "no heat spotted".
+      if (p.hotspots24h == null) return 'Satellite heat data is not available right now.'
       const n = num(/(\d+)/, s.value) ?? 0
       return n > 0 ? `Heat spotted by satellites ${n} time${n === 1 ? '' : 's'} within 100 km in the last day.` : 'No heat spotted by satellites within 100 km in the last day.'
     }
@@ -214,9 +184,9 @@ export function historySentence(p: PlaceReport): string | null {
 // Nearest fire and smoke
 
 const COMPASS: Record<Compass8, string> = { N: 'north', NE: 'north-east', E: 'east', SE: 'south-east', S: 'south', SW: 'south-west', W: 'west', NW: 'north-west' }
-const STAGE: Record<string, string> = { OC: 'out of control', BH: 'being held', UC: 'under control', EX: 'out' }
+const STAGE: Record<string, string> = { OC: 'out of control', BH: 'being held: not expected to spread for now', UC: 'under control', EX: 'out' }
 
-/** "Wildfire 13 km south-west, being held." */
+/** "Wildfire 13 km south-west, being held: not expected to spread for now." */
 export function fireSentence(f: PlaceFire): string {
   const stage = STAGE[f.stage?.toUpperCase()]
   const where = f.distanceKm < 1 ? 'Wildfire less than 1 km away' : `Wildfire ${f.distanceKm} km ${COMPASS[f.bearing] ?? ''}`.trimEnd()
@@ -242,28 +212,11 @@ export function heatCounts(h: NonNullable<PlaceReport['hotspots24h']>): string {
   return `Heat spotted by satellites ${h.within50km} time${h.within50km === 1 ? '' : 's'} within 50 km, and ${h.within100km} within 100 km, in the last day.`
 }
 
-export type SmokeLevel = 'very little' | 'light' | 'moderate' | 'heavy'
-const SMOKE_RANK: Record<SmokeLevel, number> = { 'very little': 0, light: 1, moderate: 2, heavy: 3 }
+export type SmokeLevel = SmokeWord
 
-/**
- * Smoke in words from the US AQI (or PM2.5 when the AQI is missing).
- * TEAM ASSUMPTION, not an official scale: up to 50 very little, 51–100 light, 101–200 moderate,
- * above 200 heavy. Canada's official index is the AQHI, a different formula; we never mix them,
- * so the number shown next to these words is labelled "US air quality index".
- */
+/** Smoke in words from the US AQI (or PM2.5 when the AQI is missing), on the one shared scale (shared/aqi.ts smokePlain). */
 export function smokeLevel(usAqi: number | null | undefined, pm25?: number | null): SmokeLevel | null {
-  const aqi = usAqi ?? aqiFromPm25(pm25)
-  if (aqi == null || Number.isNaN(aqi)) return null
-  return aqi <= 50 ? 'very little' : aqi <= 100 ? 'light' : aqi <= 200 ? 'moderate' : 'heavy'
-}
-
-/** Health advice for the smoke level, from Health Canada "Wildfire smoke and your health" and
- *  "Preparing for wildfire smoke events" (docs/research/preparedness.md §3). Suggestions, not orders. */
-export const SMOKE_ADVICE: Record<SmokeLevel, string> = {
-  'very little': 'No need to change your plans because of smoke.',
-  light: 'Most people can carry on as usual. If the smoke bothers you, take it easier outdoors.',
-  moderate: 'Elders, young children, pregnant people and anyone with heart or lung problems may want to cut back on hard work outdoors. Keep windows and doors closed.',
-  heavy: 'Everyone may want to cut back on time outdoors. Keep windows and doors closed, and use an air cleaner if you have one. If you have to be outside, a well-fitted N95 mask helps. Get medical help for chest pain, wheezing or trouble breathing.',
+  return smokePlain(usAqi ?? aqiFromPm25(pm25))?.word ?? null
 }
 
 export function smokeWords(p: PlaceReport): { line: string; advice: string; number: string | null; ahead: string | null } | null {
@@ -271,15 +224,14 @@ export function smokeWords(p: PlaceReport): { line: string; advice: string; numb
   const now = p.air.now
   const lvl = smokeLevel(now.usAqi, now.pm25)
   if (!lvl) return null
-  const bits: string[] = []
-  if (now.pm25 != null) bits.push(`fine smoke particles ${Math.round(now.pm25)} µg/m³`)
-  if (now.usAqi != null) bits.push(`US air quality index ${Math.round(now.usAqi)}`)
-  const number = bits.length ? `Right now: ${bits.join(', ')}.` : null
+  // One number on the main screen, with the scale in words; no µg/m³ here (docs/design/review-wave3.md #10).
+  const aqi = now.usAqi ?? aqiFromPm25(now.pm25)
+  const number = aqi != null && !Number.isNaN(aqi) ? smokeReading(aqi) : null
   let ahead: string | null = null
   const m = p.air.max3d
   const lvl3 = smokeLevel(m.usAqi, m.pm25)
   if (lvl3 && m.date && SMOKE_RANK[lvl3] > SMOKE_RANK[lvl]) ahead = `Expected to be ${lvl3} ${onDay(m.date, todayOf(p))}.`
-  return { line: `Smoke in the air: ${lvl} today.`, advice: SMOKE_ADVICE[lvl], number, ahead }
+  return { line: `Smoke in the air: ${lvl} today.`, advice: SMOKE_RANK[lvl] >= SMOKE_RANK.heavy ? `${smokePlain(aqi)!.healthLine} ${SMOKE_MEDICAL}` : smokePlain(aqi)!.healthLine, number, ahead }
 }
 
 /** The level the "What you can do now" list follows: today's, or the highest expected in the look-ahead when that is higher. */

@@ -7,6 +7,7 @@ import { linearTrend, mannKendall, quantiles, senSlope } from '../shared/stats.t
 import { regionById } from './data/regions.ts'
 import { getPowerDaily, type PowerDaily } from './sources/powerDaily.ts'
 import { NotFound } from './services.ts'
+import { SIM_NOW_MS, simLocalDay } from './sim.ts'
 import { src } from './util.ts'
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -25,7 +26,9 @@ function windowDays(month: number, day: number): { set: Set<string>; start: Date
 
 function windowFor(mode: Mode) {
   if (mode === 'sim') {
-    const w = windowDays(7, 14)
+    // The scenario's own today (14 July), never the real clock.
+    const today = simLocalDay(SIM_NOW_MS)
+    const w = windowDays(Number(today.slice(5, 7)), Number(today.slice(8, 10)))
     return { ...w, label: 'mid-July', note: 'The simulated scenario is set in mid-July, so today is compared with 7–21 July of every year.' }
   }
   const now = new Date()

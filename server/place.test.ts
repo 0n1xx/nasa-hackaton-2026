@@ -53,13 +53,22 @@ test('place: outlook, signs, fires and air are filled from the same point', asyn
   assert.ok(data.hotspots24h && data.hotspots24h.within50km <= data.hotspots24h.within100km)
   assert.equal(data.hotspots24h!.within100km, data.risk.hotspots100km)
   assert.ok(data.air && data.air.max3d.days === 3 && data.air.max3d.pm25 != null)
-  // Smoke maximum: the 3 whole local days after today, whatever the hour (sim air times are UTC).
+  // Smoke maximum: the 3 whole local days after today, whatever the hour (sim air times are scenario wall-clock times).
   const next = (iso: string, n: number) => { const t = new Date(`${iso}T12:00:00`); t.setDate(t.getDate() + n); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}` }
   assert.deepEqual(data.air!.max3d.daily.map((x) => x.date), [1, 2, 3].map((n) => next(data.risk.todayDate, n)))
   assert.equal(data.air!.max3d.pm25, Math.max(...data.air!.max3d.daily.map((x) => x.pm25)))
   assert.equal(data.region?.id, 'thunder-bay')
   assert.ok(sources.some((s) => s.id === 'communities'))
   assert.equal(new Set(sources.map((s) => s.id)).size, sources.length, 'sources are de-duplicated')
+})
+
+test('place: the example is set on 14 July 2026, not on the real date', async () => {
+  const { data } = await placeCore('sim', 'whitesand', 7)
+  assert.equal(data.risk.todayDate, '2026-07-14')
+  assert.equal(data.risk.timeline.find((t) => t.kind === 'today')?.date, '2026-07-14')
+  assert.equal(data.risk.timeline.find((t) => t.kind === 'forecast')?.date, '2026-07-15')
+  assert.equal(data.risk.current.time, '2026-07-14T15:00')
+  assert.deepEqual(data.air!.max3d.daily.map((x) => x.date), ['2026-07-15', '2026-07-16', '2026-07-17'])
 })
 
 test('place: unknown community is NotFound', async () => {

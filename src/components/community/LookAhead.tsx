@@ -8,13 +8,14 @@ import { dayOfMonth, fullDate, highestLine, lookAheadDays, todayOf, weekdayLong,
 
 const HORIZON_WORDS: Record<number, string> = { 1: '1 day', 3: '3 days', 7: '1 week', 14: '2 weeks' }
 
-/** Today: a solid light tint. Forecast days: hatched, lighter the further out they are ("Further ahead is less certain"). */
+/** Today: a solid light tint. Forecast days: white, with a hatched 8 px band along the top that fades the
+ *  further out it is ("Further ahead is less certain"). The hatch never runs behind the words. */
 function cellStyle(d: RiskDay, i: number, n: number): { className: string; style: CSSProperties } {
   const color = LEVEL_COLORS[d.level]
   if (d.kind === 'today') return { className: '', style: { background: `color-mix(in srgb, ${color} 24%, white)`, printColorAdjust: 'exact' } }
   const steps = Math.max(1, n - 1)
-  const alpha = Math.round(46 - ((i - 1) / steps) * 32) // 46% next to today, down to 14% at the far end
-  return { className: 'hatch', style: { ['--c' as string]: `color-mix(in srgb, ${color} ${alpha}%, transparent)` } }
+  const alpha = Math.round(30 - ((i - 1) / steps) * 18) // 30% next to today, down to 12% at the far end
+  return { className: 'hatch-band', style: { ['--c' as string]: `color-mix(in srgb, ${color} ${alpha}%, transparent)` } }
 }
 
 const cellName = (d: RiskDay) => (d.kind === 'today' ? 'Today' : `${weekdayShort(d.date)} ${dayOfMonth(d.date)}`)
@@ -71,7 +72,7 @@ export default function LookAhead({ place, layout }: { place: PlaceReport; layou
           const c = cellStyle(d, i, days.length)
           return <li key={d.date}>
             <button type="button" onClick={() => pick(d)} aria-pressed={d.date === selected} aria-label={ariaName(d)} title={ariaName(d)}
-              className={`flex w-full flex-col items-center gap-1 rounded-md px-0.5 pt-1.5 pb-2 text-[15px] leading-tight ${c.className} ${ring(d)}`} style={c.style}>
+              className={`flex w-full flex-col items-center gap-1 rounded-md px-0.5 pt-2.5 pb-2 text-[15px] leading-tight ${c.className} ${ring(d)}`} style={c.style}>
               <span className="font-semibold">{d.kind === 'today' ? 'Today' : weekdayShort(d.date)}</span>
               <span className="num">{d.kind === 'today' ? ' ' : dayOfMonth(d.date)}</span>
               <MiniMeter level={d.level} />
@@ -85,7 +86,7 @@ export default function LookAhead({ place, layout }: { place: PlaceReport; layou
           const c = cellStyle(d, i, days.length)
           return <li key={d.date}>
             <button type="button" onClick={() => pick(d)} aria-pressed={d.date === selected} aria-label={ariaName(d)}
-              className={`flex w-full flex-col items-start gap-1.5 rounded-md px-2.5 py-2 text-left text-[15px] leading-tight ${c.className} ${ring(d)}`} style={c.style}>
+              className={`flex w-full flex-col items-start gap-1.5 rounded-md px-2.5 pt-2.5 pb-2 text-left text-[15px] leading-tight ${c.className} ${ring(d)}`} style={c.style}>
               <span className="font-semibold">{cellName(d)}</span>
               <LevelMeter level={d.level} size="sm" />
               <span className="font-semibold">{levelLabel(d.level)}</span>

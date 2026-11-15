@@ -90,7 +90,7 @@ export const EXPLAIN: Record<string, Explain> = {
   'fireStage.EX': { title: 'Out', body: 'The fire is out.', detail: 'Stage of control EX, reported by the fire agency through CWFIS.' },
   hotspot: {
     title: 'Heat spotted by satellites',
-    body: 'A spot on the ground hot enough that it may be a fire, seen from space. Not every spot is a wildfire; bigger, redder dots give off more heat.',
+    body: 'A small orange square is a spot hot enough to be a fire, seen from space. Not every spot is a wildfire.',
     detail: 'NASA FIRMS (VIIRS), or CWFIS 24-hour hotspots when no FIRMS key is set. Red above 60 MW fire radiative power.',
   },
   frp: {
@@ -107,7 +107,7 @@ export const EXPLAIN: Record<string, Explain> = {
   // Communities
   community: {
     title: 'Community',
-    body: 'The general location of a First Nation or Métis Settlement. Distance to a fire tells you how close it is, not how dangerous it is.',
+    body: 'Each circle is a First Nation or Métis Settlement, filled with its fire risk colour.',
     detail: PLACES,
   },
   'community.firstNation': {

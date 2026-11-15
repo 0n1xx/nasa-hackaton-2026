@@ -77,7 +77,7 @@ Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 ### Step 1: find your community (2:20–2:32)
 
-**2:20** This is Before the Smoke. It's November, so this is an example summer scenario, and the banner says so on every screen.
+**2:20** This is Before the Smoke. It's November, so we're showing an example: a summer day, July fourteenth, the week of the real evacuations. The banner says so on every screen.
 
 **[CLICK the search box, TYPE "White", CLICK **Whitesand First Nation**.]**
 
@@ -107,7 +107,7 @@ Three speakers. About 560 spoken words. Ends at about 4:40, leaving roughly 20 s
 
 **[CLICK **Satellite photo** at the top of the map. Wait about two seconds.]**
 
-**3:14** And this part is real. NASA's satellite photo from the fourteenth of July, the week Whitesand and four other Nations were evacuated. The red is fire seen from space. The haze is smoke.
+**3:14** And this part is real. NASA's satellite photo from that same day, July fourteenth, when Whitesand and four other Nations were being evacuated. The red is fire seen from space. The haze is smoke.
 
 > *If the photo doesn't draw within five seconds:* say the line anyway, click **Map**, and move on.
 

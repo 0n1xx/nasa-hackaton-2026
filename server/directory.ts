@@ -17,6 +17,8 @@ import { km, src } from './util.ts'
 
 const ISC_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'data/communities-isc.json')
 const DUPLICATE_KM = 15
+/** Shortest search, in letters (after normalizing). */
+export const MIN_QUERY = 2
 /** ISC entries that are the same Nation as a manual entry under a different name. */
 const SAME_AS: Record<string, string> = {
   'isc-276': 'pimicikamak', // Cross Lake Band of Indians = Pimicikamak Cree Nation
@@ -75,11 +77,12 @@ function build() {
     extra.push(c)
   }
   const all = [...manual, ...extra]
-  // Search terms per entry: full name, name without the parenthetical, each parenthetical, aliases, id.
+  // Search terms per entry: full name, name without the parenthetical, each parenthetical, aliases, and the
+  // hand-checked list's slug (a name). Never an ISC id such as "isc-441": typing "is" must not match it.
   const terms = new Map(all.map((c) => {
     const parens = [...c.name.matchAll(/\(([^)]+)\)/g)].map((m) => m[1])
     const base = c.name.replace(/\([^)]*\)/g, ' ')
-    return [c.id, [...new Set([c.name, base, ...parens, ...c.aliases, c.id].map(normalizeName).filter(Boolean))]]
+    return [c.id, [...new Set([c.name, base, ...parens, ...c.aliases, ...(c.source === 'manual' ? [c.id] : [])].map(normalizeName).filter(Boolean))]]
   }))
   return { all, byId, terms, isc }
 }
@@ -117,7 +120,8 @@ function tier(terms: string[], q: string): number {
 export function searchCommunities(query: string, limit = 10): Envelope<CommunityMatch[]> {
   const q = normalizeName(String(query ?? '').slice(0, 100))
   const sources = [locationSource({ source: 'manual' }), ...(DIR.isc ? [locationSource({ source: 'isc' })] : [])]
-  if (!q) return { data: [], sources }
+  // One letter matches almost every name: wait for two.
+  if (q.length < MIN_QUERY) return { data: [], sources }
   const hits = DIR.all.map((c) => ({ c, t: tier(DIR.terms.get(c.id)!, q) })).filter((h) => h.t < 4)
   hits.sort((a, b) => a.t - b.t || (a.c.source === b.c.source ? 0 : a.c.source === 'manual' ? -1 : 1) || a.c.name.length - b.c.name.length || a.c.name.localeCompare(b.c.name))
   return { data: hits.slice(0, limit).map(({ c }) => ({ id: c.id, name: c.name, kind: c.kind, province: c.province, regionId: c.regionId, source: c.source })), sources }

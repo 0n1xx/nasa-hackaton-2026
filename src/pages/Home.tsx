@@ -19,7 +19,7 @@ export default function Home() {
   }, [mapOpen])
 
   return <div className="md:flex md:h-full">
-    <aside aria-label="Find your community" className="relative z-[1000] overflow-x-clip bg-white md:h-full md:w-[440px] md:shrink-0 md:overflow-y-auto md:border-r md:border-line">
+    <aside aria-label="Find your community" className="quiet-scroll relative z-[1000] overflow-x-clip bg-white md:h-full md:w-[440px] md:shrink-0 md:overflow-y-auto md:border-r md:border-line">
       <HomePanel />
     </aside>
     <div className={mapOpen

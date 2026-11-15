@@ -1,6 +1,6 @@
 // The community view, /c/:id (docs/design/critique-and-direction.md §3.3 desktop, §3.4 phone).
-// It answers, in order: is fire risk coming near us and when, how sure are you, why, what can we do,
-// and then the main action, Ask for help. Every number comes from one PlaceReport (usePlace).
+// It answers, in order: is fire risk coming near us and when, how sure are you, what can we do, the days
+// ahead, why, and then the main action, Ask for help. Every number comes from one PlaceReport (usePlace).
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import HeroMap from '../components/HeroMap.tsx'
@@ -10,6 +10,7 @@ import LookAhead from '../components/community/LookAhead.tsx'
 import WhySigns from '../components/community/WhySigns.tsx'
 import WhatToDo from '../components/community/WhatToDo.tsx'
 import FireAndSmoke from '../components/community/FireAndSmoke.tsx'
+import { todayLevel } from '../components/community/words.ts'
 import { usePlace } from '../place.ts'
 import { useApp } from '../state.tsx'
 
@@ -29,6 +30,9 @@ const readOpen = () => { try { return localStorage.getItem(ASSISTANT_KEY) !== 'c
 const saveOpen = (open: boolean) => { try { localStorage.setItem(ASSISTANT_KEY, open ? 'open' : 'closed') } catch { /* private mode */ } }
 
 const HELP_LINE = 'Write a request for firefighters and equipment before a fire starts.'
+const DISCLAIMER = 'A student prototype for NASA Space Apps 2026. Not an emergency alerting service, and it does not speak for any First Nation.'
+/** A reported wildfire this close puts the 911 line on screen whatever the level. */
+const FIRE_NEAR_KM = 25
 const btnPrimary = 'inline-flex h-12 items-center justify-center rounded-md bg-action px-4 text-[17px] font-semibold text-white hover:bg-action-deep'
 const btnSecondary = 'inline-flex h-12 items-center justify-center rounded-md border border-edge bg-white px-4 text-[17px] font-semibold text-fg hover:bg-ink-800'
 
@@ -40,6 +44,17 @@ export default function Community() {
   const desk = useMedia('(min-width: 1024px)')   // panel + map + assistant column
   const [assistantOpen, setAssistantOpenRaw] = useState(readOpen)
   const setAssistantOpen = (v: boolean) => { setAssistantOpenRaw(v); saveOpen(v) }
+  // Phone: the small map sits under a cover so a swipe scrolls the page; tapping opens it full screen (as on Home).
+  const [mapOpen, setMapOpen] = useState(false)
+
+  useEffect(() => {
+    // Leaflet only re-measures on window resize; nudge it when the map container changes size.
+    window.dispatchEvent(new Event('resize'))
+    if (!mapOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMapOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mapOpen])
 
   // One day for the whole screen: start on Today, and leave Today behind for the next screen.
   useEffect(() => { setDay(null); return () => setDay(null) }, [id, setDay])
@@ -71,14 +86,26 @@ export default function Community() {
     </div>
   }
 
-  const body = (mapSlot: ReactNode = null) => data ? <div className="fade-in" key={data.community.id}>
-    <StatusBlock place={data} />
-    <LookAhead place={data} layout={wide ? 'cells' : 'list'} />
-    <WhySigns place={data} />
-    <WhatToDo place={data} count={2} />
-    <FireAndSmoke place={data} example={example} />
+  // High or Very high today, or a reported fire within 25 km: say "call 911" right under the status.
+  const urgent = data ? ['High', 'Critical'].includes(todayLevel(data)) || (data.fires?.nearest.some((f) => f.distanceKm <= FIRE_NEAR_KM) ?? false) : false
+
+  // Order (docs/design/review-wave3.md #12): status and how sure, what you can do now, look ahead, why. The action
+  // comes before the look-ahead cells so it stays on the first screen. The map slot sits outside the fading block,
+  // so the full-screen phone map is not trapped under the sticky bar.
+  const body = (mapSlot: ReactNode = null) => data ? <>
+    <div className="fade-in" key={data.community.id}>
+      <StatusBlock place={data} />
+      {urgent && <p className="mt-4 rounded-md border border-danger px-3 py-2 text-[16px] leading-snug text-danger">
+        Fire or smoke near you now? <a href="tel:911" className="font-semibold underline underline-offset-2">Call 911</a> and follow any evacuation order.
+      </p>}
+      <WhatToDo place={data} count={2} />
+      <LookAhead place={data} layout={wide ? 'cells' : 'list'} />
+      <WhySigns place={data} />
+      <FireAndSmoke place={data} example={example} />
+    </div>
     {mapSlot}
-  </div> : <Skeleton />
+    <p className="mt-6 border-t border-line pt-3 text-[14px] leading-snug text-mute">{DISCLAIMER}</p>
+  </> : <Skeleton />
 
   const map = focus ? <HeroMap focus={focus} /> : <div className="skeleton absolute inset-0 rounded-none" />
 
@@ -86,7 +113,18 @@ export default function Community() {
   if (!wide) {
     return <div className="flex min-h-full flex-col">
       <div className="flex-1 px-4 pt-4 pb-6">
-        {body(<div className="relative isolate mt-5 h-[220px] overflow-hidden rounded-md border border-line">{map}</div>)}
+        {body(<div className={mapOpen ? 'fixed inset-0 z-[1200] isolate bg-white' : 'relative isolate mt-5 h-[220px] overflow-hidden rounded-md border border-line'}>
+          {map}
+          {mapOpen
+            ? <button type="button" onClick={() => setMapOpen(false)}
+              className="absolute top-3 right-3 z-[1001] h-11 rounded-md border border-edge bg-white px-4 text-[17px] font-semibold text-fg shadow-sm">
+              Close map
+            </button>
+            : <button type="button" onClick={() => setMapOpen(true)} aria-label="Open the map full screen"
+              className="absolute inset-0 z-[1001] flex items-end justify-center pb-3">
+              <span className="rounded-md border border-edge bg-white px-3 py-1.5 text-[15px] font-semibold text-fg shadow-sm">Open the map</span>
+            </button>}
+        </div>)}
       </div>
       <nav aria-label="Get help" className="sticky bottom-0 z-[1100] grid grid-cols-2 gap-2 border-t border-line bg-white px-4 pt-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         <Link to={`/c/${encodeURIComponent(id)}/help`} className={btnPrimary}>Ask for help</Link>
@@ -98,7 +136,7 @@ export default function Community() {
   // Tablet and desktop (§3.3): the panel scrolls inside itself with Ask for help pinned at its foot.
   return <div className="flex h-full min-h-0">
     <aside aria-label="Fire risk for this community" className="relative z-[1000] flex w-[440px] shrink-0 flex-col border-r border-line bg-white">
-      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-6 pt-4 pb-6">
+      <div className="quiet-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-6 pt-4 pb-6">
         {body()}
         {/* 768–1023: no room for a third column, so the assistant follows the panel content. */}
         {!desk && data && <section className="mt-6 min-h-[420px] border-t border-line pt-2"><Assistant communityId={id} variant="column" /></section>}

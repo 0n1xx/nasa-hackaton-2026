@@ -10,7 +10,8 @@
 import type { Compass8, DayWeather, Mode, PlaceReport, RiskLevel } from './types.ts'
 import type { WarningSign } from './signals.ts'
 import { levelLabel } from './risk.ts'
-import { aqiBand } from './aqi.ts'
+import { smokePlain } from './aqi.ts'
+import { fullDates, outlookPhrase } from './outlookWords.ts'
 import type { ProvinceContacts } from './contacts.ts'
 
 export type NeedKey = 'crews' | 'pumps' | 'brush' | 'evac' | 'air'
@@ -75,10 +76,10 @@ export function countedSigns(signs: WarningSign[]): WarningSign[] {
   return signs.filter((s) => s.active && s.key !== 'outlook')
 }
 
-/** The day the wind peaks, by the same rule as shared/signals.ts (today, then the forecast days). */
+/** The day the wind peaks, by the same rule as shared/signals.ts (today, then the next 3 forecast days). */
 function windPeak(days: DayWeather[]): DayWeather | null {
   const today = days.filter((d) => d.kind === 'historical').at(-1)
-  const window = [today, ...days.filter((d) => d.kind === 'forecast')].filter((d): d is DayWeather => !!d && d.windMax != null)
+  const window = [today, ...days.filter((d) => d.kind === 'forecast').slice(0, 3)].filter((d): d is DayWeather => !!d && d.windMax != null)
   return window.length ? window.reduce((a, b) => (b.windMax! > a.windMax! ? b : a)) : null
 }
 
@@ -119,17 +120,11 @@ function riskSentence(place: PlaceReport): string {
   const todayLevel = o.todayLevel ?? place.risk.today.level
   const todayDate = o.todayDate ?? place.risk.todayDate
   const head = `Fire risk near ${name} is ${words(todayLevel)} today, ${dayDate(todayDate)} (${place.risk.today.score} out of 100 on our estimate)`
-  if (o.firstHigherLevelDate) {
-    // The level on the first higher day, not the peak: the peak can be a later, higher day.
-    const day = place.risk.timeline.find((d) => d.date === o.firstHigherLevelDate)
-    const level = day?.level ?? o.peakLevel
-    const peakLater = o.peakDate !== o.firstHigherLevelDate && o.peakLevel !== level
-    return `${head}, and expected to be ${words(level)} from ${dayDate(o.firstHigherLevelDate)}.` +
-      (peakLater ? ` The highest expected is ${words(o.peakLevel)}, on ${dayDate(o.peakDate)}.` : '')
-  }
-  const span = place.horizon === 7 ? 'the next week' : place.horizon === 14 ? 'the next 2 weeks' : `the next ${plural(place.horizon, 'day')}`
-  if (!o.peakDate || o.peakDate === todayDate) return `${head}. Over ${span}, it is not expected to go higher than today.`
-  return `${head}. Over ${span}, the highest expected is ${words(o.peakLevel)}, on ${dayDate(o.peakDate)}.`
+  // The community page's status rule (shared/outlookWords.ts), with full dates: "expected to reach very high
+  // on Thursday 16 July" for a single higher day, "expected to be very high from …" only when it holds.
+  const ahead = place.risk.timeline.filter((d) => d.kind === 'forecast')
+  const phrase = outlookPhrase({ todayLevel, ahead, firstHigherLevelDate: o.firstHigherLevelDate, horizon: place.horizon }, fullDates)
+  return phrase ? `${head}, and ${phrase.text}.` : `${head}.`
 }
 
 function firesSentence(place: PlaceReport): string | null {
@@ -146,9 +141,10 @@ function firesSentence(place: PlaceReport): string | null {
 
 function smokeSentence(place: PlaceReport): string | null {
   const aqi = place.air?.now.usAqi
-  const band = aqiBand(aqi)
-  if (aqi == null || !band) return null
-  return `Smoke and air quality today: ${band.label.toLowerCase()} (US air quality index ${Math.round(aqi)}).`
+  const plain = smokePlain(aqi)
+  if (aqi == null || !plain) return null
+  // The same word as the community page and the assistant (shared/aqi.ts smokePlain).
+  return `Smoke in the air today: ${plain.word} (smoke reading ${Math.round(aqi)} on the US air quality scale, where over 300 is the worst level).`
 }
 
 function historySentence(place: PlaceReport): string | null {

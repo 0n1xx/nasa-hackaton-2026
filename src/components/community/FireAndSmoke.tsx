@@ -25,7 +25,7 @@ export default function FireAndSmoke({ place, example }: { place: PlaceReport; e
       <p className="mt-1.5 text-[17px] leading-[1.45]">{fireCounts(fires)}</p>
     </>}
     <p className="mt-1 text-[17px] leading-[1.45]">
-      {place.hotspots24h == null ? 'Satellite heat readings are not available right now.' : heatCounts(place.hotspots24h)}
+      {place.hotspots24h == null ? 'Satellite heat data is not available right now.' : heatCounts(place.hotspots24h)}
     </p>
 
     <div className="mt-3">

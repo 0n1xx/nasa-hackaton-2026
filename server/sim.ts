@@ -5,6 +5,10 @@
 // The scenario is loosely shaped like a severe mid-summer outbreak in
 // Northwestern Ontario. None of it is an observation, and every response built
 // from it carries kind: "simulated" so the UI labels it.
+//
+// It is pinned to the real week it is modelled on, never to the real clock: "now" is
+// SIM_NOW_MS, Tuesday 14 July 2026 at 3:00 p.m. Central (the date of the real NASA
+// satellite photo), so past days are 7–13 July and the look-ahead starts on 15 July.
 import type { ActiveFire, AirNow, AirPoint, ClimateNormals, Hotspot } from '../shared/types.ts'
 import type { Pt, WeatherResult } from './sources/openMeteo.ts'
 import { km } from './util.ts'
@@ -14,8 +18,15 @@ import { DEFAULT_HORIZON, MAX_AIR_HORIZON } from '../shared/horizon.ts'
 function rng(seed: number) {
   return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
 }
-/** Local calendar date (YYYY-MM-DD), not UTC, so 'today' matches the presenter's clock in the evening. */
-const localDay = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+/** The scenario's "now": 14 July 2026, 3:00 p.m. Central Daylight Time (America/Winnipeg). */
+export const SIM_NOW_MS = Date.parse('2026-07-14T15:00:00-05:00')
+/** The scenario's time zone is a fixed UTC-5 (Central Daylight Time, which holds through all of July and August). */
+const SIM_UTC_OFFSET_MS = -5 * 3600000
+/** Wall-clock time in the scenario's zone (YYYY-MM-DDTHH:MM, no offset), the same form Open-Meteo gives live (timezone=auto). */
+export const simLocalTime = (ms: number) => new Date(ms + SIM_UTC_OFFSET_MS).toISOString().slice(0, 16)
+/** Calendar date (YYYY-MM-DD) in the scenario's zone, whatever the server's own time zone. */
+export const simLocalDay = (ms: number) => simLocalTime(ms).slice(0, 10)
+const localDay = simLocalDay
 const hash = (lat: number, lon: number) => Math.round(lat * 1000) * 7919 + Math.round(lon * 1000) * 104729
 
 // cluster centre, spread (deg), number of fires, typical size (ha), agency
@@ -31,7 +42,7 @@ let fireCache: ActiveFire[] | null = null
 export function simActiveFires(): ActiveFire[] {
   if (fireCache) return fireCache
   const r = rng(20260714), out: ActiveFire[] = []
-  const start = localDay(Date.now() - 6 * 86400000)
+  const start = localDay(SIM_NOW_MS - 6 * 86400000)
   for (const [lat, lon, spread, n, size, agency] of CLUSTERS) {
     for (let i = 0; i < n; i++) {
       out.push({ id: `SIM-${agency}-${out.length + 1}`, name: `SIM ${agency} ${String(out.length + 1).padStart(3, '0')}`, agency, lat: lat + (r() - 0.5) * 2 * spread, lon: lon + (r() - 0.5) * 3 * spread, hectares: Math.round(size * (0.05 + r() ** 2 * 1.6)), startDate: start, stage: STAGES[Math.floor(r() * STAGES.length)] })
@@ -47,7 +58,7 @@ export function simHotspots(days: number): Hotspot[] {
     const n = Math.min(60, Math.round((3 + Math.sqrt(f.hectares) / 9) * (f.stage === 'OC' ? 1 : 0.4) * (0.6 + days * 0.4)))
     const rad = Math.sqrt(f.hectares) / 1100 + 0.02
     for (let i = 0; i < n; i++) {
-      out.push({ lat: f.lat + (r() - 0.5) * 2 * rad, lon: f.lon + (r() - 0.5) * 3.2 * rad, frp: Math.round((2 + r() ** 3 * 180) * 10) / 10, time: new Date(Date.now() - r() * days * 86400000).toISOString(), sensor: 'SIMULATED' })
+      out.push({ lat: f.lat + (r() - 0.5) * 2 * rad, lon: f.lon + (r() - 0.5) * 3.2 * rad, frp: Math.round((2 + r() ** 3 * 180) * 10) / 10, time: new Date(SIM_NOW_MS - r() * days * 86400000).toISOString(), sensor: 'SIMULATED' })
     }
   }
   return out
@@ -80,31 +91,31 @@ export function simWeather(pts: Pt[], horizon = DEFAULT_HORIZON): WeatherResult[
       const rhMin = Math.max(14, 62 - 40 * a * build + (g() - 0.5) * 10)
       const wet = i <= 1 ? g() < 0.55 + 0.4 * a : g() < 0.14 - 0.12 * a
       return {
-        date: localDay(Date.now() + off * 86400000), kind: off > 0 ? 'forecast' as const : 'historical' as const,
+        date: localDay(SIM_NOW_MS + off * 86400000), kind: off > 0 ? 'forecast' as const : 'historical' as const,
         tMax: +tMax.toFixed(1), rhMin: Math.round(rhMin), windMax: +(12 + g() * 16 + 10 * a * (off >= -1 ? 1 : 0.4)).toFixed(1), windDir: Math.round(200 + g() * 90),
         precip: wet ? +((i <= 1 ? 8 : 1) + g() * 9).toFixed(1) : 0, vpdMax: +(0.6108 * Math.exp((17.27 * tMax) / (tMax + 237.3)) * (1 - rhMin / 100)).toFixed(2),
         soil: +(0.3 - 0.17 * a * build + (g() - 0.5) * 0.03).toFixed(3), snow: 0,
       }
     })
     const t = days[7]
-    return { current: { time: new Date().toISOString().slice(0, 16), temp: +(t.tMax - 2).toFixed(1), rh: t.rhMin + 6, wind: +(t.windMax * 0.7).toFixed(1), windDir: t.windDir, precip: 0 }, days }
+    return { current: { time: simLocalTime(SIM_NOW_MS), temp: +(t.tMax - 2).toFixed(1), rh: t.rhMin + 6, wind: +(t.windMax * 0.7).toFixed(1), windDir: t.windDir, precip: 0 }, days }
   })
 }
 
 const pmAt = (lat: number, lon: number, wobble = 1) => Math.round((5 + smoke(lat, lon) * 95 * wobble) * 10) / 10
 
 export function simAirNow(pts: Pt[]): AirNow[] {
-  return pts.map((p) => { const pm25 = pmAt(p.lat, p.lon); return { time: new Date().toISOString().slice(0, 16), pm25, pm10: +(pm25 * 1.25 + 4).toFixed(1), usAqi: aqiFromPm25(pm25), aod: +(0.08 + pm25 / 160).toFixed(2) } })
+  return pts.map((p) => { const pm25 = pmAt(p.lat, p.lon); return { time: simLocalTime(SIM_NOW_MS), pm25, pm10: +(pm25 * 1.25 + 4).toFixed(1), usAqi: aqiFromPm25(pm25), aod: +(0.08 + pm25 / 160).toFixed(2) } })
 }
 
 export function simAirSeries(p: Pt, pastDays: number, days = DEFAULT_HORIZON): { now: AirNow; hourly: AirPoint[] } {
   const r = rng(hash(p.lat, p.lon) + 5), hourly: AirPoint[] = []
-  const now = Date.now(), H = 3600000, end = Math.min(days, MAX_AIR_HORIZON) * 24
+  const now = SIM_NOW_MS, H = 3600000, end = Math.min(days, MAX_AIR_HORIZON) * 24
   for (let h = -pastDays * 24; h <= end; h++) {
     const ramp = Math.min(1, Math.max(0.08, 1 + h / (24 * 6)))            // smoke builds over the last 6 days
     const pulse = 0.75 + 0.35 * Math.sin((h / 24) * 2 * Math.PI + 1) + (r() - 0.5) * 0.3 // overnight pooling
     const pm25 = Math.max(2, pmAt(p.lat, p.lon, ramp * pulse))
-    hourly.push({ time: new Date(now + h * H).toISOString().slice(0, 16), pm25: +pm25.toFixed(1), pm10: +(pm25 * 1.25 + 4).toFixed(1), kind: h > 0 ? 'forecast' : 'model' })
+    hourly.push({ time: simLocalTime(now + h * H), pm25: +pm25.toFixed(1), pm10: +(pm25 * 1.25 + 4).toFixed(1), kind: h > 0 ? 'forecast' : 'model' })
   }
   return { now: simAirNow([p])[0], hourly }
 }

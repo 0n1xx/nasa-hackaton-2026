@@ -18,9 +18,18 @@ export default function AssistantPage() {
           Close
         </Link>
       </div>
-      <div className="flex flex-1 flex-col">
-        <Assistant communityId={communityId} variant="page" />
-      </div>
+      {communityId && !place.data && place.error
+        // The community was chosen but its data did not load: never answer as if none was chosen.
+        ? <div className="px-4 py-8 text-[17px]" role="alert">
+          <p className="font-semibold text-fg">We couldn’t load this community. Try again.</p>
+          <button type="button" onClick={place.reload}
+            className="mt-4 inline-flex h-12 items-center justify-center rounded-md border border-edge bg-white px-4 text-[17px] font-semibold text-fg hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action">
+            Try again
+          </button>
+        </div>
+        : <div className="flex flex-1 flex-col">
+          <Assistant communityId={communityId} variant="page" />
+        </div>}
     </div>
   )
 }

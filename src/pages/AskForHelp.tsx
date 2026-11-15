@@ -198,7 +198,7 @@ export default function AskForHelp() {
     </div> : contacts && letter && <>
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-10">
         <div>
-          <Step title="1. What you need">
+          <Step title="What you need">
             <fieldset className="mt-3">
               <legend className="sr-only">What you need</legend>
               <ul className="space-y-1">
@@ -212,7 +212,7 @@ export default function AskForHelp() {
             </fieldset>
           </Step>
 
-          <Step title="2. Who to send it to">
+          <Step title="Who to send it to">
             {contacts.howItWorks && <p className="mt-2 text-[16px] text-mute">{contacts.howItWorks}</p>}
             <ul className="mt-4 space-y-3">
               {contacts.wildfireAgency && <AgencyCard a={contacts.wildfireAgency} />}
@@ -232,12 +232,12 @@ export default function AskForHelp() {
           </Step>
         </div>
 
-        <Step title="3. Your request">
+        <Step title="Your request">
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <label className="block"><span className="font-semibold">Your name</span>
               <input className={field} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></label>
             <label className="block"><span className="font-semibold">Your role</span>
-              <input className={field} value={role} onChange={(e) => setRole(e.target.value)} placeholder="For example, emergency coordinator" autoComplete="organization-title" /></label>
+              <input className={field} value={role} onChange={(e) => setRole(e.target.value)} placeholder="For example, fire chief" autoComplete="organization-title" /></label>
             <label className="block sm:col-span-2 lg:col-span-1 xl:col-span-2"><span className="font-semibold">Your phone number</span>
               <input className={field} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" /></label>
           </div>
@@ -253,18 +253,20 @@ export default function AskForHelp() {
             <div className="flex gap-2"><dt className="shrink-0 font-semibold">Subject:</dt><dd className="min-w-0">{letter.subject}</dd></div>
           </dl>
 
+          {/* Desktop: the actions sit next to the letter, above the fold. Below lg, the sticky bar carries them. */}
+          <div className="mt-4 hidden flex-wrap gap-3 lg:flex">{actions(false)}</div>
+          {/* The confirmation sits right under the buttons that cause it. */}
+          <p aria-live="polite" className="mt-3 min-h-6 text-[16px]">{statusText}</p>
+          {mail?.trimmed && <p className="text-[15px] text-mute">The letter is long for an email link, so “Open in email” puts in a shorter version and copies the full letter for you to paste.</p>}
+
           <label htmlFor="letter" className="mt-4 block font-semibold">The letter <span className="font-normal text-mute">(you can change any of it)</span></label>
           <textarea id="letter" ref={letterRef} value={draft} onChange={(e) => setEdited(e.target.value)} spellCheck
-            className={`mt-1.5 block w-full resize-y rounded-md border border-edge bg-white p-4 text-[17px] leading-relaxed text-fg focus:border-fg ${expanded ? 'h-[46rem]' : 'h-[14rem] lg:h-[46rem]'}`} />
+            className={`mt-1.5 block w-full resize-y rounded-md border border-edge bg-white p-4 text-[17px] leading-relaxed text-fg focus:border-fg lg:h-[28rem] ${expanded ? 'h-[46rem]' : 'h-[14rem]'}`} />
           <button type="button" onClick={() => setExpanded((e) => !e)} className={`${link} mt-2 text-[16px] lg:hidden`}>{expanded ? 'Show less of the letter' : 'Show the whole letter'}</button>
           {edited != null && edited !== letter.body && <p className="mt-3 text-[16px] text-mute">
             You changed the letter yourself, so new choices above are not added to it.{' '}
             <button type="button" onClick={() => setEdited(null)} className={link}>Write it again from my choices</button>
           </p>}
-
-          <div className="mt-5 hidden flex-wrap gap-3 lg:flex">{actions(false)}</div>
-          <p aria-live="polite" className="mt-3 min-h-6 text-[16px]">{statusText}</p>
-          {mail?.trimmed && <p className="text-[15px] text-mute">The letter is long for an email link, so “Open in email” puts in a shorter version and copies the full letter for you to paste.</p>}
         </Step>
       </div>
 
